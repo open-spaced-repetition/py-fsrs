@@ -8,7 +8,7 @@ class FSRS:
     def __init__(self) -> None:
         self.p = Parameters()
 
-    def repeat(self, card: Card, now: int) -> SchedulingCards:
+    def repeat(self, card: Card, now: int) -> dict[int, SchedulingInfo]:
         if card.state == NEW:
             card.elapsed_days = 0
         else:
@@ -46,7 +46,7 @@ class FSRS:
             good_interval = max(good_interval, hard_interval + 1)
             easy_interval = max(self.next_interval(s.easy.stability * self.p.hard_factor), good_interval + 1)
             s.schedule(now, hard_interval, good_interval, easy_interval)
-        return s
+        return s.record_log(card, now)
 
     def init_ds(self, s: SchedulingCards) -> None:
         s.again.difficulty = self.init_difficulty(AGAIN)

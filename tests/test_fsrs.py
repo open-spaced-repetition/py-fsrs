@@ -1,17 +1,17 @@
-from fsrs import FSRS, Card
+from fsrs import *
 from datetime import datetime
 import json
 
 
 def print_scheduling_cards(scheduling_cards):
-    print("again:", json.dumps(scheduling_cards.again.__dict__))
-    print(scheduling_cards.record_log()['again'].__dict__)
-    print("hard:", json.dumps(scheduling_cards.hard.__dict__))
-    print(scheduling_cards.record_log()['hard'].__dict__)
-    print("good:", json.dumps(scheduling_cards.good.__dict__))
-    print(scheduling_cards.record_log()['good'].__dict__)
-    print("easy:", json.dumps(scheduling_cards.easy.__dict__))
-    print(scheduling_cards.record_log()['easy'].__dict__)
+    print("again.card:", json.dumps(scheduling_cards[AGAIN].card.__dict__))
+    print("again.review_log:", json.dumps(scheduling_cards[AGAIN].review_log.__dict__))
+    print("hard.card:", json.dumps(scheduling_cards[HARD].card.__dict__))
+    print("hard.review_log:", json.dumps(scheduling_cards[HARD].review_log.__dict__))
+    print("good.card:", json.dumps(scheduling_cards[GOOD].card.__dict__))
+    print("good.review_log:", json.dumps(scheduling_cards[GOOD].review_log.__dict__))
+    print("easy.card:", json.dumps(scheduling_cards[EASY].card.__dict__))
+    print("easy.review_log:", json.dumps(scheduling_cards[EASY].review_log.__dict__))
     print()
 
 
@@ -22,17 +22,17 @@ def test_repeat():
     scheduling_cards = fsrs.repeat(card, now)
     print_scheduling_cards(scheduling_cards)
 
-    card = scheduling_cards.good
+    card = scheduling_cards[GOOD].card
     now = card.due
     scheduling_cards = fsrs.repeat(card, now)
     print_scheduling_cards(scheduling_cards)
 
-    card = scheduling_cards.good
+    card = scheduling_cards[GOOD].card
     now = card.due
     scheduling_cards = fsrs.repeat(card, now)
     print_scheduling_cards(scheduling_cards)
 
-    card = scheduling_cards.good
+    card = scheduling_cards[GOOD].card
     now = card.due
     scheduling_cards = fsrs.repeat(card, now)
     print_scheduling_cards(scheduling_cards)

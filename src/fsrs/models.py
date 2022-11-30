@@ -23,17 +23,12 @@ EASY = 3
 
 
 class ReviewLog:
-    rid: int
-    card_id: int
-    state: int
     rating: int
     elapsed_days: int
     scheduled_days: int
     state: int
 
-    def __init__(self, rid: int, card_id: int, rating: int, elapsed_days: int, scheduled_days: int, state: int):
-        self.rid = rid
-        self.card_id = card_id
+    def __init__(self, rating: int, elapsed_days: int, scheduled_days: int, state: int):
         self.rating = rating
         self.elapsed_days = elapsed_days
         self.scheduled_days = scheduled_days
@@ -41,7 +36,6 @@ class ReviewLog:
 
 
 class Card:
-    cid: int
     due: int
     stability: float
     difficulty: float
@@ -53,7 +47,7 @@ class Card:
     last_review: int
 
     def __init__(self) -> None:
-        self.cid = date_to_ms(datetime.utcnow())
+        self.due = 0
         self.stability = 0
         self.difficulty = 0
         self.elapsed_days = 0
@@ -61,6 +55,7 @@ class Card:
         self.reps = 0
         self.lapses = 0
         self.state = NEW
+        self.last_review = 0
 
 
 class SchedulingInfo:
@@ -90,6 +85,7 @@ class SchedulingCards:
             self.hard.state = LEARNING
             self.good.state = LEARNING
             self.easy.state = REVIEW
+            self.again.lapses += 1
         elif state == LEARNING or state == RELEARNING:
             self.again.state = state
             self.hard.state = REVIEW
@@ -100,6 +96,7 @@ class SchedulingCards:
             self.hard.state = REVIEW
             self.good.state = REVIEW
             self.easy.state = REVIEW
+            self.again.lapses += 1
 
     def schedule(self, now: int, hard_interval: float, good_interval: float, easy_interval: float):
         self.again.scheduled_days = 0
@@ -113,10 +110,10 @@ class SchedulingCards:
 
     def record_log(self, card: Card, now: int) -> dict[int, SchedulingInfo]:
         return {
-            AGAIN: SchedulingInfo(self.again, ReviewLog(now, card.cid, AGAIN, self.again.scheduled_days, card.elapsed_days, card.state)),
-            HARD: SchedulingInfo(self.hard, ReviewLog(now, card.cid, HARD, self.hard.scheduled_days, card.elapsed_days, card.state)),
-            GOOD: SchedulingInfo(self.good, ReviewLog(now, card.cid, GOOD, self.good.scheduled_days, card.elapsed_days, card.state)),
-            EASY: SchedulingInfo(self.easy, ReviewLog(now, card.cid, EASY, self.easy.scheduled_days, card.elapsed_days, card.state)),
+            AGAIN: SchedulingInfo(self.again, ReviewLog(AGAIN, self.again.scheduled_days, card.elapsed_days, card.state)),
+            HARD: SchedulingInfo(self.hard, ReviewLog(HARD, self.hard.scheduled_days, card.elapsed_days, card.state)),
+            GOOD: SchedulingInfo(self.good, ReviewLog(GOOD, self.good.scheduled_days, card.elapsed_days, card.state)),
+            EASY: SchedulingInfo(self.easy, ReviewLog(EASY, self.easy.scheduled_days, card.elapsed_days, card.state)),
         }
 
 

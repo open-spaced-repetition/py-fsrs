@@ -9,7 +9,7 @@ class FSRS:
         self.p = Parameters()
 
     def repeat(self, card: Card, now: datetime) -> dict[int, SchedulingInfo]:
-        if card.state == NEW:
+        if card.state == State.New:
             card.elapsed_days = 0
         else:
             card.elapsed_days = (now - card.last_review).days
@@ -18,7 +18,7 @@ class FSRS:
         s = SchedulingCards(card)
         s.update_state(card.state)
 
-        if card.state == NEW:
+        if card.state == State.New:
             self.init_ds(s)
 
             s.again.due = now + timedelta(minutes=1)
@@ -27,13 +27,13 @@ class FSRS:
             easy_interval = self.next_interval(s.easy.stability * self.p.easy_bonus)
             s.easy.scheduled_days = easy_interval
             s.easy.due = now + timedelta(days=easy_interval)
-        elif card.state == LEARNING or card.state == RELEARNING:
+        elif card.state == State.Learning or card.state == State.Relearning:
             hard_interval = self.next_interval(s.hard.stability)
             good_interval = max(self.next_interval(s.good.stability), hard_interval + 1)
             easy_interval = max(self.next_interval(s.easy.stability * self.p.easy_bonus), good_interval + 1)
 
             s.schedule(now, hard_interval, good_interval, easy_interval)
-        elif card.state == REVIEW:
+        elif card.state == State.Review:
             interval = card.elapsed_days
             last_d = card.difficulty
             last_s = card.stability
@@ -49,23 +49,23 @@ class FSRS:
         return s.record_log(card, now)
 
     def init_ds(self, s: SchedulingCards) -> None:
-        s.again.difficulty = self.init_difficulty(AGAIN)
-        s.again.stability = self.init_stability(AGAIN)
-        s.hard.difficulty = self.init_difficulty(HARD)
-        s.hard.stability = self.init_stability(HARD)
-        s.good.difficulty = self.init_difficulty(GOOD)
-        s.good.stability = self.init_stability(GOOD)
-        s.easy.difficulty = self.init_difficulty(EASY)
-        s.easy.stability = self.init_stability(EASY)
+        s.again.difficulty = self.init_difficulty(Rating.Again)
+        s.again.stability = self.init_stability(Rating.Again)
+        s.hard.difficulty = self.init_difficulty(Rating.Hard)
+        s.hard.stability = self.init_stability(Rating.Hard)
+        s.good.difficulty = self.init_difficulty(Rating.Good)
+        s.good.stability = self.init_stability(Rating.Good)
+        s.easy.difficulty = self.init_difficulty(Rating.Easy)
+        s.easy.stability = self.init_stability(Rating.Easy)
 
     def next_ds(self, s: SchedulingCards, last_d: float, last_s: float, retrievability: float):
-        s.again.difficulty = self.next_difficulty(last_d, AGAIN)
+        s.again.difficulty = self.next_difficulty(last_d, Rating.Again)
         s.again.stability = self.next_forget_stability(s.again.difficulty, last_s, retrievability)
-        s.hard.difficulty = self.next_difficulty(last_d, HARD)
+        s.hard.difficulty = self.next_difficulty(last_d, Rating.Hard)
         s.hard.stability = self.next_recall_stability(s.hard.difficulty, last_s, retrievability)
-        s.good.difficulty = self.next_difficulty(last_d, GOOD)
+        s.good.difficulty = self.next_difficulty(last_d, Rating.Good)
         s.good.stability = self.next_recall_stability(s.good.difficulty, last_s, retrievability)
-        s.easy.difficulty = self.next_difficulty(last_d, EASY)
+        s.easy.difficulty = self.next_difficulty(last_d, Rating.Easy)
         s.easy.stability = self.next_recall_stability(s.easy.difficulty, last_s, retrievability)
 
     def init_stability(self, r: int) -> float:
@@ -75,8 +75,8 @@ class FSRS:
         return min(max(self.p.w[2] + self.p.w[3] * (r - 2), 1), 10)
 
     def next_interval(self, s: float) -> int:
-        new_interval = s * math.log(self.p.request_retention) / math.log(0.9)
-        return min(max(round(new_interval), 1), self.p.maximum_interval)
+        State.New_interval = s * math.log(self.p.request_retention) / math.log(0.9)
+        return min(max(round(State.New_interval), 1), self.p.maximum_interval)
 
     def next_difficulty(self, d: float, r: int) -> float:
         next_d = d + self.p.w[4] * (r - 2)

@@ -1,23 +1,28 @@
 from datetime import datetime, timedelta
 import copy
 from typing import Tuple
+from enum import IntEnum
 
-NEW = 0
-LEARNING = 1
-REVIEW = 2
-RELEARNING = 3
 
-AGAIN = 0
-HARD = 1
-GOOD = 2
-EASY = 3
+class State(IntEnum):
+    New = 0
+    Learning = 1
+    Review = 2
+    Relearning = 3
+
+
+class Rating(IntEnum):
+    Again = 0
+    Hard = 1
+    Good = 2
+    Easy = 3
 
 
 class ReviewLog:
     rating: int
     elapsed_days: int
     scheduled_days: int
-    review: datetime
+    Review: datetime
     state: int
 
     def __init__(self, rating: int, elapsed_days: int, scheduled_days: int, review: datetime, state: int):
@@ -36,7 +41,7 @@ class Card:
     scheduled_days: int
     reps: int
     lapses: int
-    state: int
+    state: State
     last_review: datetime
 
     def __init__(self) -> None:
@@ -47,12 +52,12 @@ class Card:
         self.scheduled_days = 0
         self.reps = 0
         self.lapses = 0
-        self.state = NEW
+        self.state = State.New
 
 
 class SchedulingInfo:
     card: Card
-    review_log: ReviewLog
+    Review_log: ReviewLog
 
     def __init__(self, card: Card, review_log: ReviewLog) -> None:
         self.card = card
@@ -71,23 +76,23 @@ class SchedulingCards:
         self.good = copy.deepcopy(card)
         self.easy = copy.deepcopy(card)
 
-    def update_state(self, state: int):
-        if state == NEW:
-            self.again.state = LEARNING
-            self.hard.state = LEARNING
-            self.good.state = LEARNING
-            self.easy.state = REVIEW
+    def update_state(self, state: State):
+        if state == State.New:
+            self.again.state = State.Learning
+            self.hard.state = State.Learning
+            self.good.state = State.Learning
+            self.easy.state = State.Review
             self.again.lapses += 1
-        elif state == LEARNING or state == RELEARNING:
+        elif state == State.Learning or state == State.Relearning:
             self.again.state = state
-            self.hard.state = REVIEW
-            self.good.state = REVIEW
-            self.easy.state = REVIEW
-        elif state == REVIEW:
-            self.again.state = RELEARNING
-            self.hard.state = REVIEW
-            self.good.state = REVIEW
-            self.easy.state = REVIEW
+            self.hard.state = State.Review
+            self.good.state = State.Review
+            self.easy.state = State.Review
+        elif state == State.Review:
+            self.again.state = State.Learning
+            self.hard.state = State.Review
+            self.good.state = State.Review
+            self.easy.state = State.Review
             self.again.lapses += 1
 
     def schedule(self, now: datetime, hard_interval: float, good_interval: float, easy_interval: float):
@@ -102,14 +107,18 @@ class SchedulingCards:
 
     def record_log(self, card: Card, now: datetime) -> dict[int, SchedulingInfo]:
         return {
-            AGAIN: SchedulingInfo(self.again,
-                                  ReviewLog(AGAIN, self.again.scheduled_days, card.elapsed_days, now, card.state)),
-            HARD: SchedulingInfo(self.hard,
-                                 ReviewLog(HARD, self.hard.scheduled_days, card.elapsed_days, now, card.state)),
-            GOOD: SchedulingInfo(self.good,
-                                 ReviewLog(GOOD, self.good.scheduled_days, card.elapsed_days, now, card.state)),
-            EASY: SchedulingInfo(self.easy,
-                                 ReviewLog(EASY, self.easy.scheduled_days, card.elapsed_days, now, card.state)),
+            Rating.Again: SchedulingInfo(self.again,
+                                         ReviewLog(Rating.Again, self.again.scheduled_days, card.elapsed_days, now,
+                                                   card.state)),
+            Rating.Hard: SchedulingInfo(self.hard,
+                                        ReviewLog(Rating.Hard, self.hard.scheduled_days, card.elapsed_days, now,
+                                                  card.state)),
+            Rating.Good: SchedulingInfo(self.good,
+                                        ReviewLog(Rating.Good, self.good.scheduled_days, card.elapsed_days, now,
+                                                  card.state)),
+            Rating.Easy: SchedulingInfo(self.easy,
+                                        ReviewLog(Rating.Easy, self.easy.scheduled_days, card.elapsed_days, now,
+                                                  card.state)),
         }
 
 

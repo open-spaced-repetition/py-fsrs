@@ -2,15 +2,6 @@ from datetime import datetime, timedelta
 import copy
 from typing import Tuple
 
-
-def date_to_ms(t: datetime) -> int:
-    return int(t.utcnow().timestamp() * 1000)
-
-
-def ms_to_date(t: int) -> datetime:
-    return datetime.fromtimestamp(t / 1000.0)
-
-
 NEW = 0
 LEARNING = 1
 REVIEW = 2
@@ -26,17 +17,19 @@ class ReviewLog:
     rating: int
     elapsed_days: int
     scheduled_days: int
+    review: datetime
     state: int
 
-    def __init__(self, rating: int, elapsed_days: int, scheduled_days: int, state: int):
+    def __init__(self, rating: int, elapsed_days: int, scheduled_days: int, review: datetime, state: int):
         self.rating = rating
         self.elapsed_days = elapsed_days
         self.scheduled_days = scheduled_days
+        self.review = review
         self.state = state
 
 
 class Card:
-    due: int
+    due: datetime
     stability: float
     difficulty: float
     elapsed_days: int
@@ -44,10 +37,10 @@ class Card:
     reps: int
     lapses: int
     state: int
-    last_review: int
+    last_review: datetime
 
     def __init__(self) -> None:
-        self.due = 0
+        self.due = datetime.utcnow()
         self.stability = 0
         self.difficulty = 0
         self.elapsed_days = 0
@@ -55,7 +48,6 @@ class Card:
         self.reps = 0
         self.lapses = 0
         self.state = NEW
-        self.last_review = 0
 
 
 class SchedulingInfo:
@@ -98,22 +90,26 @@ class SchedulingCards:
             self.easy.state = REVIEW
             self.again.lapses += 1
 
-    def schedule(self, now: int, hard_interval: float, good_interval: float, easy_interval: float):
+    def schedule(self, now: datetime, hard_interval: float, good_interval: float, easy_interval: float):
         self.again.scheduled_days = 0
         self.hard.scheduled_days = hard_interval
         self.good.scheduled_days = good_interval
         self.easy.scheduled_days = easy_interval
-        self.again.due = now + int(timedelta(minutes=5).total_seconds() * 1000)
-        self.hard.due = now + int(timedelta(days=hard_interval).total_seconds() * 1000)
-        self.good.due = now + int(timedelta(days=good_interval).total_seconds() * 1000)
-        self.easy.due = now + int(timedelta(days=easy_interval).total_seconds() * 1000)
+        self.again.due = now + timedelta(minutes=5)
+        self.hard.due = now + timedelta(days=hard_interval)
+        self.good.due = now + timedelta(days=good_interval)
+        self.easy.due = now + timedelta(days=easy_interval)
 
-    def record_log(self, card: Card, now: int) -> dict[int, SchedulingInfo]:
+    def record_log(self, card: Card, now: datetime) -> dict[int, SchedulingInfo]:
         return {
-            AGAIN: SchedulingInfo(self.again, ReviewLog(AGAIN, self.again.scheduled_days, card.elapsed_days, card.state)),
-            HARD: SchedulingInfo(self.hard, ReviewLog(HARD, self.hard.scheduled_days, card.elapsed_days, card.state)),
-            GOOD: SchedulingInfo(self.good, ReviewLog(GOOD, self.good.scheduled_days, card.elapsed_days, card.state)),
-            EASY: SchedulingInfo(self.easy, ReviewLog(EASY, self.easy.scheduled_days, card.elapsed_days, card.state)),
+            AGAIN: SchedulingInfo(self.again,
+                                  ReviewLog(AGAIN, self.again.scheduled_days, card.elapsed_days, now, card.state)),
+            HARD: SchedulingInfo(self.hard,
+                                 ReviewLog(HARD, self.hard.scheduled_days, card.elapsed_days, now, card.state)),
+            GOOD: SchedulingInfo(self.good,
+                                 ReviewLog(GOOD, self.good.scheduled_days, card.elapsed_days, now, card.state)),
+            EASY: SchedulingInfo(self.easy,
+                                 ReviewLog(EASY, self.easy.scheduled_days, card.elapsed_days, now, card.state)),
         }
 
 

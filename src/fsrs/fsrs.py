@@ -8,11 +8,11 @@ class FSRS:
     def __init__(self) -> None:
         self.p = Parameters()
 
-    def repeat(self, card: Card, now: int) -> dict[int, SchedulingInfo]:
+    def repeat(self, card: Card, now: datetime) -> dict[int, SchedulingInfo]:
         if card.state == NEW:
             card.elapsed_days = 0
         else:
-            card.elapsed_days = (ms_to_date(now) - ms_to_date(card.last_review)).days
+            card.elapsed_days = (now - card.last_review).days
         card.last_review = now
         card.reps += 1
         s = SchedulingCards(card)
@@ -21,12 +21,12 @@ class FSRS:
         if card.state == NEW:
             self.init_ds(s)
 
-            s.again.due = now + int(timedelta(minutes=1).total_seconds() * 1000)
-            s.hard.due = now + int(timedelta(minutes=5).total_seconds() * 1000)
-            s.good.due = now + int(timedelta(minutes=10).total_seconds() * 1000)
+            s.again.due = now + timedelta(minutes=1)
+            s.hard.due = now + timedelta(minutes=5)
+            s.good.due = now + timedelta(minutes=10)
             easy_interval = self.next_interval(s.easy.stability * self.p.easy_bonus)
             s.easy.scheduled_days = easy_interval
-            s.easy.due = now + int(timedelta(days=easy_interval).total_seconds() * 1000)
+            s.easy.due = now + timedelta(days=easy_interval)
         elif card.state == LEARNING or card.state == RELEARNING:
             hard_interval = self.next_interval(s.hard.stability)
             good_interval = max(self.next_interval(s.good.stability), hard_interval + 1)
@@ -80,7 +80,7 @@ class FSRS:
 
     def next_difficulty(self, d: float, r: int) -> float:
         next_d = d + self.p.w[4] * (r - 2)
-        return min(max(next_d, 1), 10)
+        return min(max(self.mean_reversion(self.p.w[2], next_d), 1), 10)
 
     def mean_reversion(self, init: float, current: float) -> float:
         return self.p.w[5] * init + (1 - self.p.w[5]) * current

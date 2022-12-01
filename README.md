@@ -5,7 +5,7 @@ Py-fsrs is a Python Package implements [Free Spaced Repetition Scheduler algorit
 ## Getting Started
 
 ```
-pip install py-fsrs
+pip install fsrs
 ```
 
 ## Usage

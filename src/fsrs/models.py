@@ -89,7 +89,7 @@ class SchedulingCards:
             self.good.state = State.Review
             self.easy.state = State.Review
         elif state == State.Review:
-            self.again.state = State.Learning
+            self.again.state = State.Relearning
             self.hard.state = State.Review
             self.good.state = State.Review
             self.easy.state = State.Review

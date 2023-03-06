@@ -9,6 +9,7 @@ class FSRS:
         self.p = Parameters()
 
     def repeat(self, card: Card, now: datetime) -> dict[int, SchedulingInfo]:
+        card = copy.deepcopy(card)
         if card.state == State.New:
             card.elapsed_days = 0
         else:

@@ -85,7 +85,7 @@ class SchedulingCards:
             self.again.lapses += 1
         elif state == State.Learning or state == State.Relearning:
             self.again.state = state
-            self.hard.state = State.Review
+            self.hard.state = state
             self.good.state = State.Review
             self.easy.state = State.Review
         elif state == State.Review:
@@ -101,7 +101,10 @@ class SchedulingCards:
         self.good.scheduled_days = good_interval
         self.easy.scheduled_days = easy_interval
         self.again.due = now + timedelta(minutes=5)
-        self.hard.due = now + timedelta(days=hard_interval)
+        if hard_interval > 0:
+            self.hard.due = now + timedelta(days=hard_interval)
+        else:
+            self.hard.due = now + timedelta(minutes=10)
         self.good.due = now + timedelta(days=good_interval)
         self.easy.due = now + timedelta(days=easy_interval)
 

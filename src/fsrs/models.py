@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import copy
+import math
 from typing import Tuple
 from enum import IntEnum
 
@@ -53,6 +54,14 @@ class Card:
         self.reps = 0
         self.lapses = 0
         self.state = State.New
+
+    
+    def get_retrievability(self, now: datetime) -> float:
+        if self.state == State.Review:
+            elapsed_days = max(0, (now - self.last_review).days)
+            return math.exp(math.log(0.9) * elapsed_days / self.stability)
+        else:
+            return 0
 
 
 class SchedulingInfo:

@@ -121,16 +121,16 @@ class SchedulingCards:
         return {
             Rating.Again: SchedulingInfo(self.again,
                                          ReviewLog(Rating.Again, self.again.scheduled_days, card.elapsed_days, now,
-                                                   card.state)),
+                                                   State.Learning if card.state == State.New else card.state)),
             Rating.Hard: SchedulingInfo(self.hard,
                                         ReviewLog(Rating.Hard, self.hard.scheduled_days, card.elapsed_days, now,
-                                                  card.state)),
+                                                  State.Learning if card.state == State.New else card.state)),
             Rating.Good: SchedulingInfo(self.good,
                                         ReviewLog(Rating.Good, self.good.scheduled_days, card.elapsed_days, now,
-                                                  card.state)),
+                                                  State.Learning if card.state == State.New else card.state)),
             Rating.Easy: SchedulingInfo(self.easy,
                                         ReviewLog(Rating.Easy, self.easy.scheduled_days, card.elapsed_days, now,
-                                                  card.state)),
+                                                  State.Learning if card.state == State.New else card.state)),
         }
 
 

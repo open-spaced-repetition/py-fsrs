@@ -45,7 +45,7 @@ class FSRS:
             good_interval = self.next_interval(s.good.stability)
             hard_interval = min(hard_interval, good_interval)
             good_interval = max(good_interval, hard_interval + 1)
-            easy_interval = max(self.next_interval(s.easy.stability * self.p.hard_factor), good_interval + 1)
+            easy_interval = max(self.next_interval(s.easy.stability * self.p.easy_bonus), good_interval + 1)
             s.schedule(now, hard_interval, good_interval, easy_interval)
         return s.record_log(card, now)
 

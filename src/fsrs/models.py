@@ -137,8 +137,6 @@ class SchedulingCards:
 class Parameters:
     request_retention: float
     maximum_interval: int
-    easy_bonus: float
-    hard_factor: float
     w: Tuple[float, ...]
 
     def __init__(self) -> None:

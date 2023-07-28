@@ -1,4 +1,4 @@
-from .models import *
+from models import *
 import math
 
 
@@ -98,6 +98,6 @@ class FSRS:
 
     def next_forget_stability(self, d: float, s: float, r: float) -> float:
         return self.p.w[11] * \
-            math.pow(d, self.p.w[12]) * \
+            math.pow(d, -self.p.w[12]) * \
             (math.pow(s + 1, self.p.w[13]) - 1) * \
             math.exp((1 - r) * self.p.w[14])

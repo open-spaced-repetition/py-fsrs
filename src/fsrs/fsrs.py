@@ -74,7 +74,8 @@ class FSRS:
                     card.due = now + timedelta(days=interval)
 
         card.update_state(rating)
-        return card
+        log = card.save_log(rating)
+        return card, log
 
     def init_stability(self, r: int) -> float:
         return max(self.params.w[r - 1], 0.1)
@@ -113,3 +114,10 @@ class FSRS:
             * (math.pow(s + 1, self.params.w[13]) - 1)
             * math.exp((1 - r) * self.params.w[14])
         )
+
+
+if __name__ == "__main__":
+    fsrs = FSRS()
+    card = Card()
+    card, log = fsrs.review(card, Rating.Good)
+    print(vars(log))

@@ -21,7 +21,7 @@ class ReviewLog:
     rating: int
     elapsed_days: int
     scheduled_days: int
-    Review: datetime
+    review: datetime
     state: int
 
     def __init__(

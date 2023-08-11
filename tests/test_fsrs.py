@@ -55,8 +55,8 @@ def test_state():
     state_history = []
     now = datetime.now()
     for rating in ratings:
-        state_history.append(card.state)
         card, log = f.review(card, rating, now=now)
+        state_history.append(log.state)
         now = card.due
     assert state_history == [
         State.New,

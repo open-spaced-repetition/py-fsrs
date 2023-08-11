@@ -17,5 +17,10 @@ keywords = ["spaced-repetition", "flashcard"]
 dependencies = []
 requires-python = ">=3.10"
 
+[project.optional-dependencies]
+test = [
+    "pytest==7.4.0",
+]
+
 [project.urls]
 Homepage = "https://github.com/open-spaced-repetition/py-fsrs"

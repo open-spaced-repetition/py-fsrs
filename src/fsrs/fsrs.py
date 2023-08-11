@@ -1,5 +1,5 @@
 import math
-from models import *
+from src.fsrs.models import *
 from datetime import timedelta
 
 

@@ -1,4 +1,4 @@
-from fsrs import *
+from src.fsrs import *
 from datetime import datetime
 
 

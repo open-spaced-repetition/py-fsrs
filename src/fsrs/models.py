@@ -20,15 +20,15 @@ class Rating(IntEnum):
 
 class ReviewLog:
     rating: int
-    elapsed_days: int
     scheduled_days: int
+    elapsed_days: int
     Review: datetime
     state: int
 
-    def __init__(self, rating: int, elapsed_days: int, scheduled_days: int, review: datetime, state: int):
+    def __init__(self, rating: int, scheduled_days: int, elapsed_days: int, review: datetime, state: int):
         self.rating = rating
-        self.elapsed_days = elapsed_days
         self.scheduled_days = scheduled_days
+        self.elapsed_days = elapsed_days
         self.review = review
         self.state = state
 

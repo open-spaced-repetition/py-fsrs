@@ -90,7 +90,6 @@ class SchedulingCards:
             self.hard.state = State.Learning
             self.good.state = State.Learning
             self.easy.state = State.Review
-            self.again.lapses += 1
         elif state == State.Learning or state == State.Relearning:
             self.again.state = state
             self.hard.state = state

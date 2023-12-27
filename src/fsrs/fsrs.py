@@ -4,9 +4,13 @@ import math
 
 class FSRS:
     p: Parameters
+    DECAY: float
+    FACTOR: float
 
     def __init__(self) -> None:
         self.p = Parameters()
+        self.DECAY = -0.5
+        self.FACTOR = 0.9 ** (1 / self.DECAY) - 1
 
     def repeat(self, card: Card, now: datetime) -> dict[int, SchedulingInfo]:
         card = copy.deepcopy(card)
@@ -38,7 +42,7 @@ class FSRS:
             interval = card.elapsed_days
             last_d = card.difficulty
             last_s = card.stability
-            retrievability = (1 + interval / (9 * last_s)) ** -1
+            retrievability = self.forgetting_curve(interval, last_s)
             self.next_ds(s, last_d, last_s, retrievability)
 
             hard_interval = self.next_interval(s.hard.stability)
@@ -75,8 +79,11 @@ class FSRS:
     def init_difficulty(self, r: int) -> float:
         return min(max(self.p.w[4] - self.p.w[5] * (r - 3), 1), 10)
 
+    def forgetting_curve(self, elapsed_days: int, stability: float) -> float:
+        return (1 + self.FACTOR * elapsed_days / stability) ** self.DECAY
+
     def next_interval(self, s: float) -> int:
-        new_interval = s * 9 * (1 / self.p.request_retention - 1)
+        new_interval = s / self.FACTOR * (self.p.request_retention ** (1 / self.DECAY) - 1)
         return min(max(round(new_interval), 1), self.p.maximum_interval)
 
     def next_difficulty(self, d: float, r: int) -> float:

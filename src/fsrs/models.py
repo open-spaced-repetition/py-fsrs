@@ -56,9 +56,12 @@ class Card:
 
     
     def get_retrievability(self, now: datetime) -> Optional[float]:
+        DECAY = -0.5
+        FACTOR = 0.9 ** (1 / DECAY) - 1
+
         if self.state == State.Review:
             elapsed_days = max(0, (now - self.last_review).days)
-            return (1 + elapsed_days / (9 * self.stability)) ** -1
+            return (1 + FACTOR * elapsed_days / self.stability) ** DECAY
         else:
             return None
 

@@ -25,7 +25,14 @@ class ReviewLog:
     Review: datetime
     state: int
 
-    def __init__(self, rating: int, scheduled_days: int, elapsed_days: int, review: datetime, state: int):
+    def __init__(
+        self,
+        rating: int,
+        scheduled_days: int,
+        elapsed_days: int,
+        review: datetime,
+        state: int,
+    ):
         self.rating = rating
         self.scheduled_days = scheduled_days
         self.elapsed_days = elapsed_days
@@ -54,7 +61,6 @@ class Card:
         self.lapses = 0
         self.state = State.New
 
-    
     def get_retrievability(self, now: datetime) -> Optional[float]:
         DECAY = -0.5
         FACTOR = 0.9 ** (1 / DECAY) - 1
@@ -105,7 +111,13 @@ class SchedulingCards:
             self.easy.state = State.Review
             self.again.lapses += 1
 
-    def schedule(self, now: datetime, hard_interval: float, good_interval: float, easy_interval: float):
+    def schedule(
+        self,
+        now: datetime,
+        hard_interval: float,
+        good_interval: float,
+        easy_interval: float,
+    ):
         self.again.scheduled_days = 0
         self.hard.scheduled_days = hard_interval
         self.good.scheduled_days = good_interval
@@ -120,18 +132,46 @@ class SchedulingCards:
 
     def record_log(self, card: Card, now: datetime) -> dict[int, SchedulingInfo]:
         return {
-            Rating.Again: SchedulingInfo(self.again,
-                                         ReviewLog(Rating.Again, self.again.scheduled_days, card.elapsed_days, now,
-                                                   card.state)),
-            Rating.Hard: SchedulingInfo(self.hard,
-                                        ReviewLog(Rating.Hard, self.hard.scheduled_days, card.elapsed_days, now,
-                                                  card.state)),
-            Rating.Good: SchedulingInfo(self.good,
-                                        ReviewLog(Rating.Good, self.good.scheduled_days, card.elapsed_days, now,
-                                                  card.state)),
-            Rating.Easy: SchedulingInfo(self.easy,
-                                        ReviewLog(Rating.Easy, self.easy.scheduled_days, card.elapsed_days, now,
-                                                  card.state)),
+            Rating.Again: SchedulingInfo(
+                self.again,
+                ReviewLog(
+                    Rating.Again,
+                    self.again.scheduled_days,
+                    card.elapsed_days,
+                    now,
+                    card.state,
+                ),
+            ),
+            Rating.Hard: SchedulingInfo(
+                self.hard,
+                ReviewLog(
+                    Rating.Hard,
+                    self.hard.scheduled_days,
+                    card.elapsed_days,
+                    now,
+                    card.state,
+                ),
+            ),
+            Rating.Good: SchedulingInfo(
+                self.good,
+                ReviewLog(
+                    Rating.Good,
+                    self.good.scheduled_days,
+                    card.elapsed_days,
+                    now,
+                    card.state,
+                ),
+            ),
+            Rating.Easy: SchedulingInfo(
+                self.easy,
+                ReviewLog(
+                    Rating.Easy,
+                    self.easy.scheduled_days,
+                    card.elapsed_days,
+                    now,
+                    card.state,
+                ),
+            ),
         }
 
 
@@ -143,4 +183,22 @@ class Parameters:
     def __init__(self) -> None:
         self.request_retention = 0.9
         self.maximum_interval = 36500
-        self.w = (0.4, 0.6, 2.4, 5.8, 4.93, 0.94, 0.86, 0.01, 1.49, 0.14, 0.94, 2.18, 0.05, 0.34, 1.26, 0.29, 2.61)
+        self.w = (
+            0.4,
+            0.6,
+            2.4,
+            5.8,
+            4.93,
+            0.94,
+            0.86,
+            0.01,
+            1.49,
+            0.14,
+            0.94,
+            2.18,
+            0.05,
+            0.34,
+            1.26,
+            0.29,
+            2.61,
+        )

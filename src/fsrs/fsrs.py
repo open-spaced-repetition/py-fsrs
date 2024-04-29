@@ -1,5 +1,6 @@
 from .models import *
 import math
+from datetime import timezone
 
 
 class FSRS:
@@ -13,6 +14,10 @@ class FSRS:
         self.FACTOR = 0.9 ** (1 / self.DECAY) - 1
 
     def repeat(self, card: Card, now: datetime) -> dict[int, SchedulingInfo]:
+
+        if (now.tzinfo is None) or (now.tzinfo != timezone.utc):
+            raise ValueError("datetime must be timezone-aware and set to UTC")
+
         card = copy.deepcopy(card)
         if card.state == State.New:
             card.elapsed_days = 0

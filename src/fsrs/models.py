@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 import copy
 from typing import Tuple, Optional
 from enum import IntEnum
@@ -22,7 +22,7 @@ class ReviewLog:
     rating: int
     scheduled_days: int
     elapsed_days: int
-    Review: datetime
+    review: datetime
     state: int
 
     def __init__(
@@ -52,7 +52,7 @@ class Card:
     last_review: datetime
 
     def __init__(self) -> None:
-        self.due = datetime.utcnow()
+        self.due = datetime.now(UTC)
         self.stability = 0
         self.difficulty = 0
         self.elapsed_days = 0

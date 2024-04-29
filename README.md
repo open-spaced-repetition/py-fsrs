@@ -14,10 +14,12 @@ pip install fsrs
 
 Create a card and review it at a given time:
 ```python
+from datetime import datetime, UTC
 from fsrs import *
 f = FSRS()
 card = Card()
-now = datetime(2022, 11, 29, 12, 30, 0, 0)
+# (py-fsrs cards use UTC)
+now = datetime(2022, 11, 29, 12, 30, 0, 0, tzinfo=UTC) 
 scheduling_cards = f.repeat(card, now)
 ```
 

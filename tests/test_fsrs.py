@@ -1,5 +1,6 @@
 from fsrs import *
-from datetime import datetime
+from datetime import datetime, UTC
+import pytest
 
 
 def print_scheduling_cards(scheduling_cards):
@@ -38,7 +39,7 @@ class TestPyFSRS:
             2.0902,
         )
         card = Card()
-        now = datetime(2022, 11, 29, 12, 30, 0, 0)
+        now = datetime(2022, 11, 29, 12, 30, 0, 0, tzinfo=UTC)
         scheduling_cards = f.repeat(card, now)
         print_scheduling_cards(scheduling_cards)
 
@@ -69,3 +70,29 @@ class TestPyFSRS:
 
         print(ivl_history)
         assert ivl_history == [0, 5, 16, 43, 106, 236, 0, 0, 12, 25, 47, 85, 147]
+
+    def test_datetime(self):
+
+        f = FSRS()
+        card = Card()
+
+        # new cards should be due immediately after creation
+        assert datetime.now(UTC) >= card.due
+
+        # comparing timezone aware cards with deprecated datetime.utcnow() should raise a TypeError
+        with pytest.raises(TypeError):
+            datetime.now() >= card.due
+
+        # repeating a card with a non-utc, non-timezone-aware datetime object should raise a Value Error
+        with pytest.raises(ValueError):
+            f.repeat(card, datetime(2022, 11, 29, 12, 30, 0, 0))
+
+        # repeat a card with rating good before next tests
+        scheduling_cards = f.repeat(card, datetime.now(UTC))
+        card = scheduling_cards[Rating.Good].card
+
+        # card object's due and last_review attributes must be timezone aware and UTC
+        assert card.due.tzinfo == UTC
+        assert card.last_review.tzinfo == UTC
+        # card object's due datetime should be later than its last review
+        assert card.due >= card.last_review

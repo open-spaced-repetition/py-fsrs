@@ -51,15 +51,81 @@ class Card:
     state: State
     last_review: datetime
 
-    def __init__(self) -> None:
-        self.due = datetime.now(UTC)
-        self.stability = 0
-        self.difficulty = 0
-        self.elapsed_days = 0
-        self.scheduled_days = 0
-        self.reps = 0
-        self.lapses = 0
-        self.state = State.New
+    def __init__(
+        self,
+        due=None,
+        stability=0,
+        difficulty=0,
+        elapsed_days=0,
+        scheduled_days=0,
+        reps=0,
+        lapses=0,
+        state=State.New,
+        last_review=None,
+    ) -> None:
+
+        if due is None:
+            self.due = datetime.now(UTC)
+        else:
+            self.due = due
+
+        self.stability = stability
+        self.difficulty = difficulty
+        self.elapsed_days = elapsed_days
+        self.scheduled_days = scheduled_days
+        self.reps = reps
+        self.lapses = lapses
+        self.state = state
+
+        if last_review is not None:
+            self.last_review = last_review
+
+    def to_dict(self):
+
+        return_dict = {
+            "due": self.due.isoformat(),
+            "stability": self.stability,
+            "difficulty": self.difficulty,
+            "elapsed_days": self.elapsed_days,
+            "scheduled_days": self.scheduled_days,
+            "reps": self.reps,
+            "lapses": self.lapses,
+            "state": self.state,
+        }
+
+        if hasattr(self, "last_review"):
+            return_dict["last_review"] = self.last_review.isoformat()
+
+        return return_dict
+
+    @staticmethod
+    def from_dict(source_dict):
+
+        due = datetime.fromisoformat(source_dict["due"])
+        stability = source_dict["stability"]
+        difficulty = source_dict["difficulty"]
+        elapsed_days = source_dict["elapsed_days"]
+        scheduled_days = source_dict["scheduled_days"]
+        reps = source_dict["reps"]
+        lapses = source_dict["lapses"]
+        state = source_dict["state"]
+
+        if "last_review" in source_dict:
+            last_review = datetime.fromisoformat(source_dict["last_review"])
+        else:
+            last_review = None
+
+        return Card(
+            due,
+            stability,
+            difficulty,
+            elapsed_days,
+            scheduled_days,
+            reps,
+            lapses,
+            state,
+            last_review,
+        )
 
     def get_retrievability(self, now: datetime) -> Optional[float]:
         DECAY = -0.5

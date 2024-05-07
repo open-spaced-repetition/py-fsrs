@@ -1,5 +1,6 @@
 from fsrs import *
 from datetime import datetime, UTC
+import json
 import pytest
 
 
@@ -96,3 +97,43 @@ class TestPyFSRS:
         assert card.last_review.tzinfo == UTC
         # card object's due datetime should be later than its last review
         assert card.due >= card.last_review
+
+    def test_serialize(self):
+
+        f = FSRS()
+
+        # create card object the normal way
+        card = Card()
+
+        # card object is not naturally JSON serializable
+        with pytest.raises(TypeError):
+            json.dumps(card.__dict__)
+
+        # card object's to_dict() method makes it JSON serializable
+        assert type(json.dumps(card.to_dict())) == str
+
+        # we can reconstruct a copy of the card object equivalent to the original
+        card_dict = card.to_dict()
+        copied_card = Card.from_dict(card_dict)
+
+        assert vars(card) == vars(copied_card)
+        assert card.to_dict() == copied_card.to_dict()
+
+        # (x2) perform the above tests once more with a repeated card
+        scheduling_cards = f.repeat(card, datetime.now(UTC))
+        repeated_card = scheduling_cards[Rating.Good].card
+
+        with pytest.raises(TypeError):
+            json.dumps(repeated_card.__dict__)
+
+        assert type(json.dumps(repeated_card.to_dict())) == str
+
+        repeated_card_dict = repeated_card.to_dict()
+        copied_repeated_card = Card.from_dict(repeated_card_dict)
+
+        assert vars(repeated_card) == vars(copied_repeated_card)
+        assert repeated_card.to_dict() == copied_repeated_card.to_dict()
+
+        # original card and repeated card are different
+        assert vars(card) != vars(repeated_card)
+        assert card.to_dict() != repeated_card.to_dict()

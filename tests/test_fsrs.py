@@ -6,17 +6,13 @@ import pytest
 
 def print_scheduling_cards(scheduling_cards):
     print("again.card:", scheduling_cards[Rating.Again].card.__dict__)
-    print("again.review_log:",
-          scheduling_cards[Rating.Again].review_log.__dict__)
+    print("again.review_log:", scheduling_cards[Rating.Again].review_log.__dict__)
     print("hard.card:", scheduling_cards[Rating.Hard].card.__dict__)
-    print("hard.review_log:",
-          scheduling_cards[Rating.Hard].review_log.__dict__)
+    print("hard.review_log:", scheduling_cards[Rating.Hard].review_log.__dict__)
     print("good.card:", scheduling_cards[Rating.Good].card.__dict__)
-    print("good.review_log:",
-          scheduling_cards[Rating.Good].review_log.__dict__)
+    print("good.review_log:", scheduling_cards[Rating.Good].review_log.__dict__)
     print("easy.card:", scheduling_cards[Rating.Easy].card.__dict__)
-    print("easy.review_log:",
-          scheduling_cards[Rating.Easy].review_log.__dict__)
+    print("easy.review_log:", scheduling_cards[Rating.Easy].review_log.__dict__)
     print()
 
 
@@ -74,8 +70,7 @@ class TestPyFSRS:
             print_scheduling_cards(scheduling_cards)
 
         print(ivl_history)
-        assert ivl_history == [0, 5, 16, 43,
-                               106, 236, 0, 0, 12, 25, 47, 85, 147]
+        assert ivl_history == [0, 5, 16, 43, 106, 236, 0, 0, 12, 25, 47, 85, 147]
 
     def test_datetime(self):
 

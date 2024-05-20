@@ -1,5 +1,5 @@
 from fsrs import *
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 import json
 import pytest
 
@@ -40,7 +40,7 @@ class TestPyFSRS:
             2.0902,
         )
         card = Card()
-        now = datetime(2022, 11, 29, 12, 30, 0, 0, tzinfo=UTC)
+        now = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
         scheduling_cards = f.repeat(card, now)
         print_scheduling_cards(scheduling_cards)
 
@@ -78,7 +78,7 @@ class TestPyFSRS:
         card = Card()
 
         # new cards should be due immediately after creation
-        assert datetime.now(UTC) >= card.due
+        assert datetime.now(timezone.utc) >= card.due
 
         # comparing timezone aware cards with deprecated datetime.utcnow() should raise a TypeError
         with pytest.raises(TypeError):
@@ -89,12 +89,12 @@ class TestPyFSRS:
             f.repeat(card, datetime(2022, 11, 29, 12, 30, 0, 0))
 
         # repeat a card with rating good before next tests
-        scheduling_cards = f.repeat(card, datetime.now(UTC))
+        scheduling_cards = f.repeat(card, datetime.now(timezone.utc))
         card = scheduling_cards[Rating.Good].card
 
         # card object's due and last_review attributes must be timezone aware and UTC
-        assert card.due.tzinfo == UTC
-        assert card.last_review.tzinfo == UTC
+        assert card.due.tzinfo == timezone.utc
+        assert card.last_review.tzinfo == timezone.utc
         # card object's due datetime should be later than its last review
         assert card.due >= card.last_review
 
@@ -120,7 +120,7 @@ class TestPyFSRS:
         assert card.to_dict() == copied_card.to_dict()
 
         # (x2) perform the above tests once more with a repeated card
-        scheduling_cards = f.repeat(card, datetime.now(UTC))
+        scheduling_cards = f.repeat(card, datetime.now(timezone.utc))
         repeated_card = scheduling_cards[Rating.Good].card
 
         with pytest.raises(TypeError):

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, UTC
+from datetime import datetime, timedelta, timezone
 import copy
 from typing import Tuple, Optional
 from enum import IntEnum
@@ -65,7 +65,7 @@ class Card:
     ) -> None:
 
         if due is None:
-            self.due = datetime.now(UTC)
+            self.due = datetime.now(timezone.utc)
         else:
             self.due = due
 

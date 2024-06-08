@@ -140,7 +140,7 @@ class Card:
 
 class SchedulingInfo:
     card: Card
-    Review_log: ReviewLog
+    review_log: ReviewLog
 
     def __init__(self, card: Card, review_log: ReviewLog) -> None:
         self.card = card

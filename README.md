@@ -1,29 +1,104 @@
-## About The Project
+<div align="center">
+  <img src="https://avatars.githubusercontent.com/u/96821265?s=200&v=4" height="100" alt="Open Spaced Repetition logo"/>
+</div>
+<br />
+<div align="center">
+  <em>🧠🔄 Build your own Spaced Repetition System in Python 🧠🔄   </em>
+</div>
+<br />
+<div align="center">
+    <a href="https://pypi.org/project/fsrs/">
+        <img src="https://img.shields.io/pypi/v/fsrs">
+    </a>
+    <a href="https://github.com/open-spaced-repetition/py-fsrs/blob/main/LICENSE">
+        <img src="https://img.shields.io/badge/License-MIT-brightgreen.svg">
+    </a>
+    <a href="https://github.com/psf/black">
+        <img src="https://img.shields.io/badge/code%20style-black-000000.svg">
+    </a>
+</div>
+<br />
 
-[![PyPi](https://img.shields.io/pypi/v/fsrs)](https://pypi.org/project/fsrs/) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-Py-fsrs is a Python Package implements [Free Spaced Repetition Scheduler algorithm](https://github.com/open-spaced-repetition/free-spaced-repetition-scheduler). It helps developers apply FSRS in their flashcard apps.
+**Py-FSRS is a python package that allows developers to easily create their own spaced repetition system using the <a href="https://github.com/open-spaced-repetition/free-spaced-repetition-scheduler">Free Spaced Repetition Scheduler algorithm</a>.**
 
-## Getting Started
 
+---
+
+
+## Installation
+You can install the `fsrs` python package from PyPI using pip:
 ```
 pip install fsrs
 ```
 
-## Usage
+## Quickstart
 
-Create a card and review it at a given time:
+Import and initialize the FSRS scheduler
+
 ```python
-from datetime import datetime, UTC
 from fsrs import *
+from datetime import datetime, UTC, timezone
+
 f = FSRS()
-card = Card()
-# (py-fsrs cards use UTC)
-now = datetime(2022, 11, 29, 12, 30, 0, 0, tzinfo=UTC) 
-scheduling_cards = f.repeat(card, now)
 ```
 
-There are four ratings:
+Create a new Card object
+```python
+# all new cards are 'due' immediately upon creation
+card_object = Card()
+```
+
+Review the card at a specified time
+```python
+# all py-fsrs cards must be UTC and timezone-aware
+review_time = datetime.now(UTC)
+
+scheduling_cards = f.repeat(card_object, review_time)
+```
+
+Choose a rating and update the card object
+```python
+# you can choose one of the four possible ratings
+"""
+Rating.Again # forget; incorrect response
+Rating.Hard # recall; correct response recalled with serious difficulty
+Rating.Good # recall; correct response after a hesitation
+Rating.Easy # recall; perfect response
+"""
+
+card_rating = Rating.Good
+
+card_object = scheduling_cards[card_rating].card
+```
+
+See when the card is due next
+```python
+due = card_object.due
+
+# how much time between when the card is due and now
+time_delta = due - datetime.now(UTC)
+
+print(f"Card due: at {repr(due)}")
+print(f"Card due in {time_delta.seconds} seconds")
+
+"""
+> Card due: at datetime.datetime(2024, 7, 6, 20, 6, 39, 147417, tzinfo=datetime.timezone.utc)
+> Card due in: 599 seconds
+"""
+```
+
+## Reference
+
+Card objects have one of four possible states
+```python
+State.New # Never been studied
+State.Learning # Been studied for the first time recently
+State.Review # Graduate from learning state
+State.Relearning # Forgotten in review state
+```
+
+There are four possible ratings when reviewing a card ojbect:
 ```python
 Rating.Again # forget; incorrect response
 Rating.Hard # recall; correct response recalled with serious difficulty
@@ -31,44 +106,14 @@ Rating.Good # recall; correct response after a hesitation
 Rating.Easy # recall; perfect response
 ```
 
-
-Get the new state of card for each rating:
+Get the review for a given rating
 ```python
-scheduling_cards[Rating.Again].card
-scheduling_cards[Rating.Hard].card
-scheduling_cards[Rating.Good].card
-scheduling_cards[Rating.Easy].card
+review_log = scheduling_cards[card_rating].review_log
 ```
 
-Get the scheduled days for each rating:
+Get the schdeduled days after rating a card
 ```python
-card_again.scheduled_days
-card_hard.scheduled_days
-card_good.scheduled_days
-card_easy.scheduled_days
-```
-
-Update the card after rating `Good`:
-```python
-card = scheduling_cards[Rating.Good].card
-```
-
-Get the review log after rating `Good`:
-```python
-review_log = scheduling_cards[Rating.Good].review_log
-```
-
-Get the due date for card:
-```python
-due = card.due
-```
-
-There are four states:
-```python
-State.New # Never been studied
-State.Learning # Been studied for the first time recently
-State.Review # Graduate from learning state
-State.Relearning # Forgotten in review state
+scheduled_days = card_object.scheduled_days
 ```
 
 ## License

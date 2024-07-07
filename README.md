@@ -6,16 +6,10 @@
   <em>🧠🔄 Build your own Spaced Repetition System in Python 🧠🔄   </em>
 </div>
 <br />
-<div align="center">
-    <a href="https://pypi.org/project/fsrs/">
-        <img src="https://img.shields.io/pypi/v/fsrs">
-    </a>
-    <a href="https://github.com/open-spaced-repetition/py-fsrs/blob/main/LICENSE">
-        <img src="https://img.shields.io/badge/License-MIT-brightgreen.svg">
-    </a>
-    <a href="https://github.com/psf/black">
-        <img src="https://img.shields.io/badge/code%20style-black-000000.svg">
-    </a>
+<div align="center" style="text-decoration: none;">
+    <a href="https://pypi.org/project/fsrs/"><img src="https://img.shields.io/pypi/v/fsrs"></a>
+    <a href="https://github.com/open-spaced-repetition/py-fsrs/blob/main/LICENSE" style="text-decoration: none;"><img src="https://img.shields.io/badge/License-MIT-brightgreen.svg"></a>
+    <a href="https://github.com/psf/black" style="text-decoration: none;"><img src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 </div>
 <br />
 

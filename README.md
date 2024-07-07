@@ -98,7 +98,7 @@ State.Review # Graduate from learning state
 State.Relearning # Forgotten in review state
 ```
 
-There are four possible ratings when reviewing a card ojbect:
+There are four possible ratings when reviewing a card object:
 ```python
 Rating.Again # forget; incorrect response
 Rating.Hard # recall; correct response recalled with serious difficulty
@@ -106,7 +106,7 @@ Rating.Good # recall; correct response after a hesitation
 Rating.Easy # recall; perfect response
 ```
 
-Get the review for a given rating
+Get the review log for a given rating
 ```python
 review_log = scheduling_cards[card_rating].review_log
 ```

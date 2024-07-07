@@ -38,7 +38,6 @@ Import and initialize the FSRS scheduler
 
 ```python
 from fsrs import *
-from datetime import datetime, UTC, timezone
 
 f = FSRS()
 ```
@@ -49,12 +48,9 @@ Create a new Card object
 card_object = Card()
 ```
 
-Review the card at a specified time
+Review the card
 ```python
-# all py-fsrs cards must be UTC and timezone-aware
-review_time = datetime.now(UTC)
-
-scheduling_cards = f.repeat(card_object, review_time)
+scheduling_cards = f.repeat(card_object)
 ```
 
 Choose a rating and update the card object
@@ -74,10 +70,12 @@ card_object = scheduling_cards[card_rating].card
 
 See when the card is due next
 ```python
+from datetime import datetime, timezone
+
 due = card_object.due
 
 # how much time between when the card is due and now
-time_delta = due - datetime.now(UTC)
+time_delta = due - datetime.now(timezone.utc)
 
 print(f"Card due: at {repr(due)}")
 print(f"Card due in {time_delta.seconds} seconds")

@@ -6,16 +6,10 @@
   <em>🧠🔄 Build your own Spaced Repetition System in Python 🧠🔄   </em>
 </div>
 <br />
-<div align="center">
-    <a href="https://pypi.org/project/fsrs/">
-        <img src="https://img.shields.io/pypi/v/fsrs">
-    </a>
-    <a href="https://github.com/open-spaced-repetition/py-fsrs/blob/main/LICENSE">
-        <img src="https://img.shields.io/badge/License-MIT-brightgreen.svg">
-    </a>
-    <a href="https://github.com/psf/black">
-        <img src="https://img.shields.io/badge/code%20style-black-000000.svg">
-    </a>
+<div align="center" style="text-decoration: none;">
+    <a href="https://pypi.org/project/fsrs/"><img src="https://img.shields.io/pypi/v/fsrs"></a>
+    <a href="https://github.com/open-spaced-repetition/py-fsrs/blob/main/LICENSE" style="text-decoration: none;"><img src="https://img.shields.io/badge/License-MIT-brightgreen.svg"></a>
+    <a href="https://github.com/psf/black" style="text-decoration: none;"><img src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 </div>
 <br />
 
@@ -38,7 +32,6 @@ Import and initialize the FSRS scheduler
 
 ```python
 from fsrs import *
-from datetime import datetime, UTC, timezone
 
 f = FSRS()
 ```
@@ -49,12 +42,9 @@ Create a new Card object
 card_object = Card()
 ```
 
-Review the card at a specified time
+Review the card
 ```python
-# all py-fsrs cards must be UTC and timezone-aware
-review_time = datetime.now(UTC)
-
-scheduling_cards = f.repeat(card_object, review_time)
+scheduling_cards = f.repeat(card_object)
 ```
 
 Choose a rating and update the card object
@@ -74,10 +64,12 @@ card_object = scheduling_cards[card_rating].card
 
 See when the card is due next
 ```python
+from datetime import datetime, timezone
+
 due = card_object.due
 
 # how much time between when the card is due and now
-time_delta = due - datetime.now(UTC)
+time_delta = due - datetime.now(timezone.utc)
 
 print(f"Card due: at {repr(due)}")
 print(f"Card due in {time_delta.seconds} seconds")

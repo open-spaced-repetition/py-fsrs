@@ -13,7 +13,10 @@ class FSRS:
         self.DECAY = -0.5
         self.FACTOR = 0.9 ** (1 / self.DECAY) - 1
 
-    def repeat(self, card: Card, now: datetime) -> dict[int, SchedulingInfo]:
+    def repeat(self, card: Card, now: datetime = None) -> dict[int, SchedulingInfo]:
+
+        if now is None:
+            now = datetime.now(timezone.utc)
 
         if (now.tzinfo is None) or (now.tzinfo != timezone.utc):
             raise ValueError("datetime must be timezone-aware and set to UTC")

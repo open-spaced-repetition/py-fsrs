@@ -72,6 +72,25 @@ class TestPyFSRS:
         print(ivl_history)
         assert ivl_history == [0, 5, 16, 43, 106, 236, 0, 0, 12, 25, 47, 85, 147]
 
+    def test_repeat_default_arg(self):
+
+        f = FSRS()
+
+        card_object = Card()
+
+        # repeat time is not specified
+        scheduling_cards = f.repeat(card_object)
+
+        card_rating = Rating.Good
+
+        card_object = scheduling_cards[card_rating].card
+
+        due = card_object.due
+
+        time_delta = due - datetime.now(timezone.utc)
+
+        assert time_delta.seconds > 500  # due in approx. 8-10 minutes
+
     def test_datetime(self):
 
         f = FSRS()

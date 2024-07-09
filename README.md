@@ -3,6 +3,11 @@
 </div>
 <br />
 <div align="center">
+
+# Py-FSRS
+
+</div>
+<div align="center">
   <em>🧠🔄 Build your own Spaced Repetition System in Python 🧠🔄   </em>
 </div>
 <br />
@@ -21,7 +26,7 @@
 
 
 ## Installation
-You can install the `fsrs` python package from PyPI using pip:
+You can install the `fsrs` python package from [PyPI](https://pypi.org/project/fsrs/) using pip:
 ```
 pip install fsrs
 ```
@@ -108,6 +113,10 @@ Get the schdeduled days after rating a card
 scheduled_days = card_object.scheduled_days
 ```
 
+## Contribute
+
+Checkout [CONTRIBUTING](CONTRIBUTING.md) to help improve Py-FSRS!
+
 ## License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the MIT License. See [LICENSE](LICENSE) for more information.

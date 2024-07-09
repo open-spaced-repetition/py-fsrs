@@ -1,7 +1,6 @@
 <div align="center">
   <img src="https://avatars.githubusercontent.com/u/96821265?s=200&v=4" height="100" alt="Open Spaced Repetition logo"/>
 </div>
-<br />
 <div align="center">
 
 # Py-FSRS

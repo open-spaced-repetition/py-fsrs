@@ -39,6 +39,35 @@ class ReviewLog:
         self.review = review
         self.state = state
 
+    def to_dict(self):
+
+        return_dict = {
+            "rating": self.rating,
+            "scheduled_days": self.scheduled_days,
+            "elapsed_days": self.elapsed_days,
+            "review": self.review.isoformat(),
+            "state": self.state,
+        }
+
+        return return_dict
+
+    @staticmethod
+    def from_dict(source_dict):
+
+        rating = source_dict["rating"]
+        scheduled_days = source_dict["scheduled_days"]
+        elapsed_days = source_dict["elapsed_days"]
+        review = datetime.fromisoformat(source_dict["review"])
+        state = source_dict["state"]
+
+        return ReviewLog(
+            rating,
+            scheduled_days,
+            elapsed_days,
+            review,
+            state,
+        )
+
 
 class Card:
     due: datetime

@@ -43,15 +43,10 @@ f = FSRS()
 Create a new Card object
 ```python
 # all new cards are 'due' immediately upon creation
-card_object = Card()
+card = Card()
 ```
 
-Review the card
-```python
-scheduling_cards = f.repeat(card_object)
-```
-
-Choose a rating and update the card object
+Choose a rating and review the card
 ```python
 # you can choose one of the four possible ratings
 """
@@ -61,16 +56,16 @@ Rating.Good # recall; correct response after a hesitation
 Rating.Easy # recall; perfect response
 """
 
-card_rating = Rating.Good
+rating = Rating.Good
 
-card_object = scheduling_cards[card_rating].card
+card, review_log = f.review_card(card, rating)
 ```
 
 See when the card is due next
 ```python
 from datetime import datetime, timezone
 
-due = card_object.due
+due = card.due
 
 # how much time between when the card is due and now
 time_delta = due - datetime.now(timezone.utc)
@@ -79,7 +74,7 @@ print(f"Card due: at {repr(due)}")
 print(f"Card due in {time_delta.seconds} seconds")
 
 """
-> Card due: at datetime.datetime(2024, 7, 6, 20, 6, 39, 147417, tzinfo=datetime.timezone.utc)
+> Card due: at datetime.datetime(2024, 7, 12, 18, 16, 4, 429428, tzinfo=datetime.timezone.utc)
 > Card due in: 599 seconds
 """
 ```

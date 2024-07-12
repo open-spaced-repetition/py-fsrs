@@ -1,5 +1,3 @@
-__version__ = "2.2.1"
+__version__ = "2.3.0"
 
-from .fsrs import FSRS, Card
-
-from .fsrs import State, Rating
+from .fsrs import FSRS, Card, ReviewLog, State, Rating

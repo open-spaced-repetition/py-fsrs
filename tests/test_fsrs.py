@@ -117,7 +117,7 @@ class TestPyFSRS:
         # card object's due datetime should be later than its last review
         assert card.due >= card.last_review
 
-    def test_serialize(self):
+    def test_Card_serialize(self):
 
         f = FSRS()
 
@@ -156,3 +156,49 @@ class TestPyFSRS:
         # original card and repeated card are different
         assert vars(card) != vars(repeated_card)
         assert card.to_dict() != repeated_card.to_dict()
+
+    def test_ReviewLog_serialize(self):
+
+        f = FSRS()
+
+        card = Card()
+
+        # repeat a card to get the review_log
+        scheduling_cards = f.repeat(card)
+        rating = Rating.Again
+        card = scheduling_cards[rating].card
+        review_log = scheduling_cards[rating].review_log
+
+        # ReviewLog object is not naturally JSON serializable
+        with pytest.raises(TypeError):
+            json.dumps(review_log.__dict__)
+
+        # review_log object's to_dict() method makes it JSON serializable
+        assert type(json.dumps(review_log.to_dict())) == str
+
+        # we can reconstruct a copy of the review_log object equivalent to the original
+        review_log_dict = review_log.to_dict()
+        copied_review_log = ReviewLog.from_dict(review_log_dict)
+        assert vars(review_log) == vars(copied_review_log)
+        assert review_log.to_dict() == copied_review_log.to_dict()
+
+        # (x2) perform the above tests once more with a review_log from a repeated card
+        scheduling_cards = f.repeat(card, datetime.now(timezone.utc))
+        rating = Rating.Good
+        card = scheduling_cards[rating].card
+        next_review_log = scheduling_cards[rating].review_log
+
+        with pytest.raises(TypeError):
+            json.dumps(next_review_log.__dict__)
+
+        assert type(json.dumps(next_review_log.to_dict())) == str
+
+        next_review_log_dict = next_review_log.to_dict()
+        copied_next_review_log = ReviewLog.from_dict(next_review_log_dict)
+
+        assert vars(next_review_log) == vars(copied_next_review_log)
+        assert next_review_log.to_dict() == copied_next_review_log.to_dict()
+
+        # original review log and next review log are different
+        assert vars(review_log) != vars(next_review_log)
+        assert review_log.to_dict() != next_review_log.to_dict()

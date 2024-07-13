@@ -13,6 +13,17 @@ class FSRS:
         self.DECAY = -0.5
         self.FACTOR = 0.9 ** (1 / self.DECAY) - 1
 
+    def review_card(
+        self, card: Card, rating: Rating, now: datetime = None
+    ) -> tuple[Card, ReviewLog]:
+
+        scheduling_cards = self.repeat(card, now)
+
+        card = scheduling_cards[rating].card
+        review_log = scheduling_cards[rating].review_log
+
+        return card, review_log
+
     def repeat(self, card: Card, now: datetime = None) -> dict[int, SchedulingInfo]:
 
         if now is None:

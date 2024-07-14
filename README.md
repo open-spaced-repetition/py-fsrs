@@ -79,6 +79,54 @@ print(f"Card due in {time_delta.seconds} seconds")
 """
 ```
 
+## Usage
+
+### Advanced reviewing of cards
+
+Aside from using the convenience method `review_card`, there is also the `repeat` method:
+
+```python
+from datetime import datetime, timezone
+
+# custom review time (must be UTC)
+review_time = datetime(2024, 7, 13, 20, 7, 56, 150101, tzinfo=timezone.utc)
+
+scheduling_cards = f.repeat(card, review_time)
+
+# can get updated cards for each possible rating
+card_Again = scheduling_cards[Rating.Again].card
+card_Hard = scheduling_cards[Rating.Hard].card
+card_Good = scheduling_cards[Rating.Good].card
+card_Easy = scheduling_cards[Rating.Easy].card
+
+# get next review interval for each rating
+scheduled_days_Again = card_Again.scheduled_days
+scheduled_days_Hard = card_Hard.scheduled_days
+scheduled_days_Good = card_Good.scheduled_days
+scheduled_days_Easy = card_Easy.scheduled_days
+
+# choose a rating and update the card
+rating = Rating.Good
+card = scheduling_cards[rating].card
+
+# get the corresponding review log for the review
+review_log = scheduling_cards[rating].review_log
+```
+
+### Serialization
+
+`Card` and `ReviewLog` objects are JSON-serializable via their `to_dict` and `from_dict` methods for easy database storage:
+
+```python
+# serialize before storage
+card_dict = card.to_dict()
+review_log_dict = review_log.to_dict()
+
+# deserialize from dict
+new_card = Card.from_dict(card_dict)
+new_review_log = ReviewLog.from_dict(review_log_dict)
+```
+
 ## Reference
 
 Card objects have one of four possible states
@@ -95,16 +143,6 @@ Rating.Again # forget; incorrect response
 Rating.Hard # recall; correct response recalled with serious difficulty
 Rating.Good # recall; correct response after a hesitation
 Rating.Easy # recall; perfect response
-```
-
-Get the review log for a given rating
-```python
-review_log = scheduling_cards[card_rating].review_log
-```
-
-Get the schdeduled days after rating a card
-```python
-scheduled_days = card_object.scheduled_days
 ```
 
 ## Contribute

@@ -8,8 +8,13 @@ class FSRS:
     DECAY: float
     FACTOR: float
 
-    def __init__(self) -> None:
-        self.p = Parameters()
+    def __init__(
+        self,
+        w: Tuple[float, ...] = None,
+        request_retention: float = None,
+        maximum_interval: int = None,
+    ) -> None:
+        self.p = Parameters(w, request_retention, maximum_interval)
         self.DECAY = -0.5
         self.FACTOR = 0.9 ** (1 / self.DECAY) - 1
 

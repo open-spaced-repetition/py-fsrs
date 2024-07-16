@@ -81,6 +81,36 @@ print(f"Card due in {time_delta.seconds} seconds")
 
 ## Usage
 
+### Custom scheduler
+
+You can initialize the FSRS scheduler with your own custom weights as well as desired retention rate and maximum interval.
+
+```python
+f = FSRS(
+    w=(
+        1.14,
+        1.01,
+        5.44,
+        14.67,
+        5.3024,
+        1.5662,
+        1.2503,
+        0.0028,
+        1.5489,
+        0.1763,
+        0.9953,
+        2.7473,
+        0.0179,
+        0.3105,
+        0.3976,
+        0.0,
+        2.0902,
+    ),
+    request_retention=0.85,
+    maximum_interval=3650,
+)
+```
+
 ### Advanced reviewing of cards
 
 Aside from using the convenience method `review_card`, there is also the `repeat` method:

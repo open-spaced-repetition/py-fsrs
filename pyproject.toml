@@ -24,4 +24,4 @@ Homepage = "https://github.com/open-spaced-repetition/py-fsrs"
 ignore = ["F401", "F403", "F405", "E721"]
 
 [mypy]
-disable_error_code = import-untyped, import-not-found
+disable_error_code = ["import-untyped", "import-not-found"]

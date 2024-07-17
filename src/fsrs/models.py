@@ -1,6 +1,7 @@
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 import copy
-from typing import Tuple, Optional
+from typing import Any, Dict, Tuple, Optional
 from enum import IntEnum
 
 
@@ -40,7 +41,6 @@ class ReviewLog:
         self.state = state
 
     def to_dict(self):
-
         return_dict = {
             "rating": self.rating,
             "scheduled_days": self.scheduled_days,
@@ -52,8 +52,7 @@ class ReviewLog:
         return return_dict
 
     @staticmethod
-    def from_dict(source_dict):
-
+    def from_dict(source_dict: Dict[str, Any]):
         rating = source_dict["rating"]
         scheduled_days = source_dict["scheduled_days"]
         elapsed_days = source_dict["elapsed_days"]
@@ -85,14 +84,13 @@ class Card:
         due=None,
         stability=0,
         difficulty=0,
-        elapsed_days=0,
-        scheduled_days=0,
+        elapsed_days: int = 0,
+        scheduled_days: int = 0,
         reps=0,
         lapses=0,
         state=State.New,
         last_review=None,
     ) -> None:
-
         if due is None:
             self.due = datetime.now(timezone.utc)
         else:
@@ -110,7 +108,6 @@ class Card:
             self.last_review = last_review
 
     def to_dict(self):
-
         return_dict = {
             "due": self.due.isoformat(),
             "stability": self.stability,
@@ -128,8 +125,7 @@ class Card:
         return return_dict
 
     @staticmethod
-    def from_dict(source_dict):
-
+    def from_dict(source_dict: Dict[str, Any]):
         due = datetime.fromisoformat(source_dict["due"])
         stability = source_dict["stability"]
         difficulty = source_dict["difficulty"]
@@ -167,13 +163,10 @@ class Card:
             return None
 
 
+@dataclass
 class SchedulingInfo:
     card: Card
     review_log: ReviewLog
-
-    def __init__(self, card: Card, review_log: ReviewLog) -> None:
-        self.card = card
-        self.review_log = review_log
 
 
 class SchedulingCards:
@@ -209,9 +202,9 @@ class SchedulingCards:
     def schedule(
         self,
         now: datetime,
-        hard_interval: float,
-        good_interval: float,
-        easy_interval: float,
+        hard_interval: int,
+        good_interval: int,
+        easy_interval: int,
     ):
         self.again.scheduled_days = 0
         self.hard.scheduled_days = hard_interval
@@ -277,9 +270,9 @@ class Parameters:
 
     def __init__(
         self,
-        w: Tuple[float, ...] = None,
-        request_retention: float = None,
-        maximum_interval: int = None,
+        w: Optional[Tuple[float, ...]] = None,
+        request_retention: Optional[float] = None,
+        maximum_interval: Optional[int] = None,
     ) -> None:
         self.w = (
             w

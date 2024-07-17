@@ -1,6 +1,7 @@
 from .models import *
 import math
 from datetime import timezone
+from typing import Optional
 
 
 class FSRS:
@@ -10,16 +11,16 @@ class FSRS:
 
     def __init__(
         self,
-        w: Tuple[float, ...] = None,
-        request_retention: float = None,
-        maximum_interval: int = None,
+        w: Optional[Tuple[float, ...]] = None,
+        request_retention: Optional[float] = None,
+        maximum_interval: Optional[int] = None,
     ) -> None:
         self.p = Parameters(w, request_retention, maximum_interval)
         self.DECAY = -0.5
         self.FACTOR = 0.9 ** (1 / self.DECAY) - 1
 
     def review_card(
-        self, card: Card, rating: Rating, now: datetime = None
+        self, card: Card, rating: Rating, now: Optional[datetime] = None
     ) -> tuple[Card, ReviewLog]:
 
         scheduling_cards = self.repeat(card, now)
@@ -29,7 +30,7 @@ class FSRS:
 
         return card, review_log
 
-    def repeat(self, card: Card, now: datetime = None) -> dict[int, SchedulingInfo]:
+    def repeat(self, card: Card, now: Optional[datetime] = None) -> dict[int, SchedulingInfo]:
 
         if now is None:
             now = datetime.now(timezone.utc)

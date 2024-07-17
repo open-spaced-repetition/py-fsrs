@@ -19,3 +19,6 @@ requires-python = ">=3.9"
 
 [project.urls]
 Homepage = "https://github.com/open-spaced-repetition/py-fsrs"
+
+[tool.ruff.lint]
+ignore = ["F401", "F403", "F405"]

@@ -258,3 +258,94 @@ class TestPyFSRS:
 
         print(ivl_history)
         assert ivl_history == [0, 5, 16, 43, 106, 236, 0, 0, 12, 25, 47, 85, 147]
+
+    def test_custom_scheduler_args(self):
+
+        f = FSRS(
+            w=(
+                1.14,
+                1.01,
+                5.44,
+                14.67,
+                5.3024,
+                1.5662,
+                1.2503,
+                0.0028,
+                1.5489,
+                0.1763,
+                0.9953,
+                2.7473,
+                0.0179,
+                0.3105,
+                0.3976,
+                0.0,
+                2.0902,
+            ),
+            request_retention=0.9,
+            maximum_interval=36500,
+        )
+        card = Card()
+        now = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
+        # scheduling_cards = f.repeat(card, now)
+        # print_scheduling_cards(scheduling_cards)
+
+        ratings = (
+            Rating.Good,
+            Rating.Good,
+            Rating.Good,
+            Rating.Good,
+            Rating.Good,
+            Rating.Good,
+            Rating.Again,
+            Rating.Again,
+            Rating.Good,
+            Rating.Good,
+            Rating.Good,
+            Rating.Good,
+            Rating.Good,
+        )
+        ivl_history = []
+
+        for rating in ratings:
+            # card = scheduling_cards[rating].card
+            card, _ = f.review_card(card, rating, now)
+            ivl = card.scheduled_days
+            ivl_history.append(ivl)
+            now = card.due
+            # scheduling_cards = f.repeat(card, now)
+            # print_scheduling_cards(scheduling_cards)
+
+        print(ivl_history)
+        assert ivl_history == [0, 5, 16, 43, 106, 236, 0, 0, 12, 25, 47, 85, 147]
+
+        # initialize another scheduler and verify parameters are properly set
+        w2 = (
+            0.1456,
+            0.4186,
+            1.1104,
+            4.1315,
+            5.2417,
+            1.3098,
+            0.8975,
+            0.0000,
+            1.5674,
+            0.0567,
+            0.9661,
+            2.0275,
+            0.1592,
+            0.2446,
+            1.5071,
+            0.2272,
+            2.8755,
+        )
+        request_retention2 = 0.85
+        maximum_interval2 = 3650
+        f2 = FSRS(
+            w=w2,
+            request_retention=request_retention2,
+            maximum_interval=maximum_interval2,
+        )
+
+        assert f2.p.w == w2
+        assert f2.p.request_retention == request_retention2
+        assert f2.p.maximum_interval == maximum_interval2

@@ -275,25 +275,38 @@ class Parameters:
     maximum_interval: int
     w: Tuple[float, ...]
 
-    def __init__(self) -> None:
-        self.request_retention = 0.9
-        self.maximum_interval = 36500
+    def __init__(
+        self,
+        w: Tuple[float, ...] = None,
+        request_retention: float = None,
+        maximum_interval: int = None,
+    ) -> None:
         self.w = (
-            0.4872,
-            1.4003,
-            3.7145,
-            13.8206,
-            5.1618,
-            1.2298,
-            0.8975,
-            0.031,
-            1.6474,
-            0.1367,
-            1.0461,
-            2.1072,
-            0.0793,
-            0.3246,
-            1.587,
-            0.2272,
-            2.8755,
+            w
+            if w is not None
+            else (
+                0.4872,
+                1.4003,
+                3.7145,
+                13.8206,
+                5.1618,
+                1.2298,
+                0.8975,
+                0.031,
+                1.6474,
+                0.1367,
+                1.0461,
+                2.1072,
+                0.0793,
+                0.3246,
+                1.587,
+                0.2272,
+                2.8755,
+            )
+        )
+        self.request_retention = (
+            request_retention if request_retention is not None else 0.9
+        )
+        self.maximum_interval = (
+            maximum_interval if maximum_interval is not None else 36500
         )

@@ -21,4 +21,4 @@ requires-python = ">=3.9"
 Homepage = "https://github.com/open-spaced-repetition/py-fsrs"
 
 [tool.ruff.lint]
-ignore = ["F401", "F403", "F405"]
+ignore = ["F401", "F403", "F405", "E721"]

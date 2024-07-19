@@ -133,7 +133,7 @@ class Card:
         scheduled_days = source_dict["scheduled_days"]
         reps = source_dict["reps"]
         lapses = source_dict["lapses"]
-        state = State(source_dict["state"])
+        state = State(int(source_dict["state"]))
 
         if "last_review" in source_dict:
             last_review = datetime.fromisoformat(source_dict["last_review"])

@@ -46,18 +46,18 @@ class ReviewLog:
             "scheduled_days": self.scheduled_days,
             "elapsed_days": self.elapsed_days,
             "review": self.review.isoformat(),
-            "state": self.state,
+            "state": self.state.value,
         }
 
         return return_dict
 
     @staticmethod
     def from_dict(source_dict: Dict[str, Any]):
-        rating = source_dict["rating"]
-        scheduled_days = source_dict["scheduled_days"]
-        elapsed_days = source_dict["elapsed_days"]
+        rating = int(source_dict["rating"])
+        scheduled_days = int(source_dict["scheduled_days"])
+        elapsed_days = int(source_dict["elapsed_days"])
         review = datetime.fromisoformat(source_dict["review"])
-        state = source_dict["state"]
+        state = State(int(source_dict["state"]))
 
         return ReviewLog(
             rating,
@@ -127,12 +127,12 @@ class Card:
     @staticmethod
     def from_dict(source_dict: Dict[str, Any]):
         due = datetime.fromisoformat(source_dict["due"])
-        stability = source_dict["stability"]
-        difficulty = source_dict["difficulty"]
-        elapsed_days = source_dict["elapsed_days"]
-        scheduled_days = source_dict["scheduled_days"]
-        reps = source_dict["reps"]
-        lapses = source_dict["lapses"]
+        stability = float(source_dict["stability"])
+        difficulty = float(source_dict["difficulty"])
+        elapsed_days = int(source_dict["elapsed_days"])
+        scheduled_days = int(source_dict["scheduled_days"])
+        reps = int(source_dict["reps"])
+        lapses = int(source_dict["lapses"])
         state = State(int(source_dict["state"]))
 
         if "last_review" in source_dict:

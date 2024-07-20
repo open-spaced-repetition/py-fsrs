@@ -42,7 +42,7 @@ class ReviewLog:
 
     def to_dict(self):
         return_dict = {
-            "rating": self.rating,
+            "rating": self.rating.value,
             "scheduled_days": self.scheduled_days,
             "elapsed_days": self.elapsed_days,
             "review": self.review.isoformat(),
@@ -53,7 +53,7 @@ class ReviewLog:
 
     @staticmethod
     def from_dict(source_dict: Dict[str, Any]):
-        rating = int(source_dict["rating"])
+        rating = Rating(int(source_dict["rating"]))
         scheduled_days = int(source_dict["scheduled_days"])
         elapsed_days = int(source_dict["elapsed_days"])
         review = datetime.fromisoformat(source_dict["review"])

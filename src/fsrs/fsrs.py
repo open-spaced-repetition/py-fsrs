@@ -22,7 +22,6 @@ class FSRS:
     def review_card(
         self, card: Card, rating: Rating, now: Optional[datetime] = None
     ) -> tuple[Card, ReviewLog]:
-
         scheduling_cards = self.repeat(card, now)
 
         card = scheduling_cards[rating].card
@@ -30,8 +29,9 @@ class FSRS:
 
         return card, review_log
 
-    def repeat(self, card: Card, now: Optional[datetime] = None) -> dict[int, SchedulingInfo]:
-
+    def repeat(
+        self, card: Card, now: Optional[datetime] = None
+    ) -> dict[int, SchedulingInfo]:
         if now is None:
             now = datetime.now(timezone.utc)
 

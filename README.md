@@ -13,7 +13,7 @@
 <div align="center" style="text-decoration: none;">
     <a href="https://pypi.org/project/fsrs/"><img src="https://img.shields.io/pypi/v/fsrs"></a>
     <a href="https://github.com/open-spaced-repetition/py-fsrs/blob/main/LICENSE" style="text-decoration: none;"><img src="https://img.shields.io/badge/License-MIT-brightgreen.svg"></a>
-    <a href="https://github.com/psf/black" style="text-decoration: none;"><img src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+    <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json"></a>
 </div>
 <br />
 
@@ -178,7 +178,3 @@ Rating.Easy # recall; perfect response
 ## Contribute
 
 Checkout [CONTRIBUTING](CONTRIBUTING.md) to help improve Py-FSRS!
-
-## License
-
-Distributed under the MIT License. See [LICENSE](LICENSE) for more information.

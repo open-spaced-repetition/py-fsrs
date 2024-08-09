@@ -17,7 +17,6 @@ def print_scheduling_cards(scheduling_cards):
 
 
 class TestPyFSRS:
-
     def test_repeat(self):
         f = FSRS()
         f.p.w = (
@@ -73,7 +72,6 @@ class TestPyFSRS:
         assert ivl_history == [0, 5, 16, 43, 106, 236, 0, 0, 12, 25, 47, 85, 147]
 
     def test_repeat_default_arg(self):
-
         f = FSRS()
 
         card_object = Card()
@@ -92,7 +90,6 @@ class TestPyFSRS:
         assert time_delta.seconds > 500  # due in approx. 8-10 minutes
 
     def test_datetime(self):
-
         f = FSRS()
         card = Card()
 
@@ -118,7 +115,6 @@ class TestPyFSRS:
         assert card.due >= card.last_review
 
     def test_Card_serialize(self):
-
         f = FSRS()
 
         # create card object the normal way
@@ -158,7 +154,6 @@ class TestPyFSRS:
         assert card.to_dict() != repeated_card.to_dict()
 
     def test_ReviewLog_serialize(self):
-
         f = FSRS()
 
         card = Card()
@@ -204,7 +199,6 @@ class TestPyFSRS:
         assert review_log.to_dict() != next_review_log.to_dict()
 
     def test_review_card(self):
-
         f = FSRS()
         f.p.w = (
             1.14,
@@ -260,7 +254,6 @@ class TestPyFSRS:
         assert ivl_history == [0, 5, 16, 43, 106, 236, 0, 0, 12, 25, 47, 85, 147]
 
     def test_custom_scheduler_args(self):
-
         f = FSRS(
             w=(
                 1.14,

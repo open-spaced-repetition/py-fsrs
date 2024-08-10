@@ -36,18 +36,23 @@ Now you're ready to make changes to `src/fsrs` and see your changes reflected im
 
 This project follows [semantic versioning](https://semver.org/), so please make sure to increment the version number in [pyproject.toml](pyproject.toml) when contributing new code.
 
-### Lint, format and test
+### Lint, type-check, format and test
 
-Py-FSRS uses [Ruff](https://github.com/astral-sh/ruff) for linting and formatting and uses [pytest](https://docs.pytest.org) to run its tests. In order for your contribution to be accepted, your code must pass linting/formatting checks and be able to pass the tests.
+Py-FSRS uses [Ruff](https://github.com/astral-sh/ruff) for linting and formatting, [mypy](https://mypy-lang.org/) for static type-checking and [pytest](https://docs.pytest.org) to run its tests. In order for your contribution to be accepted, your code must pass the linting, type-checking and formatting checks as well as the tests.
 
 You can install these packages with
 ```
-pip install ruff pytest
+pip install ruff mypy pytest
 ```
 
 Lint your code with:
 ```
 ruff check --fix
+```
+
+Run the type-checker:
+```
+mypy .
 ```
 
 Format your code with:

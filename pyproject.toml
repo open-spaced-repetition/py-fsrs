@@ -23,3 +23,8 @@ Homepage = "https://github.com/open-spaced-repetition/py-fsrs"
 [tool.ruff.lint]
 ignore = ["F401", "F403", "F405", "E721"]
 
+[tool.pytest.ini_options]
+pythonpath = "src"
+
+[tool.mypy]
+ignore_missing_imports = true

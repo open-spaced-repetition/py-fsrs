@@ -110,7 +110,8 @@ class FSRS:
         return max(self.p.w[r - 1], 0.1)
 
     def init_difficulty(self, r: int) -> float:
-        return min(max(self.p.w[4] - self.p.w[5] * (r - 3), 1), 10)
+        # compute initial difficulty and clamp it between 1 and 10
+        return min(max(self.p.w[4] - math.exp(self.p.w[5] * (r - 1)) + 1, 1), 10)
 
     def forgetting_curve(self, elapsed_days: int, stability: float) -> float:
         return (1 + self.FACTOR * elapsed_days / stability) ** self.DECAY
@@ -123,7 +124,13 @@ class FSRS:
 
     def next_difficulty(self, d: float, r: int) -> float:
         next_d = d - self.p.w[6] * (r - 3)
-        return min(max(self.mean_reversion(self.p.w[4], next_d), 1), 10)
+
+        return min(
+            max(self.mean_reversion(self.init_difficulty(Rating.Easy), next_d), 1), 10
+        )
+
+    def short_term_stability(self, stability, rating):
+        return stability * math.exp(self.p.w[17] * (rating - 3 + self.p.w[18]))
 
     def mean_reversion(self, init: float, current: float) -> float:
         return self.p.w[7] * init + (1 - self.p.w[7]) * current

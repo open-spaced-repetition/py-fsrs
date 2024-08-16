@@ -58,9 +58,18 @@ class FSRS:
             s.easy.scheduled_days = easy_interval
             s.easy.due = now + timedelta(days=easy_interval)
         elif card.state == State.Learning or card.state == State.Relearning:
+            short_term_stability_good = self.short_term_stability(
+                card.stability, Rating.Good
+            )
+            short_term_stability_easy = self.short_term_stability(
+                card.stability, Rating.Easy
+            )
+
             hard_interval = 0
-            good_interval = self.next_interval(s.good.stability)
-            easy_interval = max(self.next_interval(s.easy.stability), good_interval + 1)
+            good_interval = self.next_interval(short_term_stability_good)
+            easy_interval = max(
+                self.next_interval(short_term_stability_easy), good_interval + 1
+            )
 
             s.schedule(now, hard_interval, good_interval, easy_interval)
         elif card.state == State.Review:

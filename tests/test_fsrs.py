@@ -4,44 +4,33 @@ import json
 import pytest
 
 
-def print_scheduling_cards(scheduling_cards):
-    print("again.card:", scheduling_cards[Rating.Again].card.__dict__)
-    print("again.review_log:", scheduling_cards[Rating.Again].review_log.__dict__)
-    print("hard.card:", scheduling_cards[Rating.Hard].card.__dict__)
-    print("hard.review_log:", scheduling_cards[Rating.Hard].review_log.__dict__)
-    print("good.card:", scheduling_cards[Rating.Good].card.__dict__)
-    print("good.review_log:", scheduling_cards[Rating.Good].review_log.__dict__)
-    print("easy.card:", scheduling_cards[Rating.Easy].card.__dict__)
-    print("easy.review_log:", scheduling_cards[Rating.Easy].review_log.__dict__)
-    print()
-
-
 class TestPyFSRS:
-    def test_repeat(self):
-        f = FSRS()
-        f.p.w = (
-            1.14,
-            1.01,
-            5.44,
-            14.67,
-            5.3024,
-            1.5662,
-            1.2503,
-            0.0028,
-            1.5489,
-            0.1763,
-            0.9953,
-            2.7473,
-            0.0179,
-            0.3105,
-            0.3976,
-            0.0,
-            2.0902,
+    def test_review_card(self):
+        f = FSRS(
+            w=(
+                0.4197,
+                1.1869,
+                3.0412,
+                15.2441,
+                7.1434,
+                0.6477,
+                1.0007,
+                0.0674,
+                1.6597,
+                0.1712,
+                1.1178,
+                2.0225,
+                0.0904,
+                0.3025,
+                2.1214,
+                0.2498,
+                2.9466,
+                0.4891,
+                0.6468,
+            )
         )
         card = Card()
         now = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
-        scheduling_cards = f.repeat(card, now)
-        print_scheduling_cards(scheduling_cards)
 
         ratings = (
             Rating.Good,
@@ -61,15 +50,27 @@ class TestPyFSRS:
         ivl_history = []
 
         for rating in ratings:
-            card = scheduling_cards[rating].card
+            card, _ = f.review_card(card, rating, now)
             ivl = card.scheduled_days
             ivl_history.append(ivl)
             now = card.due
-            scheduling_cards = f.repeat(card, now)
-            print_scheduling_cards(scheduling_cards)
 
         print(ivl_history)
-        assert ivl_history == [0, 5, 16, 43, 106, 236, 0, 0, 12, 25, 47, 85, 147]
+        assert ivl_history == [
+            0,
+            4,
+            17,
+            62,
+            198,
+            563,
+            0,
+            0,
+            9,
+            27,
+            74,
+            190,
+            457,
+        ]
 
     def test_repeat_default_arg(self):
         f = FSRS()
@@ -198,89 +199,34 @@ class TestPyFSRS:
         assert vars(review_log) != vars(next_review_log)
         assert review_log.to_dict() != next_review_log.to_dict()
 
-    def test_review_card(self):
-        f = FSRS()
-        f.p.w = (
-            1.14,
-            1.01,
-            5.44,
-            14.67,
-            5.3024,
-            1.5662,
-            1.2503,
-            0.0028,
-            1.5489,
-            0.1763,
-            0.9953,
-            2.7473,
-            0.0179,
-            0.3105,
-            0.3976,
-            0.0,
-            2.0902,
-        )
-        card = Card()
-        now = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
-        # scheduling_cards = f.repeat(card, now)
-        # print_scheduling_cards(scheduling_cards)
-
-        ratings = (
-            Rating.Good,
-            Rating.Good,
-            Rating.Good,
-            Rating.Good,
-            Rating.Good,
-            Rating.Good,
-            Rating.Again,
-            Rating.Again,
-            Rating.Good,
-            Rating.Good,
-            Rating.Good,
-            Rating.Good,
-            Rating.Good,
-        )
-        ivl_history = []
-
-        for rating in ratings:
-            # card = scheduling_cards[rating].card
-            card, _ = f.review_card(card, rating, now)
-            ivl = card.scheduled_days
-            ivl_history.append(ivl)
-            now = card.due
-            # scheduling_cards = f.repeat(card, now)
-            # print_scheduling_cards(scheduling_cards)
-
-        print(ivl_history)
-        assert ivl_history == [0, 5, 16, 43, 106, 236, 0, 0, 12, 25, 47, 85, 147]
-
     def test_custom_scheduler_args(self):
         f = FSRS(
             w=(
-                1.14,
-                1.01,
-                5.44,
-                14.67,
-                5.3024,
-                1.5662,
-                1.2503,
-                0.0028,
-                1.5489,
-                0.1763,
-                0.9953,
-                2.7473,
-                0.0179,
-                0.3105,
-                0.3976,
-                0.0,
-                2.0902,
+                0.4197,
+                1.1869,
+                3.0412,
+                15.2441,
+                7.1434,
+                0.6477,
+                1.0007,
+                0.0674,
+                1.6597,
+                0.1712,
+                1.1178,
+                2.0225,
+                0.0904,
+                0.3025,
+                2.1214,
+                0.2498,
+                2.9466,
+                0,
+                0.6468,
             ),
             request_retention=0.9,
             maximum_interval=36500,
         )
         card = Card()
         now = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
-        # scheduling_cards = f.repeat(card, now)
-        # print_scheduling_cards(scheduling_cards)
 
         ratings = (
             Rating.Good,
@@ -300,16 +246,13 @@ class TestPyFSRS:
         ivl_history = []
 
         for rating in ratings:
-            # card = scheduling_cards[rating].card
             card, _ = f.review_card(card, rating, now)
             ivl = card.scheduled_days
             ivl_history.append(ivl)
             now = card.due
-            # scheduling_cards = f.repeat(card, now)
-            # print_scheduling_cards(scheduling_cards)
 
         print(ivl_history)
-        assert ivl_history == [0, 5, 16, 43, 106, 236, 0, 0, 12, 25, 47, 85, 147]
+        assert ivl_history == [0, 3, 13, 50, 163, 473, 0, 0, 12, 34, 91, 229, 541]
 
         # initialize another scheduler and verify parameters are properly set
         w2 = (
@@ -330,6 +273,8 @@ class TestPyFSRS:
             1.5071,
             0.2272,
             2.8755,
+            1.234,
+            5.6789,
         )
         request_retention2 = 0.85
         maximum_interval2 = 3650

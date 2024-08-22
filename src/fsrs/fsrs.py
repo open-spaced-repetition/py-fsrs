@@ -58,17 +58,22 @@ class FSRS:
             s.easy.scheduled_days = easy_interval
             s.easy.due = now + timedelta(days=easy_interval)
         elif card.state == State.Learning or card.state == State.Relearning:
+            interval = card.elapsed_days
+            last_d = card.difficulty
+            last_s = card.stability
+            retrievability = self.forgetting_curve(interval, last_s)
+            self.next_ds(s, last_d, last_s, retrievability, card.state)
+
             hard_interval = 0
             good_interval = self.next_interval(s.good.stability)
             easy_interval = max(self.next_interval(s.easy.stability), good_interval + 1)
-
             s.schedule(now, hard_interval, good_interval, easy_interval)
         elif card.state == State.Review:
             interval = card.elapsed_days
             last_d = card.difficulty
             last_s = card.stability
             retrievability = self.forgetting_curve(interval, last_s)
-            self.next_ds(s, last_d, last_s, retrievability)
+            self.next_ds(s, last_d, last_s, retrievability, card.state)
 
             hard_interval = self.next_interval(s.hard.stability)
             good_interval = self.next_interval(s.good.stability)
@@ -89,28 +94,45 @@ class FSRS:
         s.easy.stability = self.init_stability(Rating.Easy)
 
     def next_ds(
-        self, s: SchedulingCards, last_d: float, last_s: float, retrievability: float
+        self,
+        s: SchedulingCards,
+        last_d: float,
+        last_s: float,
+        retrievability: float,
+        state,
     ):
         s.again.difficulty = self.next_difficulty(last_d, Rating.Again)
-        s.again.stability = self.next_forget_stability(last_d, last_s, retrievability)
         s.hard.difficulty = self.next_difficulty(last_d, Rating.Hard)
-        s.hard.stability = self.next_recall_stability(
-            last_d, last_s, retrievability, Rating.Hard
-        )
         s.good.difficulty = self.next_difficulty(last_d, Rating.Good)
-        s.good.stability = self.next_recall_stability(
-            last_d, last_s, retrievability, Rating.Good
-        )
         s.easy.difficulty = self.next_difficulty(last_d, Rating.Easy)
-        s.easy.stability = self.next_recall_stability(
-            last_d, last_s, retrievability, Rating.Easy
-        )
+
+        if state == State.Learning or state == State.Relearning:
+            # compute short term stabilities
+            s.again.stability = self.short_term_stability(last_s, Rating.Again)
+            s.hard.stability = self.short_term_stability(last_s, Rating.Hard)
+            s.good.stability = self.short_term_stability(last_s, Rating.Good)
+            s.easy.stability = self.short_term_stability(last_s, Rating.Easy)
+
+        elif state == State.Review:
+            s.again.stability = self.next_forget_stability(
+                last_d, last_s, retrievability
+            )
+            s.hard.stability = self.next_recall_stability(
+                last_d, last_s, retrievability, Rating.Hard
+            )
+            s.good.stability = self.next_recall_stability(
+                last_d, last_s, retrievability, Rating.Good
+            )
+            s.easy.stability = self.next_recall_stability(
+                last_d, last_s, retrievability, Rating.Easy
+            )
 
     def init_stability(self, r: int) -> float:
         return max(self.p.w[r - 1], 0.1)
 
     def init_difficulty(self, r: int) -> float:
-        return min(max(self.p.w[4] - self.p.w[5] * (r - 3), 1), 10)
+        # compute initial difficulty and clamp it between 1 and 10
+        return min(max(self.p.w[4] - math.exp(self.p.w[5] * (r - 1)) + 1, 1), 10)
 
     def forgetting_curve(self, elapsed_days: int, stability: float) -> float:
         return (1 + self.FACTOR * elapsed_days / stability) ** self.DECAY
@@ -123,7 +145,13 @@ class FSRS:
 
     def next_difficulty(self, d: float, r: int) -> float:
         next_d = d - self.p.w[6] * (r - 3)
-        return min(max(self.mean_reversion(self.p.w[4], next_d), 1), 10)
+
+        return min(
+            max(self.mean_reversion(self.init_difficulty(Rating.Easy), next_d), 1), 10
+        )
+
+    def short_term_stability(self, stability, rating):
+        return stability * math.exp(self.p.w[17] * (rating - 3 + self.p.w[18]))
 
     def mean_reversion(self, init: float, current: float) -> float:
         return self.p.w[7] * init + (1 - self.p.w[7]) * current

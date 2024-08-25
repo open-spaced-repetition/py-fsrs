@@ -35,7 +35,7 @@ pip install fsrs
 Import and initialize the FSRS scheduler
 
 ```python
-from fsrs import *
+from fsrs import FSRS, Card, Rating
 
 f = FSRS()
 ```

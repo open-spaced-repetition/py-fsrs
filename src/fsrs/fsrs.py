@@ -9,7 +9,7 @@ from .models import (
 )
 import math
 from datetime import datetime, timezone, timedelta
-from typing import Optional, Tuple
+from typing import Optional
 import copy
 
 
@@ -20,7 +20,7 @@ class FSRS:
 
     def __init__(
         self,
-        w: Optional[Tuple[float, ...]] = None,
+        w: Optional[tuple[float, ...]] = None,
         request_retention: Optional[float] = None,
         maximum_interval: Optional[int] = None,
     ) -> None:
@@ -40,7 +40,7 @@ class FSRS:
 
     def repeat(
         self, card: Card, now: Optional[datetime] = None
-    ) -> dict[int, SchedulingInfo]:
+    ) -> dict[Rating, SchedulingInfo]:
         if now is None:
             now = datetime.now(timezone.utc)
 
@@ -108,8 +108,8 @@ class FSRS:
         last_d: float,
         last_s: float,
         retrievability: float,
-        state,
-    ):
+        state: State,
+    ) -> None:
         s.again.difficulty = self.next_difficulty(last_d, Rating.Again)
         s.hard.difficulty = self.next_difficulty(last_d, Rating.Hard)
         s.good.difficulty = self.next_difficulty(last_d, Rating.Good)
@@ -136,10 +136,10 @@ class FSRS:
                 last_d, last_s, retrievability, Rating.Easy
             )
 
-    def init_stability(self, r: int) -> float:
+    def init_stability(self, r: Rating) -> float:
         return max(self.p.w[r - 1], 0.1)
 
-    def init_difficulty(self, r: int) -> float:
+    def init_difficulty(self, r: Rating) -> float:
         # compute initial difficulty and clamp it between 1 and 10
         return min(max(self.p.w[4] - math.exp(self.p.w[5] * (r - 1)) + 1, 1), 10)
 
@@ -152,20 +152,22 @@ class FSRS:
         )
         return min(max(round(new_interval), 1), self.p.maximum_interval)
 
-    def next_difficulty(self, d: float, r: int) -> float:
+    def next_difficulty(self, d: float, r: Rating) -> float:
         next_d = d - self.p.w[6] * (r - 3)
 
         return min(
             max(self.mean_reversion(self.init_difficulty(Rating.Easy), next_d), 1), 10
         )
 
-    def short_term_stability(self, stability, rating):
+    def short_term_stability(self, stability: float, rating: Rating) -> float:
         return stability * math.exp(self.p.w[17] * (rating - 3 + self.p.w[18]))
 
     def mean_reversion(self, init: float, current: float) -> float:
         return self.p.w[7] * init + (1 - self.p.w[7]) * current
 
-    def next_recall_stability(self, d: float, s: float, r: float, rating: int) -> float:
+    def next_recall_stability(
+        self, d: float, s: float, r: float, rating: Rating
+    ) -> float:
         hard_penalty = self.p.w[15] if rating == Rating.Hard else 1
         easy_bonus = self.p.w[16] if rating == Rating.Easy else 1
         return s * (

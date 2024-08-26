@@ -1,34 +1,34 @@
 from fsrs import *
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import json
 import pytest
+
+test_w = (
+    0.4197,
+    1.1869,
+    3.0412,
+    15.2441,
+    7.1434,
+    0.6477,
+    1.0007,
+    0.0674,
+    1.6597,
+    0.1712,
+    1.1178,
+    2.0225,
+    0.0904,
+    0.3025,
+    2.1214,
+    0.2498,
+    2.9466,
+    0.4891,
+    0.6468,
+)
 
 
 class TestPyFSRS:
     def test_review_card(self):
-        f = FSRS(
-            w=(
-                0.4197,
-                1.1869,
-                3.0412,
-                15.2441,
-                7.1434,
-                0.6477,
-                1.0007,
-                0.0674,
-                1.6597,
-                0.1712,
-                1.1178,
-                2.0225,
-                0.0904,
-                0.3025,
-                2.1214,
-                0.2498,
-                2.9466,
-                0.4891,
-                0.6468,
-            )
-        )
+        f = FSRS(w=test_w)
         card = Card()
         now = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
 
@@ -71,6 +71,29 @@ class TestPyFSRS:
             190,
             457,
         ]
+
+    def test_memo_state(self):
+        f = FSRS(w=test_w)
+        card = Card()
+        now = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
+
+        scheduling_cards = f.repeat(card, now)
+        ratings = (
+            Rating.Again,
+            Rating.Good,
+            Rating.Good,
+            Rating.Good,
+            Rating.Good,
+            Rating.Good,
+        )
+        ivl_history = [0, 0, 1, 3, 8, 21]
+        for rating, ivl in zip(ratings, ivl_history):
+            card = scheduling_cards[rating].card
+            now += timedelta(days=ivl)
+            scheduling_cards = f.repeat(card, now)
+
+        assert round(scheduling_cards[Rating.Good].card.stability, 4) == 71.4554
+        assert round(scheduling_cards[Rating.Good].card.difficulty, 4) == 5.0976
 
     def test_repeat_default_arg(self):
         f = FSRS()

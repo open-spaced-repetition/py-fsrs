@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 import copy
-from typing import Any, Dict, Tuple, Optional
+from typing import Any, Optional, Union
 from enum import IntEnum
 
 
@@ -20,27 +20,27 @@ class Rating(IntEnum):
 
 
 class ReviewLog:
-    rating: int
+    rating: Rating
     scheduled_days: int
     elapsed_days: int
     review: datetime
-    state: int
+    state: State
 
     def __init__(
         self,
-        rating: int,
+        rating: Rating,
         scheduled_days: int,
         elapsed_days: int,
         review: datetime,
-        state: int,
-    ):
+        state: State,
+    ) -> None:
         self.rating = rating
         self.scheduled_days = scheduled_days
         self.elapsed_days = elapsed_days
         self.review = review
         self.state = state
 
-    def to_dict(self):
+    def to_dict(self) -> dict[str, Union[int, str]]:
         return_dict = {
             "rating": self.rating.value,
             "scheduled_days": self.scheduled_days,
@@ -52,7 +52,7 @@ class ReviewLog:
         return return_dict
 
     @staticmethod
-    def from_dict(source_dict: Dict[str, Any]):
+    def from_dict(source_dict: dict[str, Any]) -> "ReviewLog":
         rating = Rating(int(source_dict["rating"]))
         scheduled_days = int(source_dict["scheduled_days"])
         elapsed_days = int(source_dict["elapsed_days"])
@@ -81,15 +81,15 @@ class Card:
 
     def __init__(
         self,
-        due=None,
-        stability=0,
-        difficulty=0,
+        due: Optional[datetime] = None,
+        stability: float = 0,
+        difficulty: float = 0,
         elapsed_days: int = 0,
         scheduled_days: int = 0,
-        reps=0,
-        lapses=0,
-        state=State.New,
-        last_review=None,
+        reps: int = 0,
+        lapses: int = 0,
+        state: State = State.New,
+        last_review: Optional[datetime] = None,
     ) -> None:
         if due is None:
             self.due = datetime.now(timezone.utc)
@@ -107,7 +107,7 @@ class Card:
         if last_review is not None:
             self.last_review = last_review
 
-    def to_dict(self):
+    def to_dict(self) -> dict[str, Any]:
         return_dict = {
             "due": self.due.isoformat(),
             "stability": self.stability,
@@ -125,7 +125,7 @@ class Card:
         return return_dict
 
     @staticmethod
-    def from_dict(source_dict: Dict[str, Any]):
+    def from_dict(source_dict: dict[str, Any]) -> "Card":
         due = datetime.fromisoformat(source_dict["due"])
         stability = float(source_dict["stability"])
         difficulty = float(source_dict["difficulty"])
@@ -181,7 +181,7 @@ class SchedulingCards:
         self.good = copy.deepcopy(card)
         self.easy = copy.deepcopy(card)
 
-    def update_state(self, state: State):
+    def update_state(self, state: State) -> None:
         if state == State.New:
             self.again.state = State.Learning
             self.hard.state = State.Learning
@@ -205,7 +205,7 @@ class SchedulingCards:
         hard_interval: int,
         good_interval: int,
         easy_interval: int,
-    ):
+    ) -> None:
         self.again.scheduled_days = 0
         self.hard.scheduled_days = hard_interval
         self.good.scheduled_days = good_interval
@@ -218,7 +218,7 @@ class SchedulingCards:
         self.good.due = now + timedelta(days=good_interval)
         self.easy.due = now + timedelta(days=easy_interval)
 
-    def record_log(self, card: Card, now: datetime) -> dict[int, SchedulingInfo]:
+    def record_log(self, card: Card, now: datetime) -> dict[Rating, SchedulingInfo]:
         return {
             Rating.Again: SchedulingInfo(
                 self.again,
@@ -266,11 +266,11 @@ class SchedulingCards:
 class Parameters:
     request_retention: float
     maximum_interval: int
-    w: Tuple[float, ...]
+    w: tuple[float, ...]
 
     def __init__(
         self,
-        w: Optional[Tuple[float, ...]] = None,
+        w: Optional[tuple[float, ...]] = None,
         request_retention: Optional[float] = None,
         maximum_interval: Optional[int] = None,
     ) -> None:

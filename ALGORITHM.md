@@ -23,8 +23,8 @@ The FSRS scheduler algorithm is a Markov chain with several state variables and 
   - Review
   - Relearning
 - Scheduler weights: $(w_0, w_1,... w_{18})$
-- `HARD_PENALTY` = $w_{15}$
-- `EASY_BONUS` = $w_{16}$
+- `HARD PENALTY` = $w_{15}$
+- `EASY BONUS` = $w_{16}$
 - $S$: Stability
 - $D$: Difficulty
 - $R$: Retrievability (probability of recall)
@@ -64,7 +64,7 @@ $S^\prime_f(D,S,R) = w_{11} \cdot D^{-12}\cdot \Big[(S+1)^{w_{13}} -1 \Big]\cdot
 
 <ins>Recall stability</ins>: 
 
-$$S^\prime_r(D,S,R,G) = S\cdot \left[1+e^{w_{8}}\cdot (11-D)\cdot S^{-w_9}\cdot (e^{w_{10}\cdot (1-R)}-1)\cdot \textrm{HARD\_PENALTY(if $G$=2)}\cdot \textrm{EASY\_BONUS(if $G$=4)} \right]$$
+$$S^\prime_r(D,S,R,G) = S\cdot \left[1+e^{w_{8}}\cdot (11-D)\cdot S^{-w_9}\cdot (e^{w_{10}\cdot (1-R)}-1)\cdot \textrm{HARD PENALTY(if $G$=2)}\cdot \textrm{EASY BONUS(if $G$=4)} \right]$$
 
 ### State transitions
 

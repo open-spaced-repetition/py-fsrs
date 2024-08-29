@@ -34,82 +34,99 @@ The FSRS scheduler algorithm is a Markov chain with several state variables and 
 
 ### Functions
 
-- <ins>Initial difficulty</ins>: $D_0(G) = w_4-e^{w_5\cdot(G-1)}+1$
+<ins>Initial difficulty</ins>: 
 
-- <ins>Initial stability</ins>: $S_0(G) = w_{G-1}$
+$D_0(G) = w_4-e^{w_5\cdot(G-1)}+1$
 
-- <ins>Next interval</ins>: $I(r,S) = \frac{S}{FACTOR}\cdot\left(r^{\frac{1}{DECAY}}-1\right)$
+<ins>Initial stability</ins>: 
 
-- <ins>Mean reversion</ins>: $MR(a,b) = w_7\cdot a + (1-w_7)\cdot b$
+$S_0(G) = w_{G-1}$
 
-- <ins>Short-term stability</ins>: $S^\prime(S,G) = S\cdot e^{w_{17}\cdot (G-3+w_{18})}$
+<ins>Next interval</ins>: 
 
-- <ins>Current retrievability</ins>: $R(t,S) = \left(1+FACTOR\cdot \frac{t}{S}\right)^{DECAY}$
+$I(r,S) = \frac{S}{FACTOR}\cdot\left(r^{\frac{1}{DECAY}}-1\right)$
 
-- <ins>Forget stability</ins>: $$S^\prime_f(D,S,R) = w_{11} \cdot D^{-12}\cdot \Big[(S+1)^{w_{13}} -1 \Big]\cdot e^{w_{14}\cdot (1-R)}$$
+<ins>Mean reversion</ins>: 
 
-- <ins>Recall stability</ins>: $$S^\prime_r(D,S,R,G) = S\cdot \left[1+e^{w_{8}}\cdot (11-D)\cdot S^{-w_9}\cdot (e^{w_{10}\cdot (1-R)}-1)\cdot \textrm{HARD\_PENALTY(if $G$=2)}\cdot \textrm{EASY\_BONUS(if $G$=4)} \right]$$
+$MR(a,b) = w_7\cdot a + (1-w_7)\cdot b$
+
+<ins>Short-term stability</ins>: 
+
+$S^\prime(S,G) = S\cdot e^{w_{17}\cdot (G-3+w_{18})}$
+
+<ins>Current retrievability</ins>: 
+
+$R(t,S) = \left(1+FACTOR\cdot \frac{t}{S}\right)^{DECAY}$
+
+<ins>Forget stability</ins>: 
+
+$S^\prime_f(D,S,R) = w_{11} \cdot D^{-12}\cdot \Big[(S+1)^{w_{13}} -1 \Big]\cdot e^{w_{14}\cdot (1-R)}$
+
+<ins>Recall stability</ins>: 
+
+$$S^\prime_r(D,S,R,G) = S\cdot \left[1+e^{w_{8}}\cdot (11-D)\cdot S^{-w_9}\cdot (e^{w_{10}\cdot (1-R)}-1)\cdot \textrm{HARD\_PENALTY(if $G$=2)}\cdot \textrm{EASY\_BONUS(if $G$=4)} \right]$$
 
 ### State transitions
 
-- **<ins>New card rated Easy:</ins>**
+**<ins>New card rated Easy:</ins>**
 
-  - State <- Review
+State <- Review
 
-  - $S=S_0(4)$
+$S=S_0(4)$
 
-  - $D=D_0(4)$
+$D=D_0(4)$
 
-  - $I = I(r,S)$
+$I = I(r,S)$
 
-- **<ins>New card rated Again / Hard / Good</ins>:**
+**<ins>New card rated Again / Hard / Good</ins>:**
 
-  - State <- Learning
+State <- Learning
 
-  - $S = S_0(G)$
+$S = S_0(G)$
 
-  - $D = D_0(G)$
+$D = D_0(G)$
 
-  - $I = 0$
+$I = 0$
 
-- **<ins>Learning / Relearning card rated Again / Hard:</ins>**
+**<ins>Learning / Relearning card rated Again / Hard:</ins>**
 
-  - State <- Learning / Relearning
+State <- Learning / Relearning
 
-  - $S = S^\prime(S,G)$
+$S = S^\prime(S,G)$
 
-  - $D = MR\Big(D_0(4), D-w_6\cdot (G-3)\Big)$
+$D = MR\Big(D_0(4), D-w_6\cdot (G-3)\Big)$
 
-  - $I=0$
+$I=0$
 
-- **<ins>Learning / Relearning card rated Good / Easy:</ins>**
+**<ins>Learning / Relearning card rated Good / Easy:</ins>**
 
-  - State <- Review
+State <- Review
 
-  - $S = S^\prime(S,G)$
+$S = S^\prime(S,G)$
 
-  - $D = MR\Big(D_0(4), D-w_6\cdot (G-3)\Big)$
+$D = MR\Big(D_0(4), D-w_6\cdot (G-3)\Big)$
 
-  - $I = I(r,S)$
+$I = I(r,S)$
 
-- **<ins>Review card rated Again:</ins>**
-  - State <- Relearning
+**<ins>Review card rated Again:</ins>**
 
-  - $S = S^\prime_f\big(D,S,R(t,S)\big)$
+State <- Relearning
 
-  - $D = MR\Big(D_0(4), D-w_6\cdot (1-3)\Big)$
+$S = S^\prime_f\big(D,S,R(t,S)\big)$
 
-  - $I=0$
+$D = MR\Big(D_0(4), D-w_6\cdot (1-3)\Big)$
 
-- **<ins>Review card rated Hard / Good / Easy:</ins>**
+$I=0$
 
-  - State <- Review
+**<ins>Review card rated Hard / Good / Easy:</ins>**
 
-  - $S = S^\prime_r\big(D,S,R(t,S),G\big)$
+State <- Review
 
-  - $D = MR\Big(D_0(4), D-w_6\cdot (G-3)\Big)$
+$S = S^\prime_r\big(D,S,R(t,S),G\big)$
 
-  - $I = I(r,S)$
+$D = MR\Big(D_0(4), D-w_6\cdot (G-3)\Big)$
+
+$I = I(r,S)$
 
 ## Further reading:
 

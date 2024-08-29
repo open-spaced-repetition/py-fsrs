@@ -8,31 +8,44 @@ The FSRS scheduler algorithm is a Markov chain with several state variables and 
 
 ## The Algorithm
 
-### Variables
+### <ins>Variables</ins>
 
-- $DECAY=-0.5,$
-- $FACTOR = 0.9^{\frac{1}{DECAY}}-1$,
-- $G$: Grade (card rating)
-  - $1$: again
-  - $2$: hard
-  - $3$: good
-  - $4$: easy
-- State:
-  - New
-  - Learning
-  - Review
-  - Relearning
-- Scheduler weights: $(w_0, w_1,... w_{18})$
-- `HARD PENALTY` = $w_{15}$
-- `EASY BONUS` = $w_{16}$
-- $S$: Stability
-- $D$: Difficulty
-- $R$: Retrievability (probability of recall)
-- $r$: Request retention
-- $t$: Days since last review ("elapsed days")
-- $I$: Interval ("scheduled days"). Number of days before the card is due next
+$DECAY=-0.5,$
 
-### Functions
+$FACTOR = 0.9^{\frac{1}{DECAY}}-1$,
+
+$G$: Grade (card rating)
+- $1$: again
+- $2$: hard
+- $3$: good
+- $4$: easy
+
+State:
+- New
+- Learning
+- Review
+- Relearning
+
+Scheduler weights: $(w_0, w_1,... w_{18})$
+
+`HARD PENALTY` = $w_{15}$
+
+`EASY BONUS` = $w_{16}$
+
+$S$: Stability
+
+$D$: Difficulty
+
+$R$: Retrievability (probability of recall)
+
+$r$: Request retention
+
+$t$: Days since last review ("elapsed days")
+
+$I$: Interval ("scheduled days"). Number of days before the card is due next
+
+
+### <ins>Functions</ins>
 
 <ins>Initial difficulty</ins>: 
 
@@ -66,6 +79,7 @@ $S^\prime_f(D,S,R) = w_{11} \cdot D^{-12}\cdot \Big[(S+1)^{w_{13}} -1 \Big]\cdot
 
 $$S^\prime_r(D,S,R,G) = S\cdot \left[1+e^{w_{8}}\cdot (11-D)\cdot S^{-w_9}\cdot (e^{w_{10}\cdot (1-R)}-1)\cdot \textrm{HARD PENALTY(if $G$=2)}\cdot \textrm{EASY BONUS(if $G$=4)} \right]$$
 
+---
 ### State transitions
 
 **<ins>New card rated Easy:</ins>**

@@ -73,11 +73,11 @@ $R(t,S) = \left(1+FACTOR\cdot \frac{t}{S}\right)^{DECAY}$
 
 Note that this function can be used to calculate a card's current retrievability.
 
-<ins>Forget stability</ins>: 
+<ins>Next forget stability</ins>: 
 
 $S^\prime_f(D,S,R) = w_{11} \cdot D^{-12}\cdot \Big[(S+1)^{w_{13}} -1 \Big]\cdot e^{w_{14}\cdot (1-R)}$
 
-<ins>Recall stability</ins>: 
+<ins>Next recall stability</ins>: 
 
 $$S^\prime_r(D,S,R,G) = S\cdot \left[1+e^{w_{8}}\cdot (11-D)\cdot S^{-w_9}\cdot (e^{w_{10}\cdot (1-R)}-1)\cdot \textrm{HARD PENALTY(if $G$=2)}\cdot \textrm{EASY BONUS(if $G$=4)} \right]$$
 

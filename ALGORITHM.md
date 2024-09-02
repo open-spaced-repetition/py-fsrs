@@ -12,7 +12,7 @@ The FSRS scheduler algorithm is a Markov chain with several state variables and 
 
 $DECAY=-0.5,$
 
-$FACTOR = 0.9^{\frac{1}{DECAY}}-1$,
+$FACTOR = 0.9^{\frac{1}{DECAY}}-1 = \frac{19}{81}$,
 
 $G$: Grade (card rating)
 - $1$: again

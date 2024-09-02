@@ -90,7 +90,7 @@ $D^\prime(D,G) = MR\Big(D_0(4), D-w_6\cdot (G-3)\Big)$
 
 **<ins>New card rated Easy:</ins>**
 
-State <- Review
+State: New -> Review
 
 $S=S_0(4)$
 
@@ -100,7 +100,7 @@ $I = I(r,S)$
 
 **<ins>New card rated Again / Hard / Good</ins>:**
 
-State <- Learning
+State: New -> Learning
 
 $S = S_0(G)$
 
@@ -110,7 +110,7 @@ $I = 0$
 
 **<ins>Learning / Relearning card rated Again / Hard:</ins>**
 
-State <- Learning / Relearning
+State: Learning / Relearning -> Learning / Relearning (*stays the same*)
 
 $S = S^\prime(S,G)$
 
@@ -120,7 +120,7 @@ $I=0$
 
 **<ins>Learning / Relearning card rated Good / Easy:</ins>**
 
-State <- Review
+State: Learning / Relearning -> Review
 
 $S = S^\prime(S,G)$
 
@@ -130,7 +130,7 @@ $I = I(r,S)$
 
 **<ins>Review card rated Again:</ins>**
 
-State <- Relearning
+State: Review -> Relearning
 
 $S = S^\prime_f\big(D,S,R(t,S)\big)$
 
@@ -140,7 +140,7 @@ $I=0$
 
 **<ins>Review card rated Hard / Good / Easy:</ins>**
 
-State <- Review
+State: Review -> Review (*stays the same*)
 
 $S = S^\prime_r\big(D,S,R(t,S),G\big)$
 

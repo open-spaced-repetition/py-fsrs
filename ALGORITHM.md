@@ -83,13 +83,11 @@ $$S^\prime_r(D,S,R,G) = S\cdot \left[1+e^{w_{8}}\cdot (11-D)\cdot S^{-w_9}\cdot 
 
 <ins>Next stability</ins>:
 
-$
-S^\prime(D,S,R,G) = 
+$$S^\prime(D,S,R,G) = 
 \begin{cases} 
 S^\prime_f\big(D,S,R\big) & \text{if } G = \text{1} \\
 S^\prime_r\big(D,S,R,G\big) & \text{if } G = 2,3,4
-\end{cases}
-$
+\end{cases}$$
 
 <ins>Next difficulty</ins>: 
 

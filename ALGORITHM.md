@@ -65,7 +65,7 @@ $MR(a,b) = w_7\cdot a + (1-w_7)\cdot b$
 
 <ins>Short-term stability</ins>: 
 
-$S^\prime(S,G) = S\cdot e^{w_{17}\cdot (G-3+w_{18})}$
+$S^\prime_s(S,G) = S\cdot e^{w_{17}\cdot (G-3+w_{18})}$
 
 <ins>Forgetting curve</ins>:  
 
@@ -80,6 +80,16 @@ $S^\prime_f(D,S,R) = w_{11} \cdot D^{-12}\cdot \Big[(S+1)^{w_{13}} -1 \Big]\cdot
 <ins>Next recall stability</ins>: 
 
 $$S^\prime_r(D,S,R,G) = S\cdot \left[1+e^{w_{8}}\cdot (11-D)\cdot S^{-w_9}\cdot (e^{w_{10}\cdot (1-R)}-1)\cdot \textrm{HARD PENALTY(if $G$=2)}\cdot \textrm{EASY BONUS(if $G$=4)} \right]$$
+
+<ins>Next stability</ins>:
+
+$
+S^\prime(D,S,R,G) = 
+\begin{cases} 
+S^\prime_f\big(D,S,R\big) & \text{if } G = \text{1} \\
+S^\prime_r\big(D,S,R,G\big) & \text{if } G = 2,3,4
+\end{cases}
+$
 
 <ins>Next difficulty</ins>: 
 
@@ -112,7 +122,7 @@ $I = 0$
 
 State: Learning / Relearning -> Learning / Relearning (*stays the same*)
 
-$S = S^\prime(S,G)$
+$S = S^\prime_s(S,G)$
 
 $D = D^\prime(D,G)$
 
@@ -122,7 +132,7 @@ $I=0$
 
 State: Learning / Relearning -> Review
 
-$S = S^\prime(S,G)$
+$S = S^\prime_s(S,G)$
 
 $D = D^\prime(D,G)$
 
@@ -132,7 +142,7 @@ $I = I(r,S)$
 
 State: Review -> Relearning
 
-$S = S^\prime_f\big(D,S,R(t,S)\big)$
+$S = S^\prime\big(D,S,R(t,S),G\big)$
 
 $D = D^\prime(D,1)$
 
@@ -142,7 +152,7 @@ $I=0$
 
 State: Review -> Review (*stays the same*)
 
-$S = S^\prime_r\big(D,S,R(t,S),G\big)$
+$S = S^\prime\big(D,S,R(t,S),G\big)$
 
 $D = D^\prime(D,G)$
 

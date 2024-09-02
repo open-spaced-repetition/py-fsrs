@@ -67,9 +67,11 @@ $MR(a,b) = w_7\cdot a + (1-w_7)\cdot b$
 
 $S^\prime(S,G) = S\cdot e^{w_{17}\cdot (G-3+w_{18})}$
 
-<ins>Current retrievability</ins>: 
+<ins>Forgetting curve</ins>:  
 
 $R(t,S) = \left(1+FACTOR\cdot \frac{t}{S}\right)^{DECAY}$
+
+Note that this function can be used to calculate a card's current retrievability.
 
 <ins>Forget stability</ins>: 
 

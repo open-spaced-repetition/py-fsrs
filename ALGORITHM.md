@@ -34,7 +34,7 @@ Scheduler weights: $(w_0, w_1,... w_{18})$
 
 $S$: Stability
 
-$D$: Difficulty
+$D$: Difficulty, $D \in [0,10]$
 
 $R$: Retrievability (probability of recall)
 

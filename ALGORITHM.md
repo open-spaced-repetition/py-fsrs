@@ -81,6 +81,10 @@ $S^\prime_f(D,S,R) = w_{11} \cdot D^{-12}\cdot \Big[(S+1)^{w_{13}} -1 \Big]\cdot
 
 $$S^\prime_r(D,S,R,G) = S\cdot \left[1+e^{w_{8}}\cdot (11-D)\cdot S^{-w_9}\cdot (e^{w_{10}\cdot (1-R)}-1)\cdot \textrm{HARD PENALTY(if $G$=2)}\cdot \textrm{EASY BONUS(if $G$=4)} \right]$$
 
+<ins>Next difficulty</ins>: 
+
+$D^\prime(D,G) = MR\Big(D_0(4), D-w_6\cdot (G-3)\Big)$
+
 ---
 ### State transitions
 
@@ -110,7 +114,7 @@ State <- Learning / Relearning
 
 $S = S^\prime(S,G)$
 
-$D = MR\Big(D_0(4), D-w_6\cdot (G-3)\Big)$
+$D = D^\prime(D,G)$
 
 $I=0$
 
@@ -120,7 +124,7 @@ State <- Review
 
 $S = S^\prime(S,G)$
 
-$D = MR\Big(D_0(4), D-w_6\cdot (G-3)\Big)$
+$D = D^\prime(D,G)$
 
 $I = I(r,S)$
 
@@ -130,7 +134,7 @@ State <- Relearning
 
 $S = S^\prime_f\big(D,S,R(t,S)\big)$
 
-$D = MR\Big(D_0(4), D-w_6\cdot (1-3)\Big)$
+$D = D^\prime(D,1)$
 
 $I=0$
 
@@ -140,7 +144,7 @@ State <- Review
 
 $S = S^\prime_r\big(D,S,R(t,S),G\big)$
 
-$D = MR\Big(D_0(4), D-w_6\cdot (G-3)\Big)$
+$D = D^\prime(D,G)$
 
 $I = I(r,S)$
 

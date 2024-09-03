@@ -69,6 +69,16 @@ class ReviewLog:
         review: datetime,
         state: State,
     ) -> None:
+        """
+        Creates and initializes a ReviewLog object.
+
+        Args:
+            rating (Rating): The rating given to the card during the review.
+            scheduled_days (int): The number of days until the card is due next.
+            elapsed_days (int): The number of days since the card was last reviewed.
+            review (datetime): The date and time of the review.
+            state (State): The learning state of the card before the review.
+        """
         self.rating = rating
         self.scheduled_days = scheduled_days
         self.elapsed_days = elapsed_days
@@ -76,6 +86,14 @@ class ReviewLog:
         self.state = state
 
     def to_dict(self) -> dict[str, Union[int, str]]:
+        """
+        Returns a JSON-serializable dictionary representation of the ReviewLog object.
+
+        This method is specifically useful for storing ReviewLog objects in a database.
+
+        Returns:
+            dict: A dictionary representation of the ReviewLog object.
+        """
         return_dict = {
             "rating": self.rating.value,
             "scheduled_days": self.scheduled_days,
@@ -88,6 +106,15 @@ class ReviewLog:
 
     @staticmethod
     def from_dict(source_dict: dict[str, Any]) -> "ReviewLog":
+        """
+        Creates a ReviewLog object from an existing dictionary.
+
+        Args:
+            source_dict (dict[str, Any]): A dictionary representing an existing ReviewLog object.
+
+        Returns:
+            ReviewLog: A ReviewLog object created from the provided dictionary.
+        """
         rating = Rating(int(source_dict["rating"]))
         scheduled_days = int(source_dict["scheduled_days"])
         elapsed_days = int(source_dict["elapsed_days"])
@@ -141,6 +168,22 @@ class Card:
         state: State = State.New,
         last_review: Optional[datetime] = None,
     ) -> None:
+        """
+        Creates and initializes a Card object.
+
+        Note that each of the arguments for this method are optional and can be omitted when creating a new Card.
+
+        Args:
+            due (Optional[datetime]): The date and time when the card is due next.
+            stability (float): Core FSRS parameter used for scheduling.
+            difficulty (float): Core FSRS parameter used for scheduling.
+            elapsed_days (int): The number of days since the card was last reviewed.
+            scheduled_days (int): The number of days until the card is due next.
+            reps (int): The number of times the card has been reviewed in its history.
+            lapses (int): The number of times the card has been lapsed in its history.
+            state (State): The card's current learning state.
+            last_review (Optional[datetime]): The date and time of the card's last review.
+        """
         if due is None:
             self.due = datetime.now(timezone.utc)
         else:
@@ -158,6 +201,14 @@ class Card:
             self.last_review = last_review
 
     def to_dict(self) -> dict[str, Any]:
+        """
+        Returns a JSON-serializable dictionary representation of the Card object.
+
+        This method is specifically useful for storing Card objects in a database.
+
+        Returns:
+            dict: A dictionary representation of the Card object.
+        """
         return_dict = {
             "due": self.due.isoformat(),
             "stability": self.stability,
@@ -176,6 +227,15 @@ class Card:
 
     @staticmethod
     def from_dict(source_dict: dict[str, Any]) -> "Card":
+        """
+        Creates a Card object from an existing dictionary.
+
+        Args:
+            source_dict (dict[str, Any]): A dictionary representing an existing Card object.
+
+        Returns:
+            ReviewLog: A Card object created from the provided dictionary.
+        """
         due = datetime.fromisoformat(source_dict["due"])
         stability = float(source_dict["stability"])
         difficulty = float(source_dict["difficulty"])
@@ -203,6 +263,15 @@ class Card:
         )
 
     def get_retrievability(self, now: datetime) -> Optional[float]:
+        """
+        Calculates the Card object's current retrievability for a given date and time.
+
+        Args:
+            now (datetime): The current date and time
+
+        Returns:
+            Optional[float]: The retrievability of the Card object if it's in the Review state, otherwise, will return None.
+        """
         DECAY = -0.5
         FACTOR = 0.9 ** (1 / DECAY) - 1
 

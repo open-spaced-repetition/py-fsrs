@@ -1,3 +1,13 @@
+"""
+fsrs.fsrs
+---------
+
+This module defines the FSRS scheduler.
+
+Classes:
+    FSRS: The FSRS scheduler.
+"""
+
 from .models import (
     Card,
     ReviewLog,
@@ -14,6 +24,17 @@ import copy
 
 
 class FSRS:
+    """
+    The FSRS scheduler.
+
+    Enables the reviewing and future scheduling of cards according to the FSRS algorithm.
+
+    Attributes:
+        p (Parameters): Object for configuring the scheduler's model weights, desired retention and maximum interval.
+        DECAY (float): Constant used to model the forgetting curve and compute the length of a Card's next interval after being repeated.
+        FACTOR (float): Constant used to model the forgetting curve and compute the length of a Card's next interval after being repeated.
+    """
+
     p: Parameters
     DECAY: float
     FACTOR: float

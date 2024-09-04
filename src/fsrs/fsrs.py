@@ -1,3 +1,13 @@
+"""
+fsrs.fsrs
+---------
+
+This module defines the FSRS scheduler.
+
+Classes:
+    FSRS: The FSRS scheduler.
+"""
+
 from .models import (
     Card,
     ReviewLog,
@@ -14,6 +24,17 @@ import copy
 
 
 class FSRS:
+    """
+    The FSRS scheduler.
+
+    Enables the reviewing and future scheduling of cards according to the FSRS algorithm.
+
+    Attributes:
+        p (Parameters): Object for configuring the scheduler's model weights, desired retention and maximum interval.
+        DECAY (float): Constant used to model the forgetting curve and compute the length of a Card's next interval after being repeated.
+        FACTOR (float): Constant used to model the forgetting curve and compute the length of a Card's next interval after being repeated.
+    """
+
     p: Parameters
     DECAY: float
     FACTOR: float
@@ -24,6 +45,14 @@ class FSRS:
         request_retention: Optional[float] = None,
         maximum_interval: Optional[int] = None,
     ) -> None:
+        """
+        Initializes the FSRS scheduler.
+
+        Args:
+            w (Optional[tuple[float, ...]]): The 19 model weights of the FSRS scheduler.
+            request_retention (Optional[float]): The desired retention of the scheduler. Corresponds to the maximum retrievability a Card object can have before it is due.
+            maximum_interval (Optional[int]): The maximum number of days into the future a Card object can be scheduled for next review.
+        """
         self.p = Parameters(w, request_retention, maximum_interval)
         self.DECAY = -0.5
         self.FACTOR = 0.9 ** (1 / self.DECAY) - 1
@@ -31,6 +60,20 @@ class FSRS:
     def review_card(
         self, card: Card, rating: Rating, now: Optional[datetime] = None
     ) -> tuple[Card, ReviewLog]:
+        """
+        Reviews a card for a given rating.
+
+        Args:
+            card (Card): The card being reviewed.
+            rating (Rating): The chosen rating for the card being reviewed.
+            now (Optional[datetime]): The date and time of the review.
+
+        Returns:
+            tuple: A tuple containing the updated, reviewed card and its corresponding review log.
+
+        Raises:
+            ValueError: If the `now` argument is not timezone-aware and set to UTC.
+        """
         scheduling_cards = self.repeat(card, now)
 
         card = scheduling_cards[rating].card

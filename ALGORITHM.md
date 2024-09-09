@@ -75,7 +75,7 @@ Note that this function can be used to calculate a card's current retrievability
 
 <ins>Next forget stability</ins>: 
 
-$S^\prime_f(D,S,R) = w_{11} \cdot D^{-12}\cdot \Big[(S+1)^{w_{13}} -1 \Big]\cdot e^{w_{14}\cdot (1-R)}$
+$S^\prime_f(D,S,R) = w_{11} \cdot D^{-w_{12}}\cdot \Big[(S+1)^{w_{13}} -1 \Big]\cdot e^{w_{14}\cdot (1-R)}$
 
 <ins>Next recall stability</ins>: 
 

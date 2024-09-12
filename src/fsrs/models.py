@@ -262,7 +262,7 @@ class Card:
             last_review,
         )
 
-    def get_retrievability(self, now: datetime) -> Optional[float]:
+    def get_retrievability(self, now: Optional[datetime] = None) -> float:
         """
         Calculates the Card object's current retrievability for a given date and time.
 
@@ -270,16 +270,19 @@ class Card:
             now (datetime): The current date and time
 
         Returns:
-            Optional[float]: The retrievability of the Card object if it's in the Review state, otherwise, will return None.
+            float: The retrievability of the Card object.
         """
         DECAY = -0.5
         FACTOR = 0.9 ** (1 / DECAY) - 1
 
-        if self.state == State.Review:
+        if now is None:
+            now = datetime.now(timezone.utc)
+
+        if self.state in (State.Learning, State.Review, State.Relearning):
             elapsed_days = max(0, (now - self.last_review).days)
             return (1 + FACTOR * elapsed_days / self.stability) ** DECAY
         else:
-            return None
+            return 0
 
 
 @dataclass

@@ -1,4 +1,4 @@
-from fsrs import *
+from fsrs import FSRS, Card, ReviewLog, State, Rating
 from datetime import datetime, timedelta, timezone
 import json
 import pytest
@@ -310,3 +310,31 @@ class TestPyFSRS:
         assert f2.p.w == w2
         assert f2.p.request_retention == request_retention2
         assert f2.p.maximum_interval == maximum_interval2
+
+    def test_retrievability(self):
+        f = FSRS()
+
+        card = Card()
+
+        # retrievabiliy of New card
+        assert card.state == State.New
+        retrievability = card.get_retrievability()
+        assert retrievability == 0
+
+        # retrievabiliy of Learning card
+        card, _ = f.review_card(card, Rating.Good)
+        assert card.state == State.Learning
+        retrievability = card.get_retrievability()
+        assert 0 <= retrievability <= 1
+
+        # retrievabiliy of Review card
+        card, _ = f.review_card(card, Rating.Good)
+        assert card.state == State.Review
+        retrievability = card.get_retrievability()
+        assert 0 <= retrievability <= 1
+
+        # retrievabiliy of Relearning card
+        card, _ = f.review_card(card, Rating.Again)
+        assert card.state == State.Relearning
+        retrievability = card.get_retrievability()
+        assert 0 <= retrievability <= 1

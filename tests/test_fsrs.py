@@ -1,4 +1,4 @@
-from fsrs import FSRS, Card, ReviewLog, State, Rating
+from fsrs import FSRS, Card, ReviewLog, State, Rating, Parameters
 from datetime import datetime, timedelta, timezone
 import json
 import pytest
@@ -27,8 +27,9 @@ test_w = (
 
 
 class TestPyFSRS:
-    def test_review_card(self):
-        f = FSRS(w=test_w)
+    def test_next(self):
+        p = Parameters(w=test_w)
+        f = FSRS(p)
         card = Card()
         now = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
 
@@ -50,7 +51,7 @@ class TestPyFSRS:
         ivl_history = []
 
         for rating in ratings:
-            card, _ = f.review_card(card, rating, now)
+            card = f.next(card, rating, now).card
             ivl = card.scheduled_days
             ivl_history.append(ivl)
             now = card.due
@@ -73,7 +74,8 @@ class TestPyFSRS:
         ]
 
     def test_memo_state(self):
-        f = FSRS(w=test_w)
+        p = Parameters(w=test_w)
+        f = FSRS(p)
         card = Card()
         now = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
 
@@ -223,7 +225,7 @@ class TestPyFSRS:
         assert review_log.to_dict() != next_review_log.to_dict()
 
     def test_custom_scheduler_args(self):
-        f = FSRS(
+        p = Parameters(
             w=(
                 0.4197,
                 1.1869,
@@ -248,6 +250,7 @@ class TestPyFSRS:
             request_retention=0.9,
             maximum_interval=36500,
         )
+        f = FSRS(p)
         card = Card()
         now = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
 
@@ -269,7 +272,8 @@ class TestPyFSRS:
         ivl_history = []
 
         for rating in ratings:
-            card, _ = f.review_card(card, rating, now)
+            next = f.next(card, rating, now)
+            card = next.card
             ivl = card.scheduled_days
             ivl_history.append(ivl)
             now = card.due
@@ -302,9 +306,11 @@ class TestPyFSRS:
         request_retention2 = 0.85
         maximum_interval2 = 3650
         f2 = FSRS(
-            w=w2,
-            request_retention=request_retention2,
-            maximum_interval=maximum_interval2,
+            Parameters(
+                w=w2,
+                request_retention=request_retention2,
+                maximum_interval=maximum_interval2,
+            )
         )
 
         assert f2.p.w == w2
@@ -322,19 +328,19 @@ class TestPyFSRS:
         assert retrievability == 0
 
         # retrievabiliy of Learning card
-        card, _ = f.review_card(card, Rating.Good)
+        card = f.next(card, Rating.Good).card
         assert card.state == State.Learning
         retrievability = card.get_retrievability()
         assert 0 <= retrievability <= 1
 
         # retrievabiliy of Review card
-        card, _ = f.review_card(card, Rating.Good)
+        card = f.next(card, Rating.Good).card
         assert card.state == State.Review
         retrievability = card.get_retrievability()
         assert 0 <= retrievability <= 1
 
         # retrievabiliy of Relearning card
-        card, _ = f.review_card(card, Rating.Again)
+        card = f.next(card, Rating.Again).card
         assert card.state == State.Relearning
         retrievability = card.get_retrievability()
         assert 0 <= retrievability <= 1

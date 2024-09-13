@@ -14,9 +14,10 @@ Classes:
     Parameters: The parameters used to configure the FSRS scheduler.
 """
 
+from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-import copy
+import math
 from typing import Any, Optional, Union
 from enum import IntEnum
 
@@ -154,7 +155,7 @@ class Card:
     reps: int
     lapses: int
     state: State
-    last_review: datetime
+    last_review: Optional[datetime]
 
     def __init__(
         self,
@@ -196,9 +197,7 @@ class Card:
         self.reps = reps
         self.lapses = lapses
         self.state = state
-
-        if last_review is not None:
-            self.last_review = last_review
+        self.last_review = last_review
 
     def to_dict(self) -> dict[str, Any]:
         """
@@ -221,7 +220,9 @@ class Card:
         }
 
         if hasattr(self, "last_review"):
-            return_dict["last_review"] = self.last_review.isoformat()
+            return_dict["last_review"] = (
+                self.last_review.isoformat() if self.last_review else None
+            )
 
         return return_dict
 
@@ -245,7 +246,7 @@ class Card:
         lapses = int(source_dict["lapses"])
         state = State(int(source_dict["state"]))
 
-        if "last_review" in source_dict:
+        if "last_review" in source_dict and source_dict["last_review"]:
             last_review = datetime.fromisoformat(source_dict["last_review"])
         else:
             last_review = None
@@ -278,7 +279,10 @@ class Card:
         if now is None:
             now = datetime.now(timezone.utc)
 
-        if self.state in (State.Learning, State.Review, State.Relearning):
+        if (
+            self.state in (State.Learning, State.Review, State.Relearning)
+            and self.last_review
+        ):
             elapsed_days = max(0, (now - self.last_review).days)
             return (1 + FACTOR * elapsed_days / self.stability) ** DECAY
         else:
@@ -317,10 +321,10 @@ class SchedulingCards:
     easy: Card
 
     def __init__(self, card: Card) -> None:
-        self.again = copy.deepcopy(card)
-        self.hard = copy.deepcopy(card)
-        self.good = copy.deepcopy(card)
-        self.easy = copy.deepcopy(card)
+        self.again = deepcopy(card)
+        self.hard = deepcopy(card)
+        self.good = deepcopy(card)
+        self.easy = deepcopy(card)
 
     def update_state(self, state: State) -> None:
         if state == State.New:
@@ -417,6 +421,9 @@ class Parameters:
     request_retention: float
     maximum_interval: int
     w: tuple[float, ...]
+    enable_short_term: bool
+    DECAY: float = -0.5
+    FACTOR: float = 0.9 ** (1 / DECAY) - 1
 
     def __init__(
         self,
@@ -454,4 +461,57 @@ class Parameters:
         )
         self.maximum_interval = (
             maximum_interval if maximum_interval is not None else 36500
+        )
+        self.enable_short_term = True
+
+    def init_stability(self, r: Rating) -> float:
+        return max(self.w[r - 1], 0.1)
+
+    def init_difficulty(self, r: Rating) -> float:
+        # compute initial difficulty and clamp it between 1 and 10
+        return min(max(self.w[4] - math.exp(self.w[5] * (r - 1)) + 1, 1), 10)
+
+    def forgetting_curve(self, elapsed_days: int, stability: float) -> float:
+        return (1 + self.FACTOR * elapsed_days / stability) ** self.DECAY
+
+    def next_interval(self, s: float, elapsed_day: float) -> int:
+        new_interval = (
+            s / self.FACTOR * (self.request_retention ** (1 / self.DECAY) - 1)
+        )
+        return min(max(round(new_interval), 1), self.maximum_interval)
+
+    def next_difficulty(self, d: float, r: Rating) -> float:
+        next_d = d - self.w[6] * (r - 3)
+
+        return min(
+            max(self.mean_reversion(self.init_difficulty(Rating.Easy), next_d), 1), 10
+        )
+
+    def next_short_term_stability(self, stability: float, rating: Rating) -> float:
+        return stability * math.exp(self.w[17] * (rating - 3 + self.w[18]))
+
+    def mean_reversion(self, init: float, current: float) -> float:
+        return self.w[7] * init + (1 - self.w[7]) * current
+
+    def next_recall_stability(
+        self, d: float, s: float, r: float, rating: Rating
+    ) -> float:
+        hard_penalty = self.w[15] if rating == Rating.Hard else 1
+        easy_bonus = self.w[16] if rating == Rating.Easy else 1
+        return s * (
+            1
+            + math.exp(self.w[8])
+            * (11 - d)
+            * math.pow(s, -self.w[9])
+            * (math.exp((1 - r) * self.w[10]) - 1)
+            * hard_penalty
+            * easy_bonus
+        )
+
+    def next_forget_stability(self, d: float, s: float, r: float) -> float:
+        return (
+            self.w[11]
+            * math.pow(d, -self.w[12])
+            * (math.pow(s + 1, self.w[13]) - 1)
+            * math.exp((1 - r) * self.w[14])
         )

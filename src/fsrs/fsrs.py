@@ -68,6 +68,8 @@ class FSRS:
         """
         if now is None:
             now = datetime.now(timezone.utc)
+        if (now.tzinfo is None) or (now.tzinfo != timezone.utc):
+            raise ValueError("datetime must be timezone-aware and set to UTC")
         return self.Scheduler(card, now, self.p).review(rating)
 
     def repeat(

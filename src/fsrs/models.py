@@ -430,6 +430,7 @@ class Parameters:
         w: Optional[tuple[float, ...]] = None,
         request_retention: Optional[float] = None,
         maximum_interval: Optional[int] = None,
+        enable_short_term: Optional[bool] = None,
     ) -> None:
         self.w = (
             w
@@ -462,7 +463,9 @@ class Parameters:
         self.maximum_interval = (
             maximum_interval if maximum_interval is not None else 36500
         )
-        self.enable_short_term = True
+        self.enable_short_term = (
+            enable_short_term if enable_short_term is not None else True
+        )
 
     def init_stability(self, r: Rating) -> float:
         return max(self.w[r - 1], 0.1)

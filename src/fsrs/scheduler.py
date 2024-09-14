@@ -72,12 +72,6 @@ class AbstractScheduler(IScheduler):
     def review_state(self, rating: Rating) -> SchedulingInfo:
         pass
 
-    def _init_seed(self):
-        time = int(self.now.timestamp() * 1000)
-        reps = self.current.reps
-        mul = self.current.difficulty * self.current.stability
-        self.parameters.seed = f"{time}_{reps}_{mul}"
-
     def build_log(self, rating: Rating) -> ReviewLog:
         log = ReviewLog(
             rating=rating,

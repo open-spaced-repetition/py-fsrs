@@ -42,7 +42,6 @@ class AbstractScheduler(IScheduler):
         self.current.last_review = self.now
         self.current.elapsed_days = interval
         self.current.reps += 1
-        self._init_seed()
 
     def preview(self) -> IPreview:
         preview = IPreview()

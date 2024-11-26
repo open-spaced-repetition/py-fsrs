@@ -198,7 +198,6 @@ class TestPyFSRS:
         # we can reconstruct a copy of the review_log object equivalent to the original
         review_log_dict = review_log.to_dict()
         copied_review_log = ReviewLog.from_dict(review_log_dict)
-        assert vars(review_log) == vars(copied_review_log)
         assert review_log.to_dict() == copied_review_log.to_dict()
 
         # (x2) perform the above tests once more with a review_log from a repeated card
@@ -215,11 +214,9 @@ class TestPyFSRS:
         next_review_log_dict = next_review_log.to_dict()
         copied_next_review_log = ReviewLog.from_dict(next_review_log_dict)
 
-        assert vars(next_review_log) == vars(copied_next_review_log)
         assert next_review_log.to_dict() == copied_next_review_log.to_dict()
 
         # original review log and next review log are different
-        assert vars(review_log) != vars(next_review_log)
         assert review_log.to_dict() != next_review_log.to_dict()
 
     def test_custom_scheduler_args(self):

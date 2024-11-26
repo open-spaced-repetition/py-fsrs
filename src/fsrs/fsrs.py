@@ -299,9 +299,29 @@ class FSRSScheduler:
         # TODO: implement review_card method
         pass
 
-    def to_dict(self):
-        pass
+    def to_dict(self) -> dict[str, Any]:
+
+        return_dict = {
+            "parameters": self.parameters,
+            "desired_retention": self.desired_retention,
+            "learning_steps": [int(learning_step.total_seconds()) for learning_step in self.learning_steps],
+            "relearning_steps": [int(relearning_step.total_seconds()) for relearning_step in self.relearning_steps],
+            "maximum_interval": self.maximum_interval
+        }
+
+        return return_dict
 
     @staticmethod
-    def from_dict():
-        pass
+    def from_dict(source_dict: dict[str, Any]) -> "FSRSScheduler":
+
+        parameters = source_dict['parameters']
+        desired_retention = source_dict['desired_retention']
+        learning_steps = [timedelta(seconds=learning_step) for learning_step in source_dict['learning_steps']]
+        relearning_steps = [timedelta(seconds=relearning_step) for relearning_step in source_dict['relearning_steps']]
+        maximum_interval = source_dict['maximum_interval']
+
+        return FSRSScheduler(parameters=parameters, 
+                             desired_retention=desired_retention,
+                             learning_steps=learning_steps,
+                             relearning_steps=relearning_steps,
+                             maximum_interval=maximum_interval)

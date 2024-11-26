@@ -351,3 +351,16 @@ class TestPyFSRS:
         assert card.state == State.Relearning
         retrievability = card.get_retrievability()
         assert 0 <= retrievability <= 1
+
+    def test_Scheduler_serialize(self):
+
+        scheduler = FSRSScheduler()
+
+        # FSRSScheduler objects are json-serializable through its .to_dict() method
+        assert type(json.dumps(scheduler.to_dict())) == str
+
+        # scheduler can be serialized and de-serialized while remaining the same
+        scheduler_dict = scheduler.to_dict()
+        copied_scheduler = FSRSScheduler.from_dict(scheduler_dict)
+        assert vars(scheduler) == vars(copied_scheduler)
+        assert scheduler.to_dict() == copied_scheduler.to_dict()

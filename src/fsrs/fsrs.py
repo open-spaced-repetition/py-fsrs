@@ -19,7 +19,6 @@ from .models import (
 )
 import math
 from datetime import datetime, timezone, timedelta
-from typing import Optional
 import copy
 
 
@@ -41,9 +40,9 @@ class FSRS:
 
     def __init__(
         self,
-        w: Optional[tuple[float, ...]] = None,
-        request_retention: Optional[float] = None,
-        maximum_interval: Optional[int] = None,
+        w: tuple[float, ...] | None = None,
+        request_retention: float | None = None,
+        maximum_interval: int | None = None,
     ) -> None:
         """
         Initializes the FSRS scheduler.
@@ -58,7 +57,7 @@ class FSRS:
         self.FACTOR = 0.9 ** (1 / self.DECAY) - 1
 
     def review_card(
-        self, card: Card, rating: Rating, now: Optional[datetime] = None
+        self, card: Card, rating: Rating, now: datetime | None = None
     ) -> tuple[Card, ReviewLog]:
         """
         Reviews a card for a given rating.
@@ -82,7 +81,7 @@ class FSRS:
         return card, review_log
 
     def repeat(
-        self, card: Card, now: Optional[datetime] = None
+        self, card: Card, now: datetime | None = None
     ) -> dict[Rating, SchedulingInfo]:
         if now is None:
             now = datetime.now(timezone.utc)

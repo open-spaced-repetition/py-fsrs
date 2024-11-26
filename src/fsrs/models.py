@@ -17,7 +17,7 @@ Classes:
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 import copy
-from typing import Any, Optional, Union
+from typing import Any
 from enum import IntEnum
 
 
@@ -85,7 +85,8 @@ class ReviewLog:
         self.review = review
         self.state = state
 
-    def to_dict(self) -> dict[str, Union[int, str]]:
+    #def to_dict(self) -> dict[str, Union[int, str]]:
+    def to_dict(self) -> dict[str, int | str]:
         """
         Returns a JSON-serializable dictionary representation of the ReviewLog object.
 
@@ -158,7 +159,7 @@ class Card:
 
     def __init__(
         self,
-        due: Optional[datetime] = None,
+        due: datetime | None = None,
         stability: float = 0,
         difficulty: float = 0,
         elapsed_days: int = 0,
@@ -166,7 +167,7 @@ class Card:
         reps: int = 0,
         lapses: int = 0,
         state: State = State.New,
-        last_review: Optional[datetime] = None,
+        last_review: datetime | None = None,
     ) -> None:
         """
         Creates and initializes a Card object.
@@ -262,7 +263,7 @@ class Card:
             last_review,
         )
 
-    def get_retrievability(self, now: Optional[datetime] = None) -> float:
+    def get_retrievability(self, now: datetime | None = None) -> float:
         """
         Calculates the Card object's current retrievability for a given date and time.
 
@@ -420,9 +421,9 @@ class Parameters:
 
     def __init__(
         self,
-        w: Optional[tuple[float, ...]] = None,
-        request_retention: Optional[float] = None,
-        maximum_interval: Optional[int] = None,
+        w: tuple[float, ...] | None = None,
+        request_retention: float | None = None,
+        maximum_interval: int | None = None,
     ) -> None:
         self.w = (
             w

@@ -17,7 +17,7 @@ Classes:
 
 import math
 from datetime import datetime, timezone, timedelta
-import copy
+from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Any
@@ -147,7 +147,7 @@ class Card:
             source_dict (dict[str, Any]): A dictionary representing an existing Card object.
 
         Returns:
-            ReviewLog: A Card object created from the provided dictionary.
+            Card: A Card object created from the provided dictionary.
         """
         due = datetime.fromisoformat(source_dict["due"])
         stability = float(source_dict["stability"])
@@ -199,90 +199,47 @@ class Card:
 
 class ReviewLog:
     """
-    Represents the log entry of Card that has been reviewed.
-
+    Represents the log entry of a Card object that has been reviewed.
+    
     Attributes:
+        card (Card): Copy of the card object that was reviewed.
         rating (Rating): The rating given to the card during the review.
-        scheduled_days (int): The number of days until the card is due next.
-        elapsed_days (int): The number of days since the card was last reviewed.
-        review (datetime): The date and time of the review.
-        state (State): The learning state of the card before the review.
+        review_datetime (datetime): The date and time of the review.
+        review_duration (int | None): The number of miliseconds it took to review the card or None if unspecified.
     """
 
+    card: Card
     rating: Rating
-    scheduled_days: int
-    elapsed_days: int
-    review: datetime
-    state: State
+    review_datetime: datetime
+    review_duration: int | None
 
-    def __init__(
-        self,
-        rating: Rating,
-        scheduled_days: int,
-        elapsed_days: int,
-        review: datetime,
-        state: State,
-    ) -> None:
-        """
-        Creates and initializes a ReviewLog object.
+    def __init__(self, card: Card, rating: Rating, review_datetime: datetime, review_duration: int | None = None) -> None:
 
-        Args:
-            rating (Rating): The rating given to the card during the review.
-            scheduled_days (int): The number of days until the card is due next.
-            elapsed_days (int): The number of days since the card was last reviewed.
-            review (datetime): The date and time of the review.
-            state (State): The learning state of the card before the review.
-        """
+        self.card = deepcopy(card)
         self.rating = rating
-        self.scheduled_days = scheduled_days
-        self.elapsed_days = elapsed_days
-        self.review = review
-        self.state = state
+        self.review_datetime = review_datetime
+        self.review_duration = review_duration
 
-    #def to_dict(self) -> dict[str, Union[int, str]]:
-    def to_dict(self) -> dict[str, int | str]:
-        """
-        Returns a JSON-serializable dictionary representation of the ReviewLog object.
+    def to_dict(self) -> dict[str, dict[str, Any] | int | str | None]:
 
-        This method is specifically useful for storing ReviewLog objects in a database.
-
-        Returns:
-            dict: A dictionary representation of the ReviewLog object.
-        """
         return_dict = {
+            "card": self.card.to_dict(),
             "rating": self.rating.value,
-            "scheduled_days": self.scheduled_days,
-            "elapsed_days": self.elapsed_days,
-            "review": self.review.isoformat(),
-            "state": self.state.value,
+            "review_datetime": self.review_datetime.isoformat(),
+            "review_duration": self.review_duration,
         }
 
         return return_dict
 
     @staticmethod
     def from_dict(source_dict: dict[str, Any]) -> "ReviewLog":
-        """
-        Creates a ReviewLog object from an existing dictionary.
 
-        Args:
-            source_dict (dict[str, Any]): A dictionary representing an existing ReviewLog object.
-
-        Returns:
-            ReviewLog: A ReviewLog object created from the provided dictionary.
-        """
-        rating = Rating(int(source_dict["rating"]))
-        scheduled_days = int(source_dict["scheduled_days"])
-        elapsed_days = int(source_dict["elapsed_days"])
-        review = datetime.fromisoformat(source_dict["review"])
-        state = State(int(source_dict["state"]))
-
-        return ReviewLog(
-            rating,
-            scheduled_days,
-            elapsed_days,
-            review,
-            state,
-        )
+        card = Card.from_dict(source_dict['card'])
+        rating = Rating(int(source_dict['rating']))
+        review_datetime = datetime.fromisoformat(source_dict['review_datetime'])
+        review_duration = source_dict['review_duration']
+    
+        return ReviewLog(card=card, rating=rating, review_datetime=review_datetime, review_duration=review_duration)
 
 @dataclass
 class SchedulingInfo:
@@ -315,10 +272,10 @@ class SchedulingCards:
     easy: Card
 
     def __init__(self, card: Card) -> None:
-        self.again = copy.deepcopy(card)
-        self.hard = copy.deepcopy(card)
-        self.good = copy.deepcopy(card)
-        self.easy = copy.deepcopy(card)
+        self.again = deepcopy(card)
+        self.hard = deepcopy(card)
+        self.good = deepcopy(card)
+        self.easy = deepcopy(card)
 
     def update_state(self, state: State) -> None:
         if state == State.New:
@@ -361,43 +318,19 @@ class SchedulingCards:
         return {
             Rating.Again: SchedulingInfo(
                 self.again,
-                ReviewLog(
-                    Rating.Again,
-                    self.again.scheduled_days,
-                    card.elapsed_days,
-                    now,
-                    card.state,
-                ),
+                ReviewLog(card=card, rating=Rating.Again, review_datetime=now, review_duration=None),
             ),
             Rating.Hard: SchedulingInfo(
                 self.hard,
-                ReviewLog(
-                    Rating.Hard,
-                    self.hard.scheduled_days,
-                    card.elapsed_days,
-                    now,
-                    card.state,
-                ),
+                ReviewLog(card=card, rating=Rating.Hard, review_datetime=now, review_duration=None),
             ),
             Rating.Good: SchedulingInfo(
                 self.good,
-                ReviewLog(
-                    Rating.Good,
-                    self.good.scheduled_days,
-                    card.elapsed_days,
-                    now,
-                    card.state,
-                ),
+                ReviewLog(card=card, rating=Rating.Good, review_datetime=now, review_duration=None),
             ),
             Rating.Easy: SchedulingInfo(
                 self.easy,
-                ReviewLog(
-                    Rating.Easy,
-                    self.easy.scheduled_days,
-                    card.elapsed_days,
-                    now,
-                    card.state,
-                ),
+                ReviewLog(card=card, rating=Rating.Easy, review_datetime=now, review_duration=None),
             ),
         }
 
@@ -520,7 +453,7 @@ class FSRS:
         if (now.tzinfo is None) or (now.tzinfo != timezone.utc):
             raise ValueError("datetime must be timezone-aware and set to UTC")
 
-        card = copy.deepcopy(card)
+        card = deepcopy(card)
         if card.state == State.New:
             card.elapsed_days = 0
         else:

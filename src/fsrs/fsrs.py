@@ -132,8 +132,8 @@ class Card:
         card_id = int(source_dict['card_id'])
         state = State(int(source_dict['state']))
         step = source_dict['step']
-        stability = float(source_dict['stability'])
-        difficulty = float(source_dict['difficulty'])
+        stability = float(source_dict['stability']) if source_dict['stability'] else None
+        difficulty = float(source_dict['difficulty']) if source_dict['difficulty'] else None
         due = datetime.fromisoformat(source_dict['due'])
         last_review = datetime.fromisoformat(source_dict['last_review']) if source_dict['last_review'] else None
 

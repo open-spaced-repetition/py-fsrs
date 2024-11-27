@@ -120,7 +120,6 @@ class TestPyFSRS:
         assert time_delta.seconds > 500  # due in approx. 8-10 minutes
 
     def test_datetime(self):
-        return 
     
         scheduler = FSRSScheduler()
         card = Card()
@@ -131,6 +130,8 @@ class TestPyFSRS:
         # comparing timezone aware cards with deprecated datetime.utcnow() should raise a TypeError
         with pytest.raises(TypeError):
             datetime.now() >= card.due
+
+        return
 
         # repeating a card with a non-utc, non-timezone-aware datetime object should raise a Value Error
         with pytest.raises(ValueError):
@@ -147,7 +148,6 @@ class TestPyFSRS:
         assert card.due >= card.last_review
 
     def test_Card_serialize(self):
-        return 
     
         scheduler = FSRSScheduler()
 
@@ -167,6 +167,8 @@ class TestPyFSRS:
 
         assert vars(card) == vars(copied_card)
         assert card.to_dict() == copied_card.to_dict()
+
+        return
 
         # (x2) perform the above tests once more with a repeated card
         scheduling_cards = scheduler.repeat(card, datetime.now(timezone.utc))
@@ -323,7 +325,6 @@ class TestPyFSRS:
         assert scheduler2.maximum_interval == maximum_interval2
 
     def test_retrievability(self):
-        return
     
         scheduler = FSRSScheduler()
 
@@ -333,6 +334,8 @@ class TestPyFSRS:
         assert card.state == State.New
         retrievability = card.get_retrievability()
         assert retrievability == 0
+
+        return
 
         # retrievabiliy of Learning card
         card, _ = scheduler.review_card(card, Rating.Good)

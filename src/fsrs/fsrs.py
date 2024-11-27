@@ -260,8 +260,65 @@ class FSRSScheduler:
         self.maximum_interval = maximum_interval
 
     def review_card(self, card: Card, rating: Rating, review_datetime: datetime | None = None, review_duration: int | None = None) -> tuple[Card, ReviewLog]:
-        # TODO: implement review_card method
-        pass
+
+        if review_datetime is not None and ( (review_datetime.tzinfo is None) or (review_datetime.tzinfo != timezone.utc) ):
+            raise ValueError("datetime must be timezone-aware and set to UTC")
+
+        card = deepcopy(card)
+
+        if review_datetime is None:
+            review_datetime = datetime.now(timezone.utc)
+
+        review_log = ReviewLog(card=card, rating=rating, review_datetime=review_datetime, review_duration=review_duration)
+
+        if card.state == State.New:
+
+            card.stability = self._initial_stability(rating)
+            card.difficulty = self._initial_difficulty(rating)
+
+            assert type(card.stability) == float # mypy
+
+            if rating in (Rating.Again, Rating.Hard, Rating.Good):
+
+                card.state = State.Learning
+
+                if rating == Rating.Again:
+
+                    next_interval = timedelta(minutes=1)
+
+                elif rating == Rating.Hard:
+
+                    next_interval = timedelta(minutes=5)
+
+                elif rating == Rating.Good:
+
+                    next_interval = timedelta(minutes=10)
+                
+            elif rating == Rating.Easy:
+
+                card.state = State.Review
+                next_interval_days = self._next_interval(card.stability)
+                next_interval = timedelta(days=next_interval_days)
+
+            card.due = review_datetime + next_interval
+            card.last_review = review_datetime
+
+        elif card.state == State.Learning:
+
+            # TODO
+            pass
+
+        elif card.state == State.Review:
+
+            # TODO
+            pass
+
+        elif card.state == State.Relearning:
+
+            # TODO
+            pass
+
+        return card, review_log
 
     def to_dict(self) -> dict[str, Any]:
 
@@ -289,3 +346,25 @@ class FSRSScheduler:
                              learning_steps=learning_steps,
                              relearning_steps=relearning_steps,
                              maximum_interval=maximum_interval)
+
+    def _initial_stability(self, rating: Rating):
+
+        return self.parameters[rating-1]
+
+    def _initial_difficulty(self, rating: Rating):
+
+        return self.parameters[4] - math.exp(self.parameters[5] * (rating - 1)) + 1
+
+    def _next_interval(self, stability: float) -> int:
+
+        next_interval = (stability/FACTOR) * ( ( self.desired_retention ** (1/DECAY) ) - 1 )
+
+        next_interval = round(next_interval) # intervals are full days
+
+        # must be at least 1 day long
+        next_interval = max(next_interval, 1)
+
+        # can not be longer than the maximum interval
+        next_interval = min(next_interval, self.maximum_interval)
+
+        return next_interval

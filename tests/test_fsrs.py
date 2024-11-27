@@ -100,20 +100,16 @@ class TestPyFSRS:
         assert round(scheduling_cards[Rating.Good].card.difficulty, 4) == 5.0976
 
     def test_repeat_default_arg(self):
-        return 
     
         scheduler = FSRSScheduler()
 
-        card_object = Card()
+        card = Card()
 
-        # repeat time is not specified
-        scheduling_cards = scheduler.repeat(card_object)
+        rating = Rating.Good
 
-        card_rating = Rating.Good
+        card, _ = scheduler.review_card(card=card, rating=rating,)
 
-        card_object = scheduling_cards[card_rating].card
-
-        due = card_object.due
+        due = card.due
 
         time_delta = due - datetime.now(timezone.utc)
 
@@ -131,15 +127,12 @@ class TestPyFSRS:
         with pytest.raises(TypeError):
             datetime.now() >= card.due
 
-        return
-
         # repeating a card with a non-utc, non-timezone-aware datetime object should raise a Value Error
         with pytest.raises(ValueError):
-            scheduler.repeat(card, datetime(2022, 11, 29, 12, 30, 0, 0))
+            scheduler.review_card(card=card, rating=Rating.Good, review_datetime=datetime(2022, 11, 29, 12, 30, 0, 0))
 
-        # repeat a card with rating good before next tests
-        scheduling_cards = scheduler.repeat(card, datetime.now(timezone.utc))
-        card = scheduling_cards[Rating.Good].card
+        # review a card with rating good before next tests
+        card, _ = scheduler.review_card(card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc))
 
         # card object's due and last_review attributes must be timezone aware and UTC
         assert card.due.tzinfo == timezone.utc
@@ -168,39 +161,32 @@ class TestPyFSRS:
         assert vars(card) == vars(copied_card)
         assert card.to_dict() == copied_card.to_dict()
 
-        return
-
         # (x2) perform the above tests once more with a repeated card
-        scheduling_cards = scheduler.repeat(card, datetime.now(timezone.utc))
-        repeated_card = scheduling_cards[Rating.Good].card
+        reviewed_card, _ = scheduler.review_card(card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc))
 
         with pytest.raises(TypeError):
-            json.dumps(repeated_card.__dict__)
+            json.dumps(reviewed_card.__dict__)
 
-        assert type(json.dumps(repeated_card.to_dict())) == str
+        assert type(json.dumps(reviewed_card.to_dict())) == str
 
-        repeated_card_dict = repeated_card.to_dict()
-        copied_repeated_card = Card.from_dict(repeated_card_dict)
+        reviewed_card_dict = reviewed_card.to_dict()
+        copied_reviewed_card = Card.from_dict(reviewed_card_dict)
 
-        assert vars(repeated_card) == vars(copied_repeated_card)
-        assert repeated_card.to_dict() == copied_repeated_card.to_dict()
+        assert vars(reviewed_card) == vars(copied_reviewed_card)
+        assert reviewed_card.to_dict() == copied_reviewed_card.to_dict()
 
         # original card and repeated card are different
-        assert vars(card) != vars(repeated_card)
-        assert card.to_dict() != repeated_card.to_dict()
+        assert vars(card) != vars(reviewed_card)
+        assert card.to_dict() != reviewed_card.to_dict()
 
     def test_ReviewLog_serialize(self):
-        return 
     
         scheduler = FSRSScheduler()
 
         card = Card()
 
-        # repeat a card to get the review_log
-        scheduling_cards = scheduler.repeat(card)
-        rating = Rating.Again
-        card = scheduling_cards[rating].card
-        review_log = scheduling_cards[rating].review_log
+        # review a card to get the review_log
+        card, review_log = scheduler.review_card(card=card, rating=Rating.Again)
 
         # ReviewLog object is not naturally JSON serializable
         with pytest.raises(TypeError):
@@ -213,6 +199,8 @@ class TestPyFSRS:
         review_log_dict = review_log.to_dict()
         copied_review_log = ReviewLog.from_dict(review_log_dict)
         assert review_log.to_dict() == copied_review_log.to_dict()
+
+        return
 
         # (x2) perform the above tests once more with a review_log from a repeated card
         scheduling_cards = scheduler.repeat(card, datetime.now(timezone.utc))
@@ -335,13 +323,13 @@ class TestPyFSRS:
         retrievability = card.get_retrievability()
         assert retrievability == 0
 
-        return
-
         # retrievabiliy of Learning card
         card, _ = scheduler.review_card(card, Rating.Good)
         assert card.state == State.Learning
         retrievability = card.get_retrievability()
         assert 0 <= retrievability <= 1
+
+        return
 
         # retrievabiliy of Review card
         card, _ = scheduler.review_card(card, Rating.Good)

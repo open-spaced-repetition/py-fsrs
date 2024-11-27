@@ -305,8 +305,29 @@ class FSRSScheduler:
 
         elif card.state == State.Learning:
 
-            # TODO
-            pass
+            assert type(card.stability) == float # mypy
+            assert type(card.difficulty) == float # mypy
+
+            card.stability = self._short_term_stability(stability=card.stability, rating=rating)
+            card.difficulty = self._next_difficulty(difficulty=card.difficulty, rating=rating)
+
+            if rating == Rating.Again:
+
+                next_interval = timedelta(minutes=5)
+
+            elif rating == Rating.Hard:
+
+                next_interval = timedelta(minutes=10)
+
+            elif rating in (Rating.Good, Rating.Easy):
+
+                card.state = State.Review
+
+                next_interval_days = self._next_interval(stability=card.stability)
+                next_interval = timedelta(days=next_interval_days)
+
+            card.due = review_datetime + next_interval
+            card.last_review = review_datetime
 
         elif card.state == State.Review:
 
@@ -368,3 +389,17 @@ class FSRSScheduler:
         next_interval = min(next_interval, self.maximum_interval)
 
         return next_interval
+    
+    def _short_term_stability(self, stability: float, rating: Rating) -> float:
+        return stability * math.exp(self.parameters[17] * (rating - 3 + self.parameters[18]))
+    
+    def _next_difficulty(self, difficulty: float, rating: Rating) -> float:
+
+        def mean_reversion(arg_1: float, arg_2: float) -> float:
+            return self.parameters[7] * arg_1 + (1 - self.parameters[7]) * arg_2
+
+        arg_1 = self._initial_difficulty(Rating.Easy)
+        arg_2 = difficulty - ( self.parameters[6] * (rating - 3) )
+
+        return mean_reversion(arg_1, arg_2)
+        

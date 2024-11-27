@@ -49,72 +49,53 @@ class Card:
     Represents a flashcard in the FSRS system.
 
     Attributes:
-        due (datetime): The date and time when the card is due next.
-        stability (float): Core FSRS parameter used for scheduling.
-        difficulty (float): Core FSRS parameter used for scheduling.
-        elapsed_days (int): The number of days since the card was last reviewed.
-        scheduled_days (int): The number of days until the card is due next.
-        reps (int): The number of times the card has been reviewed in its history.
-        lapses (int): The number of times the card has been lapsed in its history.
+        card_id (int): The id of the card. Defaults to the epoch miliseconds of when the card was created.
         state (State): The card's current learning state.
-        last_review (datetime): The date and time of the card's last review.
+        step (int | None): The card's current learning or relearning step or None if the card is in the Review state.
+        stability (float | None): Core FSRS parameter used for scheduling.
+        difficulty (float | None): Core FSRS parameter used for scheduling.
+        due (datetime): The date and time when the card is due next.
+        last_review (datetime | None): The date and time of the card's last review.        
     """
 
-    due: datetime
-    stability: float
-    difficulty: float
-    elapsed_days: int
-    scheduled_days: int
-    reps: int
-    lapses: int
+    card_id: int
     state: State
-    last_review: datetime
+    step: int | None
+    stability: float | None
+    difficulty: float | None
+    due: datetime
+    last_review: datetime | None
+    
+    def __init__(self,
+                 card_id: int | None = None,
+                 state: State = State.New,
+                 step: int | None = None,
+                 stability: float | None = None,
+                 difficulty: float | None = None,
+                 due: datetime | None = None,
+                 last_review: datetime | None = None) -> None:
+        
+        if card_id is None:
+            # epoch miliseconds of when the card was created
+            card_id = int(datetime.now(timezone.utc).timestamp() * 1000)
+        self.card_id = card_id
 
-    def __init__(
-        self,
-        due: datetime | None = None,
-        stability: float = 0,
-        difficulty: float = 0,
-        elapsed_days: int = 0,
-        scheduled_days: int = 0,
-        reps: int = 0,
-        lapses: int = 0,
-        state: State = State.New,
-        last_review: datetime | None = None,
-    ) -> None:
-        """
-        Creates and initializes a Card object.
+        self.state = state
 
-        Note that each of the arguments for this method are optional and can be omitted when creating a new Card.
-
-        Args:
-            due (Optional[datetime]): The date and time when the card is due next.
-            stability (float): Core FSRS parameter used for scheduling.
-            difficulty (float): Core FSRS parameter used for scheduling.
-            elapsed_days (int): The number of days since the card was last reviewed.
-            scheduled_days (int): The number of days until the card is due next.
-            reps (int): The number of times the card has been reviewed in its history.
-            lapses (int): The number of times the card has been lapsed in its history.
-            state (State): The card's current learning state.
-            last_review (Optional[datetime]): The date and time of the card's last review.
-        """
-        if due is None:
-            self.due = datetime.now(timezone.utc)
-        else:
-            self.due = due
+        if self.state == State.New and step is None:
+            step = 0
+        self.step = step
 
         self.stability = stability
         self.difficulty = difficulty
-        self.elapsed_days = elapsed_days
-        self.scheduled_days = scheduled_days
-        self.reps = reps
-        self.lapses = lapses
-        self.state = state
 
-        if last_review is not None:
-            self.last_review = last_review
+        if due is None:
+            due = datetime.now(timezone.utc)
+        self.due = due
 
-    def to_dict(self) -> dict[str, Any]:
+        self.last_review = last_review
+
+    def to_dict(self) -> dict[str, int | float | str | None]:
         """
         Returns a JSON-serializable dictionary representation of the Card object.
 
@@ -123,22 +104,19 @@ class Card:
         Returns:
             dict: A dictionary representation of the Card object.
         """
+
         return_dict = {
-            "due": self.due.isoformat(),
+            "card_id": self.card_id,
+            "state": self.state.value,
+            "step": self.step,
             "stability": self.stability,
             "difficulty": self.difficulty,
-            "elapsed_days": self.elapsed_days,
-            "scheduled_days": self.scheduled_days,
-            "reps": self.reps,
-            "lapses": self.lapses,
-            "state": self.state.value,
+            "due": self.due.isoformat(),
+            "last_review": self.last_review.isoformat() if self.last_review else None
         }
 
-        if hasattr(self, "last_review"):
-            return_dict["last_review"] = self.last_review.isoformat()
-
         return return_dict
-
+    
     @staticmethod
     def from_dict(source_dict: dict[str, Any]) -> "Card":
         """
@@ -150,50 +128,36 @@ class Card:
         Returns:
             Card: A Card object created from the provided dictionary.
         """
-        due = datetime.fromisoformat(source_dict["due"])
-        stability = float(source_dict["stability"])
-        difficulty = float(source_dict["difficulty"])
-        elapsed_days = int(source_dict["elapsed_days"])
-        scheduled_days = int(source_dict["scheduled_days"])
-        reps = int(source_dict["reps"])
-        lapses = int(source_dict["lapses"])
-        state = State(int(source_dict["state"]))
 
-        if "last_review" in source_dict:
-            last_review = datetime.fromisoformat(source_dict["last_review"])
-        else:
-            last_review = None
+        card_id = int(source_dict['card_id'])
+        state = State(int(source_dict['state']))
+        step = source_dict['step']
+        stability = float(source_dict['stability'])
+        difficulty = float(source_dict['difficulty'])
+        due = datetime.fromisoformat(source_dict['due'])
+        last_review = datetime.fromisoformat(source_dict['last_review']) if source_dict['last_review'] else None
 
-        return Card(
-            due,
-            stability,
-            difficulty,
-            elapsed_days,
-            scheduled_days,
-            reps,
-            lapses,
-            state,
-            last_review,
-        )
+        return Card(card_id=card_id, state=state, step=step, stability=stability, difficulty=difficulty, due=due, last_review=last_review)
 
-    def get_retrievability(self, now: datetime | None = None) -> float:
+    def get_retrievability(self, current_datetime: datetime | None = None) -> float:
         """
         Calculates the Card object's current retrievability for a given date and time.
 
+        The retrievability of a card is the predicted probability that the card is correctly recalled at the provided datetime.
+
         Args:
-            now (datetime): The current date and time
+            current_datetime (datetime): The current date and time
 
         Returns:
             float: The retrievability of the Card object.
         """
-        DECAY = -0.5
-        FACTOR = 0.9 ** (1 / DECAY) - 1
 
-        if now is None:
-            now = datetime.now(timezone.utc)
+        if current_datetime is None:
+            current_datetime = datetime.now(timezone.utc)
 
         if self.state in (State.Learning, State.Review, State.Relearning):
-            elapsed_days = max(0, (now - self.last_review).days)
+            assert self.last_review is not None # mypy
+            elapsed_days = max(0, (current_datetime - self.last_review).days)
             return (1 + FACTOR * elapsed_days / self.stability) ** DECAY
         else:
             return 0

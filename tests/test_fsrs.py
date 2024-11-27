@@ -200,13 +200,9 @@ class TestPyFSRS:
         copied_review_log = ReviewLog.from_dict(review_log_dict)
         assert review_log.to_dict() == copied_review_log.to_dict()
 
-        return
-
-        # (x2) perform the above tests once more with a review_log from a repeated card
-        scheduling_cards = scheduler.repeat(card, datetime.now(timezone.utc))
+        # (x2) perform the above tests once more with a review_log from a reviewed card
         rating = Rating.Good
-        card = scheduling_cards[rating].card
-        next_review_log = scheduling_cards[rating].review_log
+        card, next_review_log = scheduler.review_card(card=card, rating=rating, review_datetime=datetime.now(timezone.utc))
 
         with pytest.raises(TypeError):
             json.dumps(next_review_log.__dict__)
@@ -329,13 +325,13 @@ class TestPyFSRS:
         retrievability = card.get_retrievability()
         assert 0 <= retrievability <= 1
 
-        return
-
         # retrievabiliy of Review card
         card, _ = scheduler.review_card(card, Rating.Good)
         assert card.state == State.Review
         retrievability = card.get_retrievability()
         assert 0 <= retrievability <= 1
+
+        return
 
         # retrievabiliy of Relearning card
         card, _ = scheduler.review_card(card, Rating.Again)

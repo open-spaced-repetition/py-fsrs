@@ -28,11 +28,8 @@ test_parameters = (
 
 class TestPyFSRS:
     def test_review_card(self):
-        return
 
         scheduler = FSRSScheduler(parameters=test_parameters)
-        card = Card()
-        now = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
 
         ratings = (
             Rating.Good,
@@ -49,15 +46,19 @@ class TestPyFSRS:
             Rating.Good,
             Rating.Good,
         )
+        
+        card = Card()
+        review_datetime = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
+
         ivl_history = []
-
         for rating in ratings:
-            card, _ = scheduler.review_card(card, rating, now)
-            ivl = card.scheduled_days
-            ivl_history.append(ivl)
-            now = card.due
+            card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=review_datetime)
 
-        print(ivl_history)
+            ivl = (card.due - card.last_review).days
+            ivl_history.append(ivl)
+
+            review_datetime = card.due
+
         assert ivl_history == [
             0,
             4,
@@ -221,10 +222,9 @@ class TestPyFSRS:
         assert review_log.to_dict() != next_review_log.to_dict()
 
     def test_custom_scheduler_args(self):
-        return 
     
         scheduler = FSRSScheduler(
-            w=(
+            parameters=(
                 0.4197,
                 1.1869,
                 3.0412,
@@ -245,7 +245,7 @@ class TestPyFSRS:
                 0,
                 0.6468,
             ),
-            request_retention=0.9,
+            desired_retention=0.9,
             maximum_interval=36500,
         )
         card = Card()
@@ -270,11 +270,10 @@ class TestPyFSRS:
 
         for rating in ratings:
             card, _ = scheduler.review_card(card, rating, now)
-            ivl = card.scheduled_days
+            ivl = (card.due - card.last_review).days
             ivl_history.append(ivl)
             now = card.due
 
-        print(ivl_history)
         assert ivl_history == [0, 3, 13, 50, 163, 473, 0, 0, 12, 34, 91, 229, 541]
 
         # initialize another scheduler and verify parameters are properly set

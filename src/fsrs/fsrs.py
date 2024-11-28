@@ -7,12 +7,9 @@ This module defines each of the classes used in the fsrs package.
 Classes:
     State: Enum representing the learning state of a Card object.
     Rating: Enum representing the four possible ratings when reviewing a card.
-    ReviewLog: Represents the log entry of Card that has been reviewed.
     Card: Represents a flashcard in the FSRS system.
-    FSRS: The FSRS scheduler.
-    SchedulingInfo: Simple data class that bundles together an updated Card object and it's corresponding ReviewLog object.
-    SchedulingCards: Manages the scheduling of a Card object for each of the four potential ratings.
-    Parameters: The parameters used to configure the FSRS scheduler.
+    ReviewLog: Represents the log entry of Card that has been reviewed.
+    FSRSScheduler: The FSRS spaced-repetition scheduler.
 """
 
 import math

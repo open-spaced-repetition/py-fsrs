@@ -75,13 +75,9 @@ class TestPyFSRS:
         ]
 
     def test_memo_state(self):
-        return 
     
         scheduler = FSRSScheduler(parameters=test_parameters)
-        card = Card()
-        now = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
 
-        scheduling_cards = scheduler.repeat(card, now)
         ratings = (
             Rating.Again,
             Rating.Good,
@@ -91,13 +87,20 @@ class TestPyFSRS:
             Rating.Good,
         )
         ivl_history = [0, 0, 1, 3, 8, 21]
-        for rating, ivl in zip(ratings, ivl_history):
-            card = scheduling_cards[rating].card
-            now += timedelta(days=ivl)
-            scheduling_cards = scheduler.repeat(card, now)
 
-        assert round(scheduling_cards[Rating.Good].card.stability, 4) == 71.4554
-        assert round(scheduling_cards[Rating.Good].card.difficulty, 4) == 5.0976
+        card = Card()
+        review_datetime = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
+
+        for rating, ivl in zip(ratings, ivl_history):
+
+            card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=review_datetime)
+
+            review_datetime += timedelta(days=ivl)
+
+        card, _ = scheduler.review_card(card=card, rating=Rating.Good, review_datetime=review_datetime)
+            
+        assert round(card.stability, 4) == 71.4554
+        assert round(card.difficulty, 4) == 5.0976
 
     def test_repeat_default_arg(self):
     
@@ -330,8 +333,6 @@ class TestPyFSRS:
         assert card.state == State.Review
         retrievability = card.get_retrievability()
         assert 0 <= retrievability <= 1
-
-        return
 
         # retrievabiliy of Relearning card
         card, _ = scheduler.review_card(card, Rating.Again)

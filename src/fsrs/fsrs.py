@@ -17,9 +17,28 @@ from datetime import datetime, timezone, timedelta
 from copy import deepcopy
 from typing import Any
 from enum import IntEnum
+import random
 
 DECAY = -0.5
 FACTOR = 0.9 ** (1 / DECAY) - 1
+
+FUZZ_RANGES = [
+    {
+        "start": 2.5,
+        "end": 7.0,
+        "factor": 0.15,
+    },
+    {
+        "start": 7.0,
+        "end": 20.0,
+        "factor": 0.1,
+    },
+    {
+        "start": 20.0,
+        "end": math.inf,
+        "factor": 0.05,
+    },
+]
 
 class State(IntEnum):
     """
@@ -347,6 +366,10 @@ class FSRSScheduler:
             elif rating in (Rating.Hard, Rating.Good, Rating.Easy):
 
                 next_interval_days = self._next_interval(stability=card.stability)
+
+                if self.enable_fuzzing:
+                    next_interval_days = self._get_fuzzed_interval(next_interval_days)
+
                 next_interval = timedelta(days=next_interval_days)
 
             card.due = review_datetime + next_interval
@@ -471,3 +494,46 @@ class FSRSScheduler:
         easy_bonus = self.parameters[16] if rating == Rating.Easy else 1
 
         return stability * (1 + math.exp(self.parameters[8]) * (11 - difficulty) * math.pow(stability, -self.parameters[9]) * (math.exp((1 - retrievability) * self.parameters[10]) - 1) * hard_penalty * easy_bonus)
+    
+    def _get_fuzzed_interval(self, interval: int) -> int:
+        """
+        Takes the current calculated interval and adds a small amount of random fuzz to it.
+        For example, a card that would've been due in 50 days, after fuzzing, might be due in 49, or 51 days.
+
+        Args:
+            interval (int): The calculated next interval, before fuzzing.
+
+        Returns:
+            int: The new interval, after fuzzing.
+        """
+
+        if interval < 2.5: # fuzz is not applied to intervals less than 2.5
+            return interval
+        
+        def _get_fuzz_range(interval: int) -> tuple[int, int]:
+            """
+            Helper function that computes the possible upper and lower bounds of the interval after fuzzing.
+            """
+            
+            delta = 1.0
+            for fuzz_range in FUZZ_RANGES:
+                
+                delta += fuzz_range["factor"] * max( min(interval, fuzz_range["end"]) - fuzz_range["start"], 0.0 )
+            
+            min_ivl = int(round(interval - delta))
+            max_ivl = int(round(interval + delta))
+
+            # make sure the min_ivl and max_ivl fall into a valid range
+            min_ivl = max(2, min_ivl)
+            max_ivl = min(max_ivl, self.maximum_interval)
+            min_ivl = min(min_ivl, max_ivl)
+            
+            return min_ivl, max_ivl
+
+        min_ivl, max_ivl = _get_fuzz_range(interval)
+
+        fuzzed_interval = ( random.random() * (max_ivl - min_ivl + 1) ) + min_ivl # the next interval is a random value between min_ivl and max_ivl
+
+        fuzzed_interval = min( round(fuzzed_interval), self.maximum_interval )
+
+        return fuzzed_interval

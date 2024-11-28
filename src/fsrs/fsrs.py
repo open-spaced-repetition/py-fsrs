@@ -331,8 +331,25 @@ class FSRSScheduler:
 
         elif card.state == State.Review:
 
-            # TODO
-            pass
+            assert type(card.stability) == float # mypy
+            assert type(card.difficulty) == float # mypy
+
+            card.stability = self._next_stability(difficulty=card.difficulty, stability=card.stability, retrievability=card.get_retrievability(current_datetime=review_datetime), rating=rating)
+            card.difficulty = self._next_difficulty(difficulty=card.difficulty, rating=rating)
+
+            if rating == Rating.Again:
+
+                card.state = State.Relearning
+
+                next_interval = timedelta(minutes=5)
+
+            elif rating in (Rating.Hard, Rating.Good, Rating.Easy):
+
+                next_interval_days = self._next_interval(stability=card.stability)
+                next_interval = timedelta(days=next_interval_days)
+
+            card.due = review_datetime + next_interval
+            card.last_review = review_datetime
 
         elif card.state == State.Relearning:
 
@@ -403,3 +420,29 @@ class FSRSScheduler:
 
         return mean_reversion(arg_1, arg_2)
         
+    def _next_stability(self, 
+                        difficulty: float, 
+                        stability: float, 
+                        retrievability: float,
+                        rating: Rating) -> float:
+        
+        if rating == Rating.Again:
+
+            next_stability = self._next_forget_stability(difficulty=difficulty, stability=stability, retrievability=retrievability)
+
+        elif rating in (Rating.Hard, Rating.Good, Rating.Easy):
+
+            next_stability = self._next_recall_stability(difficulty=difficulty, stability=stability, retrievability=retrievability, rating=rating)
+
+        return next_stability
+    
+    def _next_forget_stability(self, difficulty: float, stability: float, retrievability: float) -> float:
+
+        return self.parameters[11] * math.pow(difficulty, -self.parameters[12]) * (math.pow(stability + 1, self.parameters[13]) - 1) * math.exp((1 - retrievability) * self.parameters[14])
+        
+    def _next_recall_stability(self, difficulty: float, stability: float, retrievability: float, rating: Rating) -> float:
+
+        hard_penalty = self.parameters[15] if rating == Rating.Hard else 1
+        easy_bonus = self.parameters[16] if rating == Rating.Easy else 1
+
+        return stability * (1 + math.exp(self.parameters[8]) * (11 - difficulty) * math.pow(stability, -self.parameters[9]) * (math.exp((1 - retrievability) * self.parameters[10]) - 1) * hard_penalty * easy_bonus)

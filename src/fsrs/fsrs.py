@@ -215,6 +215,7 @@ class FSRSScheduler:
         learning_steps (list[timedelta]): Small time intervals that schedule cards in the Learning state.
         relearning_steps (list[timedelta]): Small time intervals that schedule cards in the Relearning state.
         maximum_interval (int): The maximum number of days a Review-state card can be scheduled into the future.
+        enable_fuzzing (bool): Whether to apply a small amount of random 'fuzz' to calculated intervals.
     """
 
     parameters: tuple[float, ...]
@@ -222,6 +223,7 @@ class FSRSScheduler:
     learning_steps: list[timedelta]
     relearning_steps: list[timedelta]
     maximum_interval: int
+    enable_fuzzing: bool
 
     def __init__(self, 
                  parameters: tuple | list = (
@@ -248,13 +250,15 @@ class FSRSScheduler:
                  desired_retention: float = 0.9,
                  learning_steps: list[timedelta] = [timedelta(minutes=1), timedelta(minutes=10)],
                  relearning_steps: list[timedelta] = [timedelta(minutes=10)],
-                 maximum_interval: int = 36500) -> None:
+                 maximum_interval: int = 36500,
+                 enable_fuzzing: bool = True) -> None:
 
         self.parameters = tuple(parameters)
         self.desired_retention = desired_retention
         self.learning_steps = learning_steps
         self.relearning_steps = relearning_steps
         self.maximum_interval = maximum_interval
+        self.enable_fuzzing = enable_fuzzing
 
     def review_card(self, card: Card, rating: Rating, review_datetime: datetime | None = None, review_duration: int | None = None) -> tuple[Card, ReviewLog]:
 
@@ -383,7 +387,8 @@ class FSRSScheduler:
             "desired_retention": self.desired_retention,
             "learning_steps": [int(learning_step.total_seconds()) for learning_step in self.learning_steps],
             "relearning_steps": [int(relearning_step.total_seconds()) for relearning_step in self.relearning_steps],
-            "maximum_interval": self.maximum_interval
+            "maximum_interval": self.maximum_interval,
+            "enable_fuzzing": self.enable_fuzzing
         }
 
         return return_dict
@@ -396,12 +401,14 @@ class FSRSScheduler:
         learning_steps = [timedelta(seconds=learning_step) for learning_step in source_dict['learning_steps']]
         relearning_steps = [timedelta(seconds=relearning_step) for relearning_step in source_dict['relearning_steps']]
         maximum_interval = source_dict['maximum_interval']
+        enable_fuzzing = source_dict['enable_fuzzing']
 
         return FSRSScheduler(parameters=parameters, 
                              desired_retention=desired_retention,
                              learning_steps=learning_steps,
                              relearning_steps=relearning_steps,
-                             maximum_interval=maximum_interval)
+                             maximum_interval=maximum_interval,
+                             enable_fuzzing=enable_fuzzing)
 
     def _initial_stability(self, rating: Rating):
 

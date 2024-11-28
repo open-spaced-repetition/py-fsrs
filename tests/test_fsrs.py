@@ -352,3 +352,29 @@ class TestPyFSRS:
         copied_scheduler = FSRSScheduler.from_dict(scheduler_dict)
         assert vars(scheduler) == vars(copied_scheduler)
         assert scheduler.to_dict() == copied_scheduler.to_dict()
+
+    def test_basic_fuzzed_interval(self):
+
+        scheduler = FSRSScheduler(parameters=test_parameters, enable_fuzzing=True)
+
+        ratings = (
+            Rating.Good,
+            Rating.Good,
+            Rating.Good
+        )
+        
+        card = Card()
+        review_datetime = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
+
+        ivl_history = []
+        for rating in ratings:
+            card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=review_datetime)
+
+            ivl = (card.due - card.last_review).days
+            ivl_history.append(ivl)
+
+            review_datetime = card.due
+
+        assert ivl_history[0] == 0 # review New-state card (no fuzz)
+        assert ivl_history[1] == 4 # review Learning-state card (no fuzz)
+        assert 14 <= ivl_history[2] <= 21 # review Review-state card (fuzz)

@@ -239,13 +239,13 @@ class FSRSScheduler:
 
     parameters: tuple[float, ...]
     desired_retention: float
-    learning_steps: list[timedelta]
-    relearning_steps: list[timedelta]
+    learning_steps: tuple[timedelta, ...]
+    relearning_steps: tuple[timedelta, ...]
     maximum_interval: int
     enable_fuzzing: bool
 
     def __init__(self, 
-                 parameters: tuple | list = (
+                 parameters: tuple[float, ...] | list[float] = (
                     0.4072,
                     1.1829,
                     3.1262,
@@ -267,15 +267,15 @@ class FSRSScheduler:
                     0.6567,
                  ),
                  desired_retention: float = 0.9,
-                 learning_steps: list[timedelta] = [timedelta(minutes=1), timedelta(minutes=10)],
-                 relearning_steps: list[timedelta] = [timedelta(minutes=10)],
+                 learning_steps: tuple[timedelta, ...] | list[timedelta] = ( timedelta(minutes=1), timedelta(minutes=10) ),
+                 relearning_steps: tuple[timedelta, ...] | list[timedelta] = ( timedelta(minutes=10), ),
                  maximum_interval: int = 36500,
                  enable_fuzzing: bool = True) -> None:
 
         self.parameters = tuple(parameters)
         self.desired_retention = desired_retention
-        self.learning_steps = learning_steps
-        self.relearning_steps = relearning_steps
+        self.learning_steps = tuple(learning_steps)
+        self.relearning_steps = tuple(relearning_steps)
         self.maximum_interval = maximum_interval
         self.enable_fuzzing = enable_fuzzing
 

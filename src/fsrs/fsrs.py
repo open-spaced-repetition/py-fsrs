@@ -353,8 +353,29 @@ class FSRSScheduler:
 
         elif card.state == State.Relearning:
 
-            # TODO
-            pass
+            assert type(card.stability) == float # mypy
+            assert type(card.difficulty) == float # mypy
+
+            card.stability = self._short_term_stability(stability=card.stability, rating=rating)
+            card.difficulty = self._next_difficulty(difficulty=card.difficulty, rating=rating)
+
+            if rating == Rating.Again:
+
+                next_interval = timedelta(minutes=5)
+
+            elif rating == Rating.Hard:
+
+                next_interval = timedelta(minutes=10)
+
+            elif rating in (Rating.Good, Rating.Easy):
+
+                card.state = State.Review
+
+                next_interval_days = self._next_interval(stability=card.stability)
+                next_interval = timedelta(days=next_interval_days)
+
+            card.due = review_datetime + next_interval
+            card.last_review = review_datetime
 
         return card, review_log
 

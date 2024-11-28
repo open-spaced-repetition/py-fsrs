@@ -29,7 +29,7 @@ test_parameters = (
 class TestPyFSRS:
     def test_review_card(self):
 
-        scheduler = FSRSScheduler(parameters=test_parameters)
+        scheduler = FSRSScheduler(parameters=test_parameters, enable_fuzzing=False)
 
         ratings = (
             Rating.Good,
@@ -247,6 +247,7 @@ class TestPyFSRS:
             ),
             desired_retention=0.9,
             maximum_interval=36500,
+            enable_fuzzing=False
         )
         card = Card()
         now = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)

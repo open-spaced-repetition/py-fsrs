@@ -425,7 +425,7 @@ class Scheduler:
                 card.difficulty = self._next_difficulty(difficulty=card.difficulty, rating=rating)
 
             else:
-                card.stability = self._short_term_stability(stability=card.stability, rating=rating)
+                card.stability = self._next_stability(difficulty=card.difficulty, stability=card.stability, retrievability=card.get_retrievability(current_datetime=review_datetime), rating=rating)
                 card.difficulty = self._next_difficulty(difficulty=card.difficulty, rating=rating)
 
             # calculate the card's next interval

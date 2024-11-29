@@ -45,7 +45,6 @@ class State(IntEnum):
     Enum representing the learning state of a Card object.
     """
 
-    New = 0
     Learning = 1
     Review = 2
     Relearning = 3
@@ -84,7 +83,7 @@ class Card:
     
     def __init__(self,
                  card_id: int | None = None,
-                 state: State = State.New,
+                 state: State = State.Learning,
                  step: int | None = None,
                  stability: float | None = None,
                  difficulty: float | None = None,
@@ -98,7 +97,7 @@ class Card:
 
         self.state = state
 
-        if self.state == State.New and step is None:
+        if self.state == State.Learning and step is None:
             step = 0
         self.step = step
 
@@ -168,11 +167,13 @@ class Card:
             float: The retrievability of the Card object.
         """
 
+        if self.last_review is None:
+            return 0
+
         if current_datetime is None:
             current_datetime = datetime.now(timezone.utc)
 
         if self.state in (State.Learning, State.Review, State.Relearning):
-            assert self.last_review is not None # mypy
             elapsed_days = max(0, (current_datetime - self.last_review).days)
             return (1 + FACTOR * elapsed_days / self.stability) ** DECAY
         else:
@@ -291,57 +292,58 @@ class FSRSScheduler:
 
         review_log = ReviewLog(card=card, rating=rating, review_datetime=review_datetime, review_duration=review_duration)
 
-        if card.state == State.New:
+        if card.state == State.Learning:
 
-            card.stability = self._initial_stability(rating)
-            card.difficulty = self._initial_difficulty(rating)
+            assert type(card.step) == int
 
-            assert type(card.stability) == float # mypy
+            if card.stability is None and card.difficulty is None:
+                card.stability = self._initial_stability(rating)
+                card.difficulty = self._initial_difficulty(rating)
+            else:
 
-            if rating in (Rating.Again, Rating.Hard, Rating.Good):
+                assert type(card.stability) == float # mypy
+                assert type(card.difficulty) == float # mypy
 
-                card.state = State.Learning
+                card.stability = self._short_term_stability(stability=card.stability, rating=rating)
+                card.difficulty = self._next_difficulty(difficulty=card.difficulty, rating=rating)
 
-                if rating == Rating.Again:
 
-                    next_interval = timedelta(minutes=1)
-
-                elif rating == Rating.Hard:
-
-                    next_interval = timedelta(minutes=5)
-
-                elif rating == Rating.Good:
-
-                    next_interval = timedelta(minutes=10)
-                
-            elif rating == Rating.Easy:
-
-                card.state = State.Review
-                next_interval_days = self._next_interval(card.stability)
-                next_interval = timedelta(days=next_interval_days)
-
-            card.due = review_datetime + next_interval
-            card.last_review = review_datetime
-
-        elif card.state == State.Learning:
-
-            assert type(card.stability) == float # mypy
-            assert type(card.difficulty) == float # mypy
-
-            card.stability = self._short_term_stability(stability=card.stability, rating=rating)
-            card.difficulty = self._next_difficulty(difficulty=card.difficulty, rating=rating)
 
             if rating == Rating.Again:
 
-                next_interval = timedelta(minutes=5)
+                card.step = 0
+                next_interval = self.learning_steps[card.step]
 
             elif rating == Rating.Hard:
 
-                next_interval = timedelta(minutes=10)
+                # card step stays the same
 
-            elif rating in (Rating.Good, Rating.Easy):
+                if card.step == 0 and len(self.learning_steps) == 1:
+                    next_interval = self.learning_steps[0] * 1.5
+                elif card.step == 0 and len(self.learning_steps) >= 2:
+                    next_interval = (self.learning_steps[1] + self.learning_steps[2]) / 2.0
+                else:
+                    next_interval = self.learning_steps[card.step]
+
+            elif rating == Rating.Good:
+
+                if card.step+1 == len(self.learning_steps): # the last step
+
+                    card.state = State.Review
+                    card.step = None
+
+                    next_interval_days = self._next_interval(stability=card.stability)
+                    next_interval = timedelta(days=next_interval_days)
+
+                else:
+
+                    card.step += 1
+                    next_interval = self.learning_steps[card.step]
+
+            elif rating == Rating.Easy:
 
                 card.state = State.Review
+                card.step = None
 
                 next_interval_days = self._next_interval(stability=card.stability)
                 next_interval = timedelta(days=next_interval_days)
@@ -360,8 +362,9 @@ class FSRSScheduler:
             if rating == Rating.Again:
 
                 card.state = State.Relearning
+                card.step = 0
 
-                next_interval = timedelta(minutes=5)
+                next_interval = self.relearning_steps[card.step]
 
             elif rating in (Rating.Hard, Rating.Good, Rating.Easy):
 
@@ -377,6 +380,7 @@ class FSRSScheduler:
 
         elif card.state == State.Relearning:
 
+            assert type(card.step) == int
             assert type(card.stability) == float # mypy
             assert type(card.difficulty) == float # mypy
 
@@ -385,15 +389,39 @@ class FSRSScheduler:
 
             if rating == Rating.Again:
 
-                next_interval = timedelta(minutes=5)
+                card.step = 0
+                next_interval = self.relearning_steps[card.step]
 
             elif rating == Rating.Hard:
 
-                next_interval = timedelta(minutes=10)
+                # card step stays the same
 
-            elif rating in (Rating.Good, Rating.Easy):
+                if card.step == 0 and len(self.relearning_steps) == 1:
+                    next_interval = self.relearning_steps[0] * 1.5
+                elif card.step == 0 and len(self.relearning_steps) >= 2:
+                    next_interval = (self.relearning_steps[1] + self.relearning_steps[2]) / 2.0
+                else:
+                    next_interval = self.relearning_steps[card.step]
+
+            elif rating == Rating.Good:
+
+                if card.step+1 == len(self.relearning_steps): # the last step
+
+                    card.state = State.Review
+                    card.step = None
+
+                    next_interval_days = self._next_interval(stability=card.stability)
+                    next_interval = timedelta(days=next_interval_days)
+
+                else:
+
+                    card.step += 1
+                    next_interval = self.relearning_steps[card.step]
+
+            elif rating == Rating.Easy:
 
                 card.state = State.Review
+                card.step = None
 
                 next_interval_days = self._next_interval(stability=card.stability)
                 next_interval = timedelta(days=next_interval_days)

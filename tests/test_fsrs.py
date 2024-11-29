@@ -556,3 +556,40 @@ class TestPyFSRS:
 
         interval = (card.due - card.last_review).days
         assert interval >= 1
+
+    def test_one_card_multiple_schedulers(self):
+
+        scheduler_with_two_learning_steps = Scheduler(learning_steps=( timedelta(minutes=1), timedelta(minutes=10) ))
+        scheduler_with_no_learning_steps = Scheduler(learning_steps=())
+
+        card = Card()
+
+        assert len(scheduler_with_two_learning_steps.learning_steps) == 2
+        card, _ = scheduler_with_two_learning_steps.review_card(card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc))
+        assert card.state == State.Learning
+        assert card.step == 1
+
+        assert len(scheduler_with_no_learning_steps.learning_steps) == 0
+        card, _ = scheduler_with_no_learning_steps.review_card(card=card, rating=Rating.Again, review_datetime=datetime.now(timezone.utc))
+        assert card.state == State.Review
+        assert card.step is None
+
+        scheduler_with_two_relearning_steps = Scheduler(relearning_steps=( timedelta(minutes=1), timedelta(minutes=10), timedelta(minutes=15) ))
+        scheduler_with_no_relearning_steps = Scheduler(relearning_steps=())
+
+        assert len(scheduler_with_two_relearning_steps.relearning_steps) == 3
+        card, _ = scheduler_with_two_relearning_steps.review_card(card=card, rating=Rating.Again, review_datetime=datetime.now(timezone.utc))
+        assert card.state == State.Relearning
+        assert card.step == 0
+
+        card, _ = scheduler_with_two_relearning_steps.review_card(card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc))
+        assert card.state == State.Relearning
+        assert card.step == 1
+
+        card, _ = scheduler_with_two_relearning_steps.review_card(card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc))
+        assert card.state == State.Relearning
+        assert card.step == 2
+
+        card, _ = scheduler_with_no_relearning_steps.review_card(card=card, rating=Rating.Again, review_datetime=datetime.now(timezone.utc))
+        assert card.state == State.Review
+        assert card.step is None

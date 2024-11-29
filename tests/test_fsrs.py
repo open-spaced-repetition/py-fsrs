@@ -378,3 +378,148 @@ class TestPyFSRS:
         assert ivl_history[0] == 0 # review New-state card (no fuzz)
         assert ivl_history[1] == 4 # review Learning-state card (no fuzz)
         assert 14 <= ivl_history[2] <= 21 # review Review-state card (fuzz)
+
+    def test_good_learning_steps(self):
+
+        scheduler = FSRSScheduler()
+
+        created_at = datetime.now(timezone.utc)
+        card = Card()
+
+        assert card.state == State.Learning
+        assert card.step == 0
+
+        rating = Rating.Good
+        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+
+        assert card.state == State.Learning
+        assert card.step == 1
+        assert round((card.due - created_at).total_seconds() / 100) == 6 # card is due in approx. 10 minutes (600 seconds)
+
+        rating = Rating.Good
+        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+        assert card.state == State.Review
+        assert card.step == None
+        assert round((card.due - created_at).total_seconds() / 3600) >= 24 # card is due in over a day
+
+    def test_again_learning_steps(self):
+
+        scheduler = FSRSScheduler()
+
+        created_at = datetime.now(timezone.utc)
+        card = Card()        
+
+        assert card.state == State.Learning
+        assert card.step == 0
+
+        rating = Rating.Again
+        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+
+        assert card.state == State.Learning
+        assert card.step == 0
+        assert round((card.due - created_at).total_seconds() / 10) == 6 # card is due in approx. 1 minute (60 seconds)
+
+    def test_hard_learning_steps(self):
+
+        scheduler = FSRSScheduler()
+
+        created_at = datetime.now(timezone.utc)
+        card = Card()    
+
+        assert card.state == State.Learning
+        assert card.step == 0
+
+        rating = Rating.Hard
+        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+
+        assert card.state == State.Learning
+        assert card.step == 0
+        assert round((card.due - created_at).total_seconds() / 10) == 33 # card is due in approx. 5.5 minutes (330 seconds)
+
+    def test_easy_learning_steps(self):
+
+        scheduler = FSRSScheduler()
+
+        created_at = datetime.now(timezone.utc)
+        card = Card()    
+
+        assert card.state == State.Learning
+        assert card.step == 0
+
+        rating = Rating.Easy
+        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+
+        assert card.state == State.Review
+        assert card.step == None
+        assert round((card.due - created_at).total_seconds() / 86400) >= 1 # card is due in at least 1 full day
+
+    def test_review_state(self):
+
+        scheduler = FSRSScheduler(enable_fuzzing=False)
+
+        card = Card()
+
+        rating = Rating.Good
+        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+
+        rating = Rating.Good
+        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+
+        assert card.state == State.Review
+        assert card.step == None
+
+        prev_due = card.due
+        rating = Rating.Good
+        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+
+        assert card.state == State.Review
+        assert round((card.due - prev_due).total_seconds() / 3600) >= 24 # card is due in at least 1 full day
+
+        # rate the card again
+        prev_due = card.due
+        rating = Rating.Again
+        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+
+        assert card.state == State.Relearning
+        assert round((card.due - prev_due).total_seconds() / 60) == 10 # card is due in 10 minutes
+
+    def test_relearning(self):
+
+        scheduler = FSRSScheduler(enable_fuzzing=False)
+
+        card = Card()
+
+        rating = Rating.Good
+        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+
+        rating = Rating.Good
+        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+
+        prev_due = card.due
+        rating = Rating.Good
+        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+
+        # rate the card again
+        prev_due = card.due
+        rating = Rating.Again
+        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+
+        assert card.state == State.Relearning
+        assert card.step == 0
+        assert round((card.due - prev_due).total_seconds() / 60) == 10 # card is due in 10 minutes 
+
+        prev_due = card.due
+        rating = Rating.Again
+        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+
+        assert card.state == State.Relearning
+        assert card.step == 0
+        assert round((card.due - prev_due).total_seconds() / 60) == 10 # card is due in 10 minutes
+
+        prev_due = card.due
+        rating = Rating.Good
+        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+
+        assert card.state == State.Review
+        assert card.step == None
+        assert round((card.due - prev_due).total_seconds() / 3600) >= 24 # card is due in at least 1 full day

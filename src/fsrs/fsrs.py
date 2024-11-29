@@ -316,7 +316,10 @@ class Scheduler:
                 card.difficulty = self._next_difficulty(difficulty=card.difficulty, rating=rating)
 
             # calculate the card's next interval
-            if len(self.learning_steps) == 0: # if there are no learning steps (they were left blank)
+            # len(self.learning_steps) == 0: no learning steps defined so move card to Review state
+            # card.step > len(self.learning_steps): handles the edge-case when a card was originally scheduled with a scheduler with more
+            # learnning steps than the current scheduler
+            if len(self.learning_steps) == 0 or card.step > len(self.learning_steps):
 
                 card.state = State.Review
                 card.step = None
@@ -425,8 +428,11 @@ class Scheduler:
                 card.stability = self._short_term_stability(stability=card.stability, rating=rating)
                 card.difficulty = self._next_difficulty(difficulty=card.difficulty, rating=rating)
 
-            # if there are no relearning steps (they were left blank)
-            if len(self.relearning_steps) == 0:
+            # calculate the card's next interval
+            # len(self.learning_steps) == 0: no learning steps defined so move card to Review state
+            # card.step > len(self.learning_steps): handles the edge-case when a card was originally scheduled with a scheduler with more
+            # learnning steps than the current scheduler
+            if len(self.relearning_steps) == 0 or card.step > len(self.relearning_steps):
 
                 card.state = State.Review
                 card.step = None

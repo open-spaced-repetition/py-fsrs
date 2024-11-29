@@ -593,3 +593,22 @@ class TestPyFSRS:
         card, _ = scheduler_with_no_relearning_steps.review_card(card=card, rating=Rating.Again, review_datetime=datetime.now(timezone.utc))
         assert card.state == State.Review
         assert card.step is None
+
+    def test_maximum_interval(self):
+
+        maximum_interval=100
+        scheduler = Scheduler(maximum_interval=maximum_interval)
+
+        card = Card()
+
+        card, _ = scheduler.review_card(card=card, rating=Rating.Easy, review_datetime=card.due)
+        assert (card.due - card.last_review).days <= scheduler.maximum_interval
+
+        card, _ = scheduler.review_card(card=card, rating=Rating.Good, review_datetime=card.due)
+        assert (card.due - card.last_review).days <= scheduler.maximum_interval
+
+        card, _ = scheduler.review_card(card=card, rating=Rating.Easy, review_datetime=card.due)
+        assert (card.due - card.last_review).days <= scheduler.maximum_interval
+
+        card, _ = scheduler.review_card(card=card, rating=Rating.Good, review_datetime=card.due)
+        assert (card.due - card.last_review).days <= scheduler.maximum_interval

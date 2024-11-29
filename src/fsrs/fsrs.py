@@ -290,25 +290,33 @@ class Scheduler:
         if review_datetime is None:
             review_datetime = datetime.now(timezone.utc)
 
+        days_since_last_review = (review_datetime - card.last_review).days if card.last_review else None
+
         review_log = ReviewLog(card=card, rating=rating, review_datetime=review_datetime, review_duration=review_duration)
 
         if card.state == State.Learning:
 
             assert type(card.step) == int
 
+            # update the card's stability and difficulty
             if card.stability is None and card.difficulty is None:
                 card.stability = self._initial_stability(rating)
                 card.difficulty = self._initial_difficulty(rating)
-            else:
 
+            elif days_since_last_review is not None and days_since_last_review < 1:
                 assert type(card.stability) == float # mypy
                 assert type(card.difficulty) == float # mypy
-
                 card.stability = self._short_term_stability(stability=card.stability, rating=rating)
                 card.difficulty = self._next_difficulty(difficulty=card.difficulty, rating=rating)
 
-            # if there are no learning steps (they were left blank)
-            if len(self.learning_steps) == 0:
+            else:
+                assert type(card.stability) == float # mypy
+                assert type(card.difficulty) == float # mypy
+                card.stability = self._next_stability(difficulty=card.difficulty, stability=card.stability, retrievability=card.get_retrievability(current_datetime=review_datetime), rating=rating)
+                card.difficulty = self._next_difficulty(difficulty=card.difficulty, rating=rating)
+
+            # calculate the card's next interval
+            if len(self.learning_steps) == 0: # if there are no learning steps (they were left blank)
 
                 card.state = State.Review
                 card.step = None
@@ -365,9 +373,16 @@ class Scheduler:
             assert type(card.stability) == float # mypy
             assert type(card.difficulty) == float # mypy
 
-            card.stability = self._next_stability(difficulty=card.difficulty, stability=card.stability, retrievability=card.get_retrievability(current_datetime=review_datetime), rating=rating)
-            card.difficulty = self._next_difficulty(difficulty=card.difficulty, rating=rating)
+            # update the card's stability and difficulty
+            if days_since_last_review is not None and days_since_last_review < 1:
+                card.stability = self._short_term_stability(stability=card.stability, rating=rating)
+                card.difficulty = self._next_difficulty(difficulty=card.difficulty, rating=rating)
 
+            else:
+                card.stability = self._next_stability(difficulty=card.difficulty, stability=card.stability, retrievability=card.get_retrievability(current_datetime=review_datetime), rating=rating)
+                card.difficulty = self._next_difficulty(difficulty=card.difficulty, rating=rating)
+
+            # calculate the card's next interval
             if rating == Rating.Again:
 
                 # if there are no relearning steps (they were left blank)
@@ -401,8 +416,14 @@ class Scheduler:
             assert type(card.stability) == float # mypy
             assert type(card.difficulty) == float # mypy
 
-            card.stability = self._short_term_stability(stability=card.stability, rating=rating)
-            card.difficulty = self._next_difficulty(difficulty=card.difficulty, rating=rating)
+            # update the card's stability and difficulty
+            if days_since_last_review is not None and days_since_last_review < 1:
+                card.stability = self._short_term_stability(stability=card.stability, rating=rating)
+                card.difficulty = self._next_difficulty(difficulty=card.difficulty, rating=rating)
+
+            else:
+                card.stability = self._short_term_stability(stability=card.stability, rating=rating)
+                card.difficulty = self._next_difficulty(difficulty=card.difficulty, rating=rating)
 
             # if there are no relearning steps (they were left blank)
             if len(self.relearning_steps) == 0:

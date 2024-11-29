@@ -516,13 +516,23 @@ class Scheduler:
                              maximum_interval=maximum_interval,
                              enable_fuzzing=enable_fuzzing)
 
-    def _initial_stability(self, rating: Rating):
+    def _initial_stability(self, rating: Rating) -> float:
 
-        return self.parameters[rating-1]
+        initial_stability = self.parameters[rating-1]
 
-    def _initial_difficulty(self, rating: Rating):
+        # initial_stability >= 0.1
+        initial_stability = max(initial_stability, 0.1)
 
-        return self.parameters[4] - math.exp(self.parameters[5] * (rating - 1)) + 1
+        return initial_stability
+
+    def _initial_difficulty(self, rating: Rating) -> float:
+
+        initial_difficulty = self.parameters[4] - math.exp(self.parameters[5] * (rating - 1)) + 1
+
+        # bound initial_difficulty between 1 and 10
+        initial_difficulty = min( max(initial_difficulty, 1), 10 )
+
+        return initial_difficulty
 
     def _next_interval(self, stability: float) -> int:
 
@@ -549,7 +559,12 @@ class Scheduler:
         arg_1 = self._initial_difficulty(Rating.Easy)
         arg_2 = difficulty - ( self.parameters[6] * (rating - 3) )
 
-        return mean_reversion(arg_1, arg_2)
+        next_difficulty = mean_reversion(arg_1, arg_2)
+
+        # bound next_difficulty between 1 and 10
+        next_difficulty = min( max(next_difficulty, 1), 10 )
+
+        return next_difficulty
         
     def _next_stability(self, 
                         difficulty: float, 

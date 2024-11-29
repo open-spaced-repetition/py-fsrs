@@ -526,3 +526,33 @@ class TestPyFSRS:
         interval = card.due - prev_due
         
         assert interval.days == 15
+
+    def test_no_learning_steps(self):
+
+        scheduler = Scheduler(learning_steps=())
+
+        assert len(scheduler.learning_steps) == 0
+
+        card = Card()
+        card, _ = scheduler.review_card(card=card, rating=Rating.Again, review_datetime=datetime.now(timezone.utc))
+
+        assert card.state == State.Review
+        interval = (card.due - card.last_review).days
+        assert interval >= 1
+
+    def test_no_relearning_steps(self):
+
+        scheduler = Scheduler(relearning_steps=())
+
+        assert len(scheduler.relearning_steps) == 0
+
+        card = Card()
+        card, _ = scheduler.review_card(card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc))
+        assert card.state == State.Learning
+        card, _ = scheduler.review_card(card=card, rating=Rating.Good, review_datetime=card.due)
+        assert card.state == State.Review
+        card, _ = scheduler.review_card(card=card, rating=Rating.Again, review_datetime=card.due)
+        assert card.state == State.Review
+
+        interval = (card.due - card.last_review).days
+        assert interval >= 1

@@ -321,7 +321,7 @@ class FSRSScheduler:
                 if card.step == 0 and len(self.learning_steps) == 1:
                     next_interval = self.learning_steps[0] * 1.5
                 elif card.step == 0 and len(self.learning_steps) >= 2:
-                    next_interval = (self.learning_steps[1] + self.learning_steps[2]) / 2.0
+                    next_interval = (self.learning_steps[0] + self.learning_steps[1]) / 2.0
                 else:
                     next_interval = self.learning_steps[card.step]
 
@@ -399,7 +399,7 @@ class FSRSScheduler:
                 if card.step == 0 and len(self.relearning_steps) == 1:
                     next_interval = self.relearning_steps[0] * 1.5
                 elif card.step == 0 and len(self.relearning_steps) >= 2:
-                    next_interval = (self.relearning_steps[1] + self.relearning_steps[2]) / 2.0
+                    next_interval = (self.relearning_steps[0] + self.relearning_steps[1]) / 2.0
                 else:
                     next_interval = self.relearning_steps[card.step]
 

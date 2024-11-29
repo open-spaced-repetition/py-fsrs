@@ -2,6 +2,7 @@ from fsrs import FSRSScheduler, Card, ReviewLog, State, Rating
 from datetime import datetime, timedelta, timezone
 import json
 import pytest
+import random
 
 test_parameters = (
     0.4197,
@@ -353,32 +354,6 @@ class TestPyFSRS:
         assert vars(scheduler) == vars(copied_scheduler)
         assert scheduler.to_dict() == copied_scheduler.to_dict()
 
-    def test_basic_fuzzed_interval(self):
-
-        scheduler = FSRSScheduler(parameters=test_parameters, enable_fuzzing=True)
-
-        ratings = (
-            Rating.Good,
-            Rating.Good,
-            Rating.Good
-        )
-        
-        card = Card()
-        review_datetime = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
-
-        ivl_history = []
-        for rating in ratings:
-            card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=review_datetime)
-
-            ivl = (card.due - card.last_review).days
-            ivl_history.append(ivl)
-
-            review_datetime = card.due
-
-        assert ivl_history[0] == 0 # review New-state card (no fuzz)
-        assert ivl_history[1] == 4 # review Learning-state card (no fuzz)
-        assert 14 <= ivl_history[2] <= 21 # review Review-state card (fuzz)
-
     def test_good_learning_steps(self):
 
         scheduler = FSRSScheduler()
@@ -523,3 +498,31 @@ class TestPyFSRS:
         assert card.state == State.Review
         assert card.step == None
         assert round((card.due - prev_due).total_seconds() / 3600) >= 24 # card is due in at least 1 full day
+
+    def test_fuzz(self):
+
+        scheduler = FSRSScheduler()
+
+        # seed 1
+        random.seed(42)
+
+        card = Card()
+        card, _ = scheduler.review_card(card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc))
+        card, _ = scheduler.review_card(card=card, rating=Rating.Good, review_datetime=card.due)
+        prev_due = card.due
+        card, _ = scheduler.review_card(card=card, rating=Rating.Good, review_datetime=card.due)
+        interval = card.due - prev_due
+        
+        assert interval.days == 16
+
+        # seed 2
+        random.seed(12345)
+
+        card = Card()
+        card, _ = scheduler.review_card(card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc))
+        card, _ = scheduler.review_card(card=card, rating=Rating.Good, review_datetime=card.due)
+        prev_due = card.due
+        card, _ = scheduler.review_card(card=card, rating=Rating.Good, review_datetime=card.due)
+        interval = card.due - prev_due
+        
+        assert interval.days == 15

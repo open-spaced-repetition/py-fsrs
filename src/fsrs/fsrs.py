@@ -9,7 +9,7 @@ Classes:
     Rating: Enum representing the four possible ratings when reviewing a card.
     Card: Represents a flashcard in the FSRS system.
     ReviewLog: Represents the log entry of Card that has been reviewed.
-    FSRSScheduler: The FSRS spaced-repetition scheduler.
+    Scheduler: The FSRS spaced-repetition scheduler.
 """
 
 import math
@@ -223,7 +223,7 @@ class ReviewLog:
     
         return ReviewLog(card=card, rating=rating, review_datetime=review_datetime, review_duration=review_duration)
 
-class FSRSScheduler:
+class Scheduler:
     """
     The FSRS scheduler.
 
@@ -445,7 +445,7 @@ class FSRSScheduler:
         return return_dict
 
     @staticmethod
-    def from_dict(source_dict: dict[str, Any]) -> "FSRSScheduler":
+    def from_dict(source_dict: dict[str, Any]) -> "Scheduler":
 
         parameters = source_dict['parameters']
         desired_retention = source_dict['desired_retention']
@@ -454,7 +454,7 @@ class FSRSScheduler:
         maximum_interval = source_dict['maximum_interval']
         enable_fuzzing = source_dict['enable_fuzzing']
 
-        return FSRSScheduler(parameters=parameters, 
+        return Scheduler(parameters=parameters, 
                              desired_retention=desired_retention,
                              learning_steps=learning_steps,
                              relearning_steps=relearning_steps,

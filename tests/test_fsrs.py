@@ -1,4 +1,4 @@
-from fsrs import FSRSScheduler, Card, ReviewLog, State, Rating
+from fsrs import Scheduler, Card, ReviewLog, State, Rating
 from datetime import datetime, timedelta, timezone
 import json
 import pytest
@@ -30,7 +30,7 @@ test_parameters = (
 class TestPyFSRS:
     def test_review_card(self):
 
-        scheduler = FSRSScheduler(parameters=test_parameters, enable_fuzzing=False)
+        scheduler = Scheduler(parameters=test_parameters, enable_fuzzing=False)
 
         ratings = (
             Rating.Good,
@@ -78,7 +78,7 @@ class TestPyFSRS:
 
     def test_memo_state(self):
     
-        scheduler = FSRSScheduler(parameters=test_parameters)
+        scheduler = Scheduler(parameters=test_parameters)
 
         ratings = (
             Rating.Again,
@@ -106,7 +106,7 @@ class TestPyFSRS:
 
     def test_repeat_default_arg(self):
     
-        scheduler = FSRSScheduler()
+        scheduler = Scheduler()
 
         card = Card()
 
@@ -122,7 +122,7 @@ class TestPyFSRS:
 
     def test_datetime(self):
     
-        scheduler = FSRSScheduler()
+        scheduler = Scheduler()
         card = Card()
 
         # new cards should be due immediately after creation
@@ -147,7 +147,7 @@ class TestPyFSRS:
 
     def test_Card_serialize(self):
     
-        scheduler = FSRSScheduler()
+        scheduler = Scheduler()
 
         # create card object the normal way
         card = Card()
@@ -186,7 +186,7 @@ class TestPyFSRS:
 
     def test_ReviewLog_serialize(self):
     
-        scheduler = FSRSScheduler()
+        scheduler = Scheduler()
 
         card = Card()
 
@@ -224,7 +224,7 @@ class TestPyFSRS:
 
     def test_custom_scheduler_args(self):
     
-        scheduler = FSRSScheduler(
+        scheduler = Scheduler(
             parameters=(
                 0.4197,
                 1.1869,
@@ -302,7 +302,7 @@ class TestPyFSRS:
         )
         desired_retention2 = 0.85
         maximum_interval2 = 3650
-        scheduler2 = FSRSScheduler(
+        scheduler2 = Scheduler(
             parameters=parameters2,
             desired_retention=desired_retention2,
             maximum_interval=maximum_interval2,
@@ -314,7 +314,7 @@ class TestPyFSRS:
 
     def test_retrievability(self):
     
-        scheduler = FSRSScheduler()
+        scheduler = Scheduler()
 
         card = Card()
 
@@ -343,20 +343,20 @@ class TestPyFSRS:
 
     def test_Scheduler_serialize(self):
 
-        scheduler = FSRSScheduler()
+        scheduler = Scheduler()
 
-        # FSRSScheduler objects are json-serializable through its .to_dict() method
+        # Scheduler objects are json-serializable through its .to_dict() method
         assert type(json.dumps(scheduler.to_dict())) == str
 
         # scheduler can be serialized and de-serialized while remaining the same
         scheduler_dict = scheduler.to_dict()
-        copied_scheduler = FSRSScheduler.from_dict(scheduler_dict)
+        copied_scheduler = Scheduler.from_dict(scheduler_dict)
         assert vars(scheduler) == vars(copied_scheduler)
         assert scheduler.to_dict() == copied_scheduler.to_dict()
 
     def test_good_learning_steps(self):
 
-        scheduler = FSRSScheduler()
+        scheduler = Scheduler()
 
         created_at = datetime.now(timezone.utc)
         card = Card()
@@ -379,7 +379,7 @@ class TestPyFSRS:
 
     def test_again_learning_steps(self):
 
-        scheduler = FSRSScheduler()
+        scheduler = Scheduler()
 
         created_at = datetime.now(timezone.utc)
         card = Card()        
@@ -396,7 +396,7 @@ class TestPyFSRS:
 
     def test_hard_learning_steps(self):
 
-        scheduler = FSRSScheduler()
+        scheduler = Scheduler()
 
         created_at = datetime.now(timezone.utc)
         card = Card()    
@@ -413,7 +413,7 @@ class TestPyFSRS:
 
     def test_easy_learning_steps(self):
 
-        scheduler = FSRSScheduler()
+        scheduler = Scheduler()
 
         created_at = datetime.now(timezone.utc)
         card = Card()    
@@ -430,7 +430,7 @@ class TestPyFSRS:
 
     def test_review_state(self):
 
-        scheduler = FSRSScheduler(enable_fuzzing=False)
+        scheduler = Scheduler(enable_fuzzing=False)
 
         card = Card()
 
@@ -460,7 +460,7 @@ class TestPyFSRS:
 
     def test_relearning(self):
 
-        scheduler = FSRSScheduler(enable_fuzzing=False)
+        scheduler = Scheduler(enable_fuzzing=False)
 
         card = Card()
 
@@ -501,7 +501,7 @@ class TestPyFSRS:
 
     def test_fuzz(self):
 
-        scheduler = FSRSScheduler()
+        scheduler = Scheduler()
 
         # seed 1
         random.seed(42)

@@ -35,30 +35,32 @@ pip install fsrs
 Import and initialize the FSRS scheduler
 
 ```python
-from fsrs import FSRS, Card, Rating
+from fsrs import Scheduler, Card, Rating, ReviewLog
 
-f = FSRS()
+scheduler = Scheduler()
 ```
 
 Create a new Card object
 ```python
-# all new cards are 'due' immediately upon creation
+# note: all new cards are 'due' immediately upon creation
 card = Card()
 ```
 
-Choose a rating and review the card
+Choose a rating and review the card with the scheduler
 ```python
-# you can choose one of the four possible ratings
 """
-Rating.Again # forget; incorrect response
-Rating.Hard # recall; correct response recalled with serious difficulty
-Rating.Good # recall; correct response after a hesitation
-Rating.Easy # recall; perfect response
+Rating.Again # (==0) forgot the card
+Rating.Hard # (==1) remembered the card, but with serious difficulty
+Rating.Good # (==2) remembered the card after a hesitation
+Rating.Easy # (==3) remembered the card easily
 """
 
 rating = Rating.Good
 
-card, review_log = f.review_card(card, rating)
+card, review_log = scheduler.review_card(card, rating)
+
+print(f"Card rated {review_log.rating} at {review_log.review_datetime}")
+# > Card rated 3 at 2024-11-30 17:46:58.856497+00:00
 ```
 
 See when the card is due next
@@ -70,111 +72,117 @@ due = card.due
 # how much time between when the card is due and now
 time_delta = due - datetime.now(timezone.utc)
 
-print(f"Card due: at {repr(due)}")
+print(f"Card due on {due}")
 print(f"Card due in {time_delta.seconds} seconds")
 
 """
-> Card due: at datetime.datetime(2024, 7, 12, 18, 16, 4, 429428, tzinfo=datetime.timezone.utc)
-> Card due in: 599 seconds
+> Card due on 2024-11-30 18:42:36.070712+00:00
+> Card due in 599 seconds
 """
 ```
 
 ## Usage
 
-### Custom scheduler
+### Custom parameters
 
-You can initialize the FSRS scheduler with your own custom weights as well as desired retention rate and maximum interval.
+You can initialize the FSRS scheduler with your own custom parameters.
 
 ```python
-f = FSRS(
-    w=(
-        0.4197,
-        1.1869,
-        3.0412,
-        15.2441,
-        7.1434,
-        0.6477,
-        1.0007,
-        0.0674,
-        1.6597,
-        0.1712,
-        1.1178,
-        2.0225,
-        0.0904,
-        0.3025,
-        2.1214,
-        0.2498,
-        2.9466,
-        0.4891,
-        0.6468,
-    ),
-    request_retention=0.85,
-    maximum_interval=3650,
+from datetime import timedelta
+
+# note: the following arguments are also the defaults
+scheduler = Scheduler(
+    parameters = (
+            0.4072,
+            1.1829,
+            3.1262,
+            15.4722,
+            7.2102,
+            0.5316,
+            1.0651,
+            0.0234,
+            1.616,
+            0.1544,
+            1.0824,
+            1.9813,
+            0.0953,
+            0.2975,
+            2.2042,
+            0.2407,
+            2.9466,
+            0.5034,
+            0.6567,
+        ),
+    desired_retention = 0.9,
+    learning_steps = (timedelta(minutes=1), timedelta(minutes=10)),
+    relearning_steps = (timedelta(minutes=10),),
+    maximum_interval = 36500,
+    enable_fuzzing = True
 )
 ```
 
-### Advanced reviewing of cards
+#### Explanation of parameters
 
-Aside from using the convenience method `review_card`, there is also the `repeat` method:
+`parameters` are a set of 19 model weights that affect how the FSRS scheduler will schedule future reviews. If you're not familiar with optimizing FSRS, it is best not to modify these default values.
+
+`desired_retention` is a value between 0 and 1 that sets the desired minimum retention rate for cards when scheduled with the scheduler. For example, with the default value of `desired_retention=0.9`, a card will be scheduled at a time in the future when the predicted probability of the user correctly recalling that card falls to 90%. A higher `desired_retention` rate will lead to more reviews and a lower rate will lead to fewer reviews.
+
+`learning_steps` are custom time intervals that schedule new cards in the Learning state. By default, cards in the Learning state have short intervals of 1 minute then 10 minutes. You can also disable `learning_steps` with `Scheduler(learning_steps=())`
+
+`relearning_steps` are analogous to `learning_steps` except they apply to cards in the Relearning state. Cards transition to the Relearning state if they were previously in the Review state, then were rated Again - this is also known as a 'lapse'. If you specify `Scheduler(relearning_steps=())`, cards in the Review state, when lapsed, will not move to the Relearning state, but instead stay in the Review state.
+
+`maximum_interval` sets the cap for the maximum days into the future the scheduler is capable of scheduling cards. For example, if you never want the scheduler to schedule a card more than one year into the future, you'd set `Scheduler(maximum_interval=365)`.
+
+`enable_fuzzing`, if set to True, will apply a small amount of random 'fuzz' to calculated intervals. For example, a card that would've been due in 50 days, after fuzzing, might be due in 49, or 51 days.
+
+### Timezone
+
+**Py-FSRS uses UTC only.** 
+
+You can still specify custom datetimes, but they must use the UTC timezone.
+
+### Retrievability
+
+You can calculate the current probability of correctly recalling a card (its 'retrievability') with
 
 ```python
-from datetime import datetime, timezone
+retrievability = card.get_retrievability()
 
-# custom review time (must be UTC)
-review_time = datetime(2024, 7, 13, 20, 7, 56, 150101, tzinfo=timezone.utc)
-
-scheduling_cards = f.repeat(card, review_time)
-
-# can get updated cards for each possible rating
-card_Again = scheduling_cards[Rating.Again].card
-card_Hard = scheduling_cards[Rating.Hard].card
-card_Good = scheduling_cards[Rating.Good].card
-card_Easy = scheduling_cards[Rating.Easy].card
-
-# get next review interval for each rating
-scheduled_days_Again = card_Again.scheduled_days
-scheduled_days_Hard = card_Hard.scheduled_days
-scheduled_days_Good = card_Good.scheduled_days
-scheduled_days_Easy = card_Easy.scheduled_days
-
-# choose a rating and update the card
-rating = Rating.Good
-card = scheduling_cards[rating].card
-
-# get the corresponding review log for the review
-review_log = scheduling_cards[rating].review_log
+print(f"There is a {retrievability} probability that this card is remembered.")
+# > There is a 0.94 probability that this card is remembered.
 ```
 
 ### Serialization
 
-`Card` and `ReviewLog` objects are JSON-serializable via their `to_dict` and `from_dict` methods for easy database storage:
+`Scheduler`, `Card` and `ReviewLog` objects are all JSON-serializable via their `to_dict` and `from_dict` methods for easy database storage:
 
 ```python
 # serialize before storage
+scheduler_dict = scheduler.to_dict()
 card_dict = card.to_dict()
 review_log_dict = review_log.to_dict()
 
 # deserialize from dict
+new_scheduler = Scheduler.from_dict(scheduler_dict)
 new_card = Card.from_dict(card_dict)
 new_review_log = ReviewLog.from_dict(review_log_dict)
 ```
 
 ## Reference
 
-Card objects have one of four possible states
+Card objects have one of three possible states
 ```python
-State.New # Never been studied
-State.Learning # Been studied for the first time recently
-State.Review # Graduate from learning state
-State.Relearning # Forgotten in review state
+State.Learning # new card being studied for the first time
+State.Review # card that has "graduated" from the Learning state
+State.Relearning # card that has lapsed from the Review state
 ```
 
 There are four possible ratings when reviewing a card object:
 ```python
-Rating.Again # forget; incorrect response
-Rating.Hard # recall; correct response recalled with serious difficulty
-Rating.Good # recall; correct response after a hesitation
-Rating.Easy # recall; perfect response
+Rating.Again # (==0) forgot the card
+Rating.Hard # (==1) remembered the card, but with serious difficulty
+Rating.Good # (==2) remembered the card after a hesitation
+Rating.Easy # (==3) remembered the card easily
 ```
 
 ## Contribute

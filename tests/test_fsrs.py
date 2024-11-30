@@ -29,7 +29,6 @@ test_parameters = (
 
 class TestPyFSRS:
     def test_review_card(self):
-
         scheduler = Scheduler(parameters=test_parameters, enable_fuzzing=False)
 
         ratings = (
@@ -47,13 +46,15 @@ class TestPyFSRS:
             Rating.Good,
             Rating.Good,
         )
-        
+
         card = Card()
         review_datetime = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
 
         ivl_history = []
         for rating in ratings:
-            card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=review_datetime)
+            card, _ = scheduler.review_card(
+                card=card, rating=rating, review_datetime=review_datetime
+            )
 
             ivl = (card.due - card.last_review).days
             ivl_history.append(ivl)
@@ -77,7 +78,6 @@ class TestPyFSRS:
         ]
 
     def test_memo_state(self):
-    
         scheduler = Scheduler(parameters=test_parameters)
 
         ratings = (
@@ -94,25 +94,30 @@ class TestPyFSRS:
         review_datetime = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
 
         for rating, ivl in zip(ratings, ivl_history):
-
-            card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=review_datetime)
+            card, _ = scheduler.review_card(
+                card=card, rating=rating, review_datetime=review_datetime
+            )
 
             review_datetime += timedelta(days=ivl)
 
-        card, _ = scheduler.review_card(card=card, rating=Rating.Good, review_datetime=review_datetime)
-            
+        card, _ = scheduler.review_card(
+            card=card, rating=Rating.Good, review_datetime=review_datetime
+        )
+
         assert round(card.stability) == 72
         assert round(card.difficulty, 4) == 5.0976
 
     def test_repeat_default_arg(self):
-    
         scheduler = Scheduler()
 
         card = Card()
 
         rating = Rating.Good
 
-        card, _ = scheduler.review_card(card=card, rating=rating,)
+        card, _ = scheduler.review_card(
+            card=card,
+            rating=rating,
+        )
 
         due = card.due
 
@@ -121,7 +126,6 @@ class TestPyFSRS:
         assert time_delta.seconds > 500  # due in approx. 8-10 minutes
 
     def test_datetime(self):
-    
         scheduler = Scheduler()
         card = Card()
 
@@ -134,10 +138,16 @@ class TestPyFSRS:
 
         # repeating a card with a non-utc, non-timezone-aware datetime object should raise a Value Error
         with pytest.raises(ValueError):
-            scheduler.review_card(card=card, rating=Rating.Good, review_datetime=datetime(2022, 11, 29, 12, 30, 0, 0))
+            scheduler.review_card(
+                card=card,
+                rating=Rating.Good,
+                review_datetime=datetime(2022, 11, 29, 12, 30, 0, 0),
+            )
 
         # review a card with rating good before next tests
-        card, _ = scheduler.review_card(card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc))
+        card, _ = scheduler.review_card(
+            card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc)
+        )
 
         # card object's due and last_review attributes must be timezone aware and UTC
         assert card.due.tzinfo == timezone.utc
@@ -146,7 +156,6 @@ class TestPyFSRS:
         assert card.due >= card.last_review
 
     def test_Card_serialize(self):
-    
         scheduler = Scheduler()
 
         # create card object the normal way
@@ -167,7 +176,9 @@ class TestPyFSRS:
         assert card.to_dict() == copied_card.to_dict()
 
         # (x2) perform the above tests once more with a repeated card
-        reviewed_card, _ = scheduler.review_card(card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc))
+        reviewed_card, _ = scheduler.review_card(
+            card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc)
+        )
 
         with pytest.raises(TypeError):
             json.dumps(reviewed_card.__dict__)
@@ -185,7 +196,6 @@ class TestPyFSRS:
         assert card.to_dict() != reviewed_card.to_dict()
 
     def test_ReviewLog_serialize(self):
-    
         scheduler = Scheduler()
 
         card = Card()
@@ -207,7 +217,9 @@ class TestPyFSRS:
 
         # (x2) perform the above tests once more with a review_log from a reviewed card
         rating = Rating.Good
-        card, next_review_log = scheduler.review_card(card=card, rating=rating, review_datetime=datetime.now(timezone.utc))
+        card, next_review_log = scheduler.review_card(
+            card=card, rating=rating, review_datetime=datetime.now(timezone.utc)
+        )
 
         with pytest.raises(TypeError):
             json.dumps(next_review_log.__dict__)
@@ -223,7 +235,6 @@ class TestPyFSRS:
         assert review_log.to_dict() != next_review_log.to_dict()
 
     def test_custom_scheduler_args(self):
-    
         scheduler = Scheduler(
             parameters=(
                 0.4197,
@@ -248,7 +259,7 @@ class TestPyFSRS:
             ),
             desired_retention=0.9,
             maximum_interval=36500,
-            enable_fuzzing=False
+            enable_fuzzing=False,
         )
         card = Card()
         now = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
@@ -313,7 +324,6 @@ class TestPyFSRS:
         assert scheduler2.maximum_interval == maximum_interval2
 
     def test_retrievability(self):
-    
         scheduler = Scheduler()
 
         card = Card()
@@ -342,7 +352,6 @@ class TestPyFSRS:
         assert 0 <= retrievability <= 1
 
     def test_Scheduler_serialize(self):
-
         scheduler = Scheduler()
 
         # Scheduler objects are json-serializable through its .to_dict() method
@@ -355,7 +364,6 @@ class TestPyFSRS:
         assert scheduler.to_dict() == copied_scheduler.to_dict()
 
     def test_good_learning_steps(self):
-
         scheduler = Scheduler()
 
         created_at = datetime.now(timezone.utc)
@@ -365,250 +373,338 @@ class TestPyFSRS:
         assert card.step == 0
 
         rating = Rating.Good
-        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+        card, _ = scheduler.review_card(
+            card=card, rating=rating, review_datetime=card.due
+        )
 
         assert card.state == State.Learning
         assert card.step == 1
-        assert round((card.due - created_at).total_seconds() / 100) == 6 # card is due in approx. 10 minutes (600 seconds)
+        assert (
+            round((card.due - created_at).total_seconds() / 100) == 6
+        )  # card is due in approx. 10 minutes (600 seconds)
 
         rating = Rating.Good
-        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+        card, _ = scheduler.review_card(
+            card=card, rating=rating, review_datetime=card.due
+        )
         assert card.state == State.Review
         assert card.step is None
-        assert round((card.due - created_at).total_seconds() / 3600) >= 24 # card is due in over a day
+        assert (
+            round((card.due - created_at).total_seconds() / 3600) >= 24
+        )  # card is due in over a day
 
     def test_again_learning_steps(self):
-
         scheduler = Scheduler()
 
         created_at = datetime.now(timezone.utc)
-        card = Card()        
+        card = Card()
 
         assert card.state == State.Learning
         assert card.step == 0
 
         rating = Rating.Again
-        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+        card, _ = scheduler.review_card(
+            card=card, rating=rating, review_datetime=card.due
+        )
 
         assert card.state == State.Learning
         assert card.step == 0
-        assert round((card.due - created_at).total_seconds() / 10) == 6 # card is due in approx. 1 minute (60 seconds)
+        assert (
+            round((card.due - created_at).total_seconds() / 10) == 6
+        )  # card is due in approx. 1 minute (60 seconds)
 
     def test_hard_learning_steps(self):
-
         scheduler = Scheduler()
 
         created_at = datetime.now(timezone.utc)
-        card = Card()    
+        card = Card()
 
         assert card.state == State.Learning
         assert card.step == 0
 
         rating = Rating.Hard
-        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+        card, _ = scheduler.review_card(
+            card=card, rating=rating, review_datetime=card.due
+        )
 
         assert card.state == State.Learning
         assert card.step == 0
-        assert round((card.due - created_at).total_seconds() / 10) == 33 # card is due in approx. 5.5 minutes (330 seconds)
+        assert (
+            round((card.due - created_at).total_seconds() / 10) == 33
+        )  # card is due in approx. 5.5 minutes (330 seconds)
 
     def test_easy_learning_steps(self):
-
         scheduler = Scheduler()
 
         created_at = datetime.now(timezone.utc)
-        card = Card()    
+        card = Card()
 
         assert card.state == State.Learning
         assert card.step == 0
 
         rating = Rating.Easy
-        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+        card, _ = scheduler.review_card(
+            card=card, rating=rating, review_datetime=card.due
+        )
 
         assert card.state == State.Review
         assert card.step is None
-        assert round((card.due - created_at).total_seconds() / 86400) >= 1 # card is due in at least 1 full day
+        assert (
+            round((card.due - created_at).total_seconds() / 86400) >= 1
+        )  # card is due in at least 1 full day
 
     def test_review_state(self):
-
         scheduler = Scheduler(enable_fuzzing=False)
 
         card = Card()
 
         rating = Rating.Good
-        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+        card, _ = scheduler.review_card(
+            card=card, rating=rating, review_datetime=card.due
+        )
 
         rating = Rating.Good
-        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+        card, _ = scheduler.review_card(
+            card=card, rating=rating, review_datetime=card.due
+        )
 
         assert card.state == State.Review
         assert card.step is None
 
         prev_due = card.due
         rating = Rating.Good
-        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+        card, _ = scheduler.review_card(
+            card=card, rating=rating, review_datetime=card.due
+        )
 
         assert card.state == State.Review
-        assert round((card.due - prev_due).total_seconds() / 3600) >= 24 # card is due in at least 1 full day
+        assert (
+            round((card.due - prev_due).total_seconds() / 3600) >= 24
+        )  # card is due in at least 1 full day
 
         # rate the card again
         prev_due = card.due
         rating = Rating.Again
-        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+        card, _ = scheduler.review_card(
+            card=card, rating=rating, review_datetime=card.due
+        )
 
         assert card.state == State.Relearning
-        assert round((card.due - prev_due).total_seconds() / 60) == 10 # card is due in 10 minutes
+        assert (
+            round((card.due - prev_due).total_seconds() / 60) == 10
+        )  # card is due in 10 minutes
 
     def test_relearning(self):
-
         scheduler = Scheduler(enable_fuzzing=False)
 
         card = Card()
 
         rating = Rating.Good
-        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+        card, _ = scheduler.review_card(
+            card=card, rating=rating, review_datetime=card.due
+        )
 
         rating = Rating.Good
-        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+        card, _ = scheduler.review_card(
+            card=card, rating=rating, review_datetime=card.due
+        )
 
         prev_due = card.due
         rating = Rating.Good
-        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+        card, _ = scheduler.review_card(
+            card=card, rating=rating, review_datetime=card.due
+        )
 
         # rate the card again
         prev_due = card.due
         rating = Rating.Again
-        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+        card, _ = scheduler.review_card(
+            card=card, rating=rating, review_datetime=card.due
+        )
 
         assert card.state == State.Relearning
         assert card.step == 0
-        assert round((card.due - prev_due).total_seconds() / 60) == 10 # card is due in 10 minutes 
+        assert (
+            round((card.due - prev_due).total_seconds() / 60) == 10
+        )  # card is due in 10 minutes
 
         prev_due = card.due
         rating = Rating.Again
-        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+        card, _ = scheduler.review_card(
+            card=card, rating=rating, review_datetime=card.due
+        )
 
         assert card.state == State.Relearning
         assert card.step == 0
-        assert round((card.due - prev_due).total_seconds() / 60) == 10 # card is due in 10 minutes
+        assert (
+            round((card.due - prev_due).total_seconds() / 60) == 10
+        )  # card is due in 10 minutes
 
         prev_due = card.due
         rating = Rating.Good
-        card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
+        card, _ = scheduler.review_card(
+            card=card, rating=rating, review_datetime=card.due
+        )
 
         assert card.state == State.Review
         assert card.step is None
-        assert round((card.due - prev_due).total_seconds() / 3600) >= 24 # card is due in at least 1 full day
+        assert (
+            round((card.due - prev_due).total_seconds() / 3600) >= 24
+        )  # card is due in at least 1 full day
 
     def test_fuzz(self):
-
         scheduler = Scheduler()
 
         # seed 1
         random.seed(42)
 
         card = Card()
-        card, _ = scheduler.review_card(card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc))
-        card, _ = scheduler.review_card(card=card, rating=Rating.Good, review_datetime=card.due)
+        card, _ = scheduler.review_card(
+            card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc)
+        )
+        card, _ = scheduler.review_card(
+            card=card, rating=Rating.Good, review_datetime=card.due
+        )
         prev_due = card.due
-        card, _ = scheduler.review_card(card=card, rating=Rating.Good, review_datetime=card.due)
+        card, _ = scheduler.review_card(
+            card=card, rating=Rating.Good, review_datetime=card.due
+        )
         interval = card.due - prev_due
-        
+
         assert interval.days == 16
 
         # seed 2
         random.seed(12345)
 
         card = Card()
-        card, _ = scheduler.review_card(card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc))
-        card, _ = scheduler.review_card(card=card, rating=Rating.Good, review_datetime=card.due)
+        card, _ = scheduler.review_card(
+            card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc)
+        )
+        card, _ = scheduler.review_card(
+            card=card, rating=Rating.Good, review_datetime=card.due
+        )
         prev_due = card.due
-        card, _ = scheduler.review_card(card=card, rating=Rating.Good, review_datetime=card.due)
+        card, _ = scheduler.review_card(
+            card=card, rating=Rating.Good, review_datetime=card.due
+        )
         interval = card.due - prev_due
-        
+
         assert interval.days == 15
 
     def test_no_learning_steps(self):
-
         scheduler = Scheduler(learning_steps=())
 
         assert len(scheduler.learning_steps) == 0
 
         card = Card()
-        card, _ = scheduler.review_card(card=card, rating=Rating.Again, review_datetime=datetime.now(timezone.utc))
+        card, _ = scheduler.review_card(
+            card=card, rating=Rating.Again, review_datetime=datetime.now(timezone.utc)
+        )
 
         assert card.state == State.Review
         interval = (card.due - card.last_review).days
         assert interval >= 1
 
     def test_no_relearning_steps(self):
-
         scheduler = Scheduler(relearning_steps=())
 
         assert len(scheduler.relearning_steps) == 0
 
         card = Card()
-        card, _ = scheduler.review_card(card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc))
+        card, _ = scheduler.review_card(
+            card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc)
+        )
         assert card.state == State.Learning
-        card, _ = scheduler.review_card(card=card, rating=Rating.Good, review_datetime=card.due)
+        card, _ = scheduler.review_card(
+            card=card, rating=Rating.Good, review_datetime=card.due
+        )
         assert card.state == State.Review
-        card, _ = scheduler.review_card(card=card, rating=Rating.Again, review_datetime=card.due)
+        card, _ = scheduler.review_card(
+            card=card, rating=Rating.Again, review_datetime=card.due
+        )
         assert card.state == State.Review
 
         interval = (card.due - card.last_review).days
         assert interval >= 1
 
     def test_one_card_multiple_schedulers(self):
-
-        scheduler_with_two_learning_steps = Scheduler(learning_steps=( timedelta(minutes=1), timedelta(minutes=10) ))
+        scheduler_with_two_learning_steps = Scheduler(
+            learning_steps=(timedelta(minutes=1), timedelta(minutes=10))
+        )
         scheduler_with_no_learning_steps = Scheduler(learning_steps=())
 
         card = Card()
 
         assert len(scheduler_with_two_learning_steps.learning_steps) == 2
-        card, _ = scheduler_with_two_learning_steps.review_card(card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc))
+        card, _ = scheduler_with_two_learning_steps.review_card(
+            card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc)
+        )
         assert card.state == State.Learning
         assert card.step == 1
 
         assert len(scheduler_with_no_learning_steps.learning_steps) == 0
-        card, _ = scheduler_with_no_learning_steps.review_card(card=card, rating=Rating.Again, review_datetime=datetime.now(timezone.utc))
+        card, _ = scheduler_with_no_learning_steps.review_card(
+            card=card, rating=Rating.Again, review_datetime=datetime.now(timezone.utc)
+        )
         assert card.state == State.Review
         assert card.step is None
 
-        scheduler_with_two_relearning_steps = Scheduler(relearning_steps=( timedelta(minutes=1), timedelta(minutes=10), timedelta(minutes=15) ))
+        scheduler_with_two_relearning_steps = Scheduler(
+            relearning_steps=(
+                timedelta(minutes=1),
+                timedelta(minutes=10),
+                timedelta(minutes=15),
+            )
+        )
         scheduler_with_no_relearning_steps = Scheduler(relearning_steps=())
 
         assert len(scheduler_with_two_relearning_steps.relearning_steps) == 3
-        card, _ = scheduler_with_two_relearning_steps.review_card(card=card, rating=Rating.Again, review_datetime=datetime.now(timezone.utc))
+        card, _ = scheduler_with_two_relearning_steps.review_card(
+            card=card, rating=Rating.Again, review_datetime=datetime.now(timezone.utc)
+        )
         assert card.state == State.Relearning
         assert card.step == 0
 
-        card, _ = scheduler_with_two_relearning_steps.review_card(card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc))
+        card, _ = scheduler_with_two_relearning_steps.review_card(
+            card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc)
+        )
         assert card.state == State.Relearning
         assert card.step == 1
 
-        card, _ = scheduler_with_two_relearning_steps.review_card(card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc))
+        card, _ = scheduler_with_two_relearning_steps.review_card(
+            card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc)
+        )
         assert card.state == State.Relearning
         assert card.step == 2
 
-        card, _ = scheduler_with_no_relearning_steps.review_card(card=card, rating=Rating.Again, review_datetime=datetime.now(timezone.utc))
+        card, _ = scheduler_with_no_relearning_steps.review_card(
+            card=card, rating=Rating.Again, review_datetime=datetime.now(timezone.utc)
+        )
         assert card.state == State.Review
         assert card.step is None
 
     def test_maximum_interval(self):
-
-        maximum_interval=100
+        maximum_interval = 100
         scheduler = Scheduler(maximum_interval=maximum_interval)
 
         card = Card()
 
-        card, _ = scheduler.review_card(card=card, rating=Rating.Easy, review_datetime=card.due)
+        card, _ = scheduler.review_card(
+            card=card, rating=Rating.Easy, review_datetime=card.due
+        )
         assert (card.due - card.last_review).days <= scheduler.maximum_interval
 
-        card, _ = scheduler.review_card(card=card, rating=Rating.Good, review_datetime=card.due)
+        card, _ = scheduler.review_card(
+            card=card, rating=Rating.Good, review_datetime=card.due
+        )
         assert (card.due - card.last_review).days <= scheduler.maximum_interval
 
-        card, _ = scheduler.review_card(card=card, rating=Rating.Easy, review_datetime=card.due)
+        card, _ = scheduler.review_card(
+            card=card, rating=Rating.Easy, review_datetime=card.due
+        )
         assert (card.due - card.last_review).days <= scheduler.maximum_interval
 
-        card, _ = scheduler.review_card(card=card, rating=Rating.Good, review_datetime=card.due)
+        card, _ = scheduler.review_card(
+            card=card, rating=Rating.Good, review_datetime=card.due
+        )
         assert (card.due - card.last_review).days <= scheduler.maximum_interval

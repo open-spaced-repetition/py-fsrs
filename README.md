@@ -177,10 +177,6 @@ Rating.Good # recall; correct response after a hesitation
 Rating.Easy # recall; perfect response
 ```
 
-## Algorithm
-
-For a brief overview of the FSRS algorithm, please see [ALGORITHM.md](ALGORITHM.md).
-
 ## Contribute
 
 Checkout [CONTRIBUTING](CONTRIBUTING.md) to help improve Py-FSRS!

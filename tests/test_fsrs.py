@@ -374,7 +374,7 @@ class TestPyFSRS:
         rating = Rating.Good
         card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
         assert card.state == State.Review
-        assert card.step == None
+        assert card.step is None
         assert round((card.due - created_at).total_seconds() / 3600) >= 24 # card is due in over a day
 
     def test_again_learning_steps(self):
@@ -425,7 +425,7 @@ class TestPyFSRS:
         card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
 
         assert card.state == State.Review
-        assert card.step == None
+        assert card.step is None
         assert round((card.due - created_at).total_seconds() / 86400) >= 1 # card is due in at least 1 full day
 
     def test_review_state(self):
@@ -441,7 +441,7 @@ class TestPyFSRS:
         card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
 
         assert card.state == State.Review
-        assert card.step == None
+        assert card.step is None
 
         prev_due = card.due
         rating = Rating.Good
@@ -496,7 +496,7 @@ class TestPyFSRS:
         card, _ = scheduler.review_card(card=card, rating=rating, review_datetime=card.due)
 
         assert card.state == State.Review
-        assert card.step == None
+        assert card.step is None
         assert round((card.due - prev_due).total_seconds() / 3600) >= 24 # card is due in at least 1 full day
 
     def test_fuzz(self):

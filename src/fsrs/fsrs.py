@@ -8,7 +8,7 @@ Classes:
     State: Enum representing the learning state of a Card object.
     Rating: Enum representing the four possible ratings when reviewing a card.
     Card: Represents a flashcard in the FSRS system.
-    ReviewLog: Represents the log entry of Card that has been reviewed.
+    ReviewLog: Represents the log entry of a Card that has been reviewed.
     Scheduler: The FSRS spaced-repetition scheduler.
 """
 
@@ -67,8 +67,8 @@ class Card:
         card_id (int): The id of the card. Defaults to the epoch miliseconds of when the card was created.
         state (State): The card's current learning state.
         step (int | None): The card's current learning or relearning step or None if the card is in the Review state.
-        stability (float | None): Core FSRS parameter used for scheduling.
-        difficulty (float | None): Core FSRS parameter used for scheduling.
+        stability (float | None): Core mathematical parameter used for future scheduling.
+        difficulty (float | None): Core mathematical parameter used for future scheduling.
         due (datetime): The date and time when the card is due next.
         last_review (datetime | None): The date and time of the card's last review.        
     """
@@ -203,6 +203,14 @@ class ReviewLog:
         self.review_duration = review_duration
 
     def to_dict(self) -> dict[str, dict[str, Any] | int | str | None]:
+        """
+        Returns a JSON-serializable dictionary representation of the ReviewLog object.
+
+        This method is specifically useful for storing ReviewLog objects in a database.
+
+        Returns:
+            dict: A dictionary representation of the Card object.
+        """
 
         return_dict = {
             "card": self.card.to_dict(),
@@ -215,6 +223,15 @@ class ReviewLog:
 
     @staticmethod
     def from_dict(source_dict: dict[str, Any]) -> "ReviewLog":
+        """
+        Creates a ReviewLog object from an existing dictionary.
+
+        Args:
+            source_dict (dict[str, Any]): A dictionary representing an existing ReviewLog object.
+
+        Returns:
+            ReviewLog: A ReviewLog object created from the provided dictionary.
+        """
 
         card = Card.from_dict(source_dict['card'])
         rating = Rating(int(source_dict['rating']))
@@ -231,7 +248,7 @@ class Scheduler:
 
     Attributes:
         parameters (tuple[float, ...]): The 19 model weights of the FSRS scheduler.
-        desired_retention (float): The desired retention rate of cards scheduled with the scheduler. Corresponds to the predicted probability of correctly recalling a card when it is next due.
+        desired_retention (float): The desired retention rate of cards scheduled with the scheduler.
         learning_steps (list[timedelta]): Small time intervals that schedule cards in the Learning state.
         relearning_steps (list[timedelta]): Small time intervals that schedule cards in the Relearning state.
         maximum_interval (int): The maximum number of days a Review-state card can be scheduled into the future.
@@ -281,6 +298,21 @@ class Scheduler:
         self.enable_fuzzing = enable_fuzzing
 
     def review_card(self, card: Card, rating: Rating, review_datetime: datetime | None = None, review_duration: int | None = None) -> tuple[Card, ReviewLog]:
+        """
+        Reviews a card with a given rating at a given time for a specified duration.
+
+        Args:
+            card (Card): The card being reviewed.
+            rating (Rating): The chosen rating for the card being reviewed.
+            review_datetime (datetime | None): The date and time of the review.
+            review_duration (int | None): The number of miliseconds it took to review the card or None if unspecified.
+
+        Returns:
+            tuple[Card, ReviewLog]: A tuple containing the updated, reviewed card and its corresponding review log.
+
+        Raises:
+            ValueError: If the `review_datetime` argument is not timezone-aware and set to UTC.
+        """
 
         if review_datetime is not None and ( (review_datetime.tzinfo is None) or (review_datetime.tzinfo != timezone.utc) ):
             raise ValueError("datetime must be timezone-aware and set to UTC")
@@ -487,6 +519,14 @@ class Scheduler:
         return card, review_log
 
     def to_dict(self) -> dict[str, Any]:
+        """
+        Returns a JSON-serializable dictionary representation of the Scheduler object.
+
+        This method is specifically useful for storing Scheduler objects in a database.
+
+        Returns:
+            dict: A dictionary representation of the Scheduler object.
+        """
 
         return_dict = {
             "parameters": self.parameters,
@@ -501,6 +541,15 @@ class Scheduler:
 
     @staticmethod
     def from_dict(source_dict: dict[str, Any]) -> "Scheduler":
+        """
+        Creates a Scheduler object from an existing dictionary.
+
+        Args:
+            source_dict (dict[str, Any]): A dictionary representing an existing Scheduler object.
+
+        Returns:
+            Scheduler: A Scheduler object created from the provided dictionary.
+        """
 
         parameters = source_dict['parameters']
         desired_retention = source_dict['desired_retention']

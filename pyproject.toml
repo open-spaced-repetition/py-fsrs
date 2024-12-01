@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fsrs"
-version = "3.1.0"
+version = "4.0.0"
 description = "Free Spaced Repetition Scheduler"
 readme = "README.md"
 authors = [{ name = "Jarrett Ye", email = "jarrett.ye@outlook.com" }]
@@ -15,7 +15,7 @@ classifiers = [
 ]
 keywords = ["spaced-repetition", "flashcard"]
 dependencies = []
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 
 [project.urls]
 Homepage = "https://github.com/open-spaced-repetition/py-fsrs"

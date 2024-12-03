@@ -4,32 +4,10 @@ import json
 import pytest
 import random
 
-test_parameters = (
-    0.4197,
-    1.1869,
-    3.0412,
-    15.2441,
-    7.1434,
-    0.6477,
-    1.0007,
-    0.0674,
-    1.6597,
-    0.1712,
-    1.1178,
-    2.0225,
-    0.0904,
-    0.3025,
-    2.1214,
-    0.2498,
-    2.9466,
-    0.4891,
-    0.6468,
-)
-
 
 class TestPyFSRS:
     def test_review_card(self):
-        scheduler = Scheduler(parameters=test_parameters, enable_fuzzing=False)
+        scheduler = Scheduler(enable_fuzzing=False)
 
         ratings = (
             Rating.Good,
@@ -64,21 +42,21 @@ class TestPyFSRS:
         assert ivl_history == [
             0,
             4,
-            17,
-            62,
-            198,
-            563,
+            14,
+            44,
+            125,
+            328,
             0,
             0,
-            9,
-            27,
-            74,
-            190,
-            457,
+            7,
+            16,
+            34,
+            71,
+            142,
         ]
 
     def test_memo_state(self):
-        scheduler = Scheduler(parameters=test_parameters)
+        scheduler = Scheduler()
 
         ratings = (
             Rating.Again,
@@ -104,8 +82,8 @@ class TestPyFSRS:
             card=card, rating=Rating.Good, review_datetime=review_datetime
         )
 
-        assert round(card.stability) == 72
-        assert round(card.difficulty, 4) == 5.0976
+        assert round(card.stability) == 49
+        assert round(card.difficulty, 4) == 7.0866
 
     def test_repeat_default_arg(self):
         scheduler = Scheduler()
@@ -236,27 +214,6 @@ class TestPyFSRS:
 
     def test_custom_scheduler_args(self):
         scheduler = Scheduler(
-            parameters=(
-                0.4197,
-                1.1869,
-                3.0412,
-                15.2441,
-                7.1434,
-                0.6477,
-                1.0007,
-                0.0674,
-                1.6597,
-                0.1712,
-                1.1178,
-                2.0225,
-                0.0904,
-                0.3025,
-                2.1214,
-                0.2498,
-                2.9466,
-                0,
-                0.6468,
-            ),
             desired_retention=0.9,
             maximum_interval=36500,
             enable_fuzzing=False,
@@ -287,7 +244,7 @@ class TestPyFSRS:
             ivl_history.append(ivl)
             now = card.due
 
-        assert ivl_history == [0, 3, 13, 50, 163, 473, 0, 0, 12, 34, 91, 229, 541]
+        assert ivl_history == [0, 4, 14, 44, 125, 328, 0, 0, 7, 16, 34, 71, 142]
 
         # initialize another scheduler and verify parameters are properly set
         parameters2 = (
@@ -571,7 +528,7 @@ class TestPyFSRS:
         )
         interval = card.due - prev_due
 
-        assert interval.days == 16
+        assert interval.days == 15
 
         # seed 2
         random.seed(12345)
@@ -589,7 +546,7 @@ class TestPyFSRS:
         )
         interval = card.due - prev_due
 
-        assert interval.days == 15
+        assert interval.days == 14
 
     def test_no_learning_steps(self):
         scheduler = Scheduler(learning_steps=())

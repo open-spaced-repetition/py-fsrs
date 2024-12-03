@@ -297,25 +297,25 @@ class Scheduler:
     def __init__(
         self,
         parameters: tuple[float, ...] | list[float] = (
-            0.4072,
-            1.1829,
-            3.1262,
-            15.4722,
-            7.2102,
-            0.5316,
-            1.0651,
-            0.0234,
-            1.616,
-            0.1544,
-            1.0824,
-            1.9813,
-            0.0953,
-            0.2975,
-            2.2042,
-            0.2407,
-            2.9466,
-            0.5034,
-            0.6567,
+            0.40255,
+            1.18385,
+            3.173,
+            15.69105,
+            7.1949,
+            0.5345,
+            1.4604,
+            0.0046,
+            1.54575,
+            0.1192,
+            1.01925,
+            1.9395,
+            0.11,
+            0.29605,
+            2.2698,
+            0.2315,
+            2.9898,
+            0.51655,
+            0.6621,
         ),
         desired_retention: float = 0.9,
         learning_steps: tuple[timedelta, ...] | list[timedelta] = (
@@ -697,13 +697,20 @@ class Scheduler:
         )
 
     def _next_difficulty(self, difficulty: float, rating: Rating) -> float:
-        def mean_reversion(arg_1: float, arg_2: float) -> float:
+        def _linear_damping(delta_difficulty: float, difficulty: float) -> float:
+            return (10.0 - difficulty) * delta_difficulty / 9.0
+
+        def _mean_reversion(arg_1: float, arg_2: float) -> float:
             return self.parameters[7] * arg_1 + (1 - self.parameters[7]) * arg_2
 
         arg_1 = self._initial_difficulty(Rating.Easy)
-        arg_2 = difficulty - (self.parameters[6] * (rating - 3))
 
-        next_difficulty = mean_reversion(arg_1, arg_2)
+        delta_difficulty = -(self.parameters[6] * (rating - 3))
+        arg_2 = difficulty + _linear_damping(
+            delta_difficulty=delta_difficulty, difficulty=difficulty
+        )
+
+        next_difficulty = _mean_reversion(arg_1=arg_1, arg_2=arg_2)
 
         # bound next_difficulty between 1 and 10
         next_difficulty = min(max(next_difficulty, 1), 10)

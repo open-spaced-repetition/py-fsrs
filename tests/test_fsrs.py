@@ -4,32 +4,10 @@ import json
 import pytest
 import random
 
-test_parameters = (
-    0.40255,
-    1.18385,
-    3.173,
-    15.69105,
-    7.1949,
-    0.5345,
-    1.4604,
-    0.0046,
-    1.54575,
-    0.1192,
-    1.01925,
-    1.9395,
-    0.11,
-    0.29605,
-    2.2698,
-    0.2315,
-    2.9898,
-    0.51655,
-    0.6621,
-)
-
 
 class TestPyFSRS:
     def test_review_card(self):
-        scheduler = Scheduler(parameters=test_parameters, enable_fuzzing=False)
+        scheduler = Scheduler(enable_fuzzing=False)
 
         ratings = (
             Rating.Good,
@@ -78,7 +56,7 @@ class TestPyFSRS:
         ]
 
     def test_memo_state(self):
-        scheduler = Scheduler(parameters=test_parameters)
+        scheduler = Scheduler()
 
         ratings = (
             Rating.Again,
@@ -236,27 +214,6 @@ class TestPyFSRS:
 
     def test_custom_scheduler_args(self):
         scheduler = Scheduler(
-            parameters=(
-                0.40255,
-                1.18385,
-                3.173,
-                15.69105,
-                7.1949,
-                0.5345,
-                1.4604,
-                0.0046,
-                1.54575,
-                0.1192,
-                1.01925,
-                1.9395,
-                0.11,
-                0.29605,
-                2.2698,
-                0.2315,
-                2.9898,
-                0.51655,
-                0.6621,
-            ),
             desired_retention=0.9,
             maximum_interval=36500,
             enable_fuzzing=False,

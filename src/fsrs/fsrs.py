@@ -421,6 +421,10 @@ class Scheduler:
                 card.step = None
 
                 next_interval_days = self._next_interval(stability=card.stability)
+
+                if self.enable_fuzzing:
+                    next_interval_days = self._get_fuzzed_interval(next_interval_days)
+
                 next_interval = timedelta(days=next_interval_days)
 
             else:
@@ -448,6 +452,12 @@ class Scheduler:
                         next_interval_days = self._next_interval(
                             stability=card.stability
                         )
+
+                        if self.enable_fuzzing:
+                            next_interval_days = self._get_fuzzed_interval(
+                                next_interval_days
+                            )
+
                         next_interval = timedelta(days=next_interval_days)
 
                     else:
@@ -459,6 +469,12 @@ class Scheduler:
                     card.step = None
 
                     next_interval_days = self._next_interval(stability=card.stability)
+
+                    if self.enable_fuzzing:
+                        next_interval_days = self._get_fuzzed_interval(
+                            next_interval_days
+                        )
+
                     next_interval = timedelta(days=next_interval_days)
 
             card.due = review_datetime + next_interval
@@ -495,6 +511,12 @@ class Scheduler:
                 # if there are no relearning steps (they were left blank)
                 if len(self.relearning_steps) == 0:
                     next_interval_days = self._next_interval(stability=card.stability)
+
+                    if self.enable_fuzzing:
+                        next_interval_days = self._get_fuzzed_interval(
+                            next_interval_days
+                        )
+
                     next_interval = timedelta(days=next_interval_days)
 
                 else:
@@ -552,6 +574,10 @@ class Scheduler:
                 card.step = None
 
                 next_interval_days = self._next_interval(stability=card.stability)
+
+                if self.enable_fuzzing:
+                    next_interval_days = self._get_fuzzed_interval(next_interval_days)
+
                 next_interval = timedelta(days=next_interval_days)
 
             else:
@@ -579,6 +605,12 @@ class Scheduler:
                         next_interval_days = self._next_interval(
                             stability=card.stability
                         )
+
+                        if self.enable_fuzzing:
+                            next_interval_days = self._get_fuzzed_interval(
+                                next_interval_days
+                            )
+
                         next_interval = timedelta(days=next_interval_days)
 
                     else:
@@ -590,6 +622,12 @@ class Scheduler:
                     card.step = None
 
                     next_interval_days = self._next_interval(stability=card.stability)
+
+                    if self.enable_fuzzing:
+                        next_interval_days = self._get_fuzzed_interval(
+                            next_interval_days
+                        )
+
                     next_interval = timedelta(days=next_interval_days)
 
             card.due = review_datetime + next_interval

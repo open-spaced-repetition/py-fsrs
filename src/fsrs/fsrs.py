@@ -415,16 +415,12 @@ class Scheduler:
             # calculate the card's next interval
             # len(self.learning_steps) == 0: no learning steps defined so move card to Review state
             # card.step > len(self.learning_steps): handles the edge-case when a card was originally scheduled with a scheduler with more
-            # learnning steps than the current scheduler
+            # learning steps than the current scheduler
             if len(self.learning_steps) == 0 or card.step > len(self.learning_steps):
                 card.state = State.Review
                 card.step = None
 
                 next_interval_days = self._next_interval(stability=card.stability)
-
-                if self.enable_fuzzing:
-                    next_interval_days = self._get_fuzzed_interval(next_interval_days)
-
                 next_interval = timedelta(days=next_interval_days)
 
             else:
@@ -452,12 +448,6 @@ class Scheduler:
                         next_interval_days = self._next_interval(
                             stability=card.stability
                         )
-
-                        if self.enable_fuzzing:
-                            next_interval_days = self._get_fuzzed_interval(
-                                next_interval_days
-                            )
-
                         next_interval = timedelta(days=next_interval_days)
 
                     else:
@@ -469,16 +459,7 @@ class Scheduler:
                     card.step = None
 
                     next_interval_days = self._next_interval(stability=card.stability)
-
-                    if self.enable_fuzzing:
-                        next_interval_days = self._get_fuzzed_interval(
-                            next_interval_days
-                        )
-
                     next_interval = timedelta(days=next_interval_days)
-
-            card.due = review_datetime + next_interval
-            card.last_review = review_datetime
 
         elif card.state == State.Review:
             assert type(card.stability) == float  # mypy
@@ -511,12 +492,6 @@ class Scheduler:
                 # if there are no relearning steps (they were left blank)
                 if len(self.relearning_steps) == 0:
                     next_interval_days = self._next_interval(stability=card.stability)
-
-                    if self.enable_fuzzing:
-                        next_interval_days = self._get_fuzzed_interval(
-                            next_interval_days
-                        )
-
                     next_interval = timedelta(days=next_interval_days)
 
                 else:
@@ -527,14 +502,7 @@ class Scheduler:
 
             elif rating in (Rating.Hard, Rating.Good, Rating.Easy):
                 next_interval_days = self._next_interval(stability=card.stability)
-
-                if self.enable_fuzzing:
-                    next_interval_days = self._get_fuzzed_interval(next_interval_days)
-
                 next_interval = timedelta(days=next_interval_days)
-
-            card.due = review_datetime + next_interval
-            card.last_review = review_datetime
 
         elif card.state == State.Relearning:
             assert type(card.step) == int
@@ -564,9 +532,9 @@ class Scheduler:
                 )
 
             # calculate the card's next interval
-            # len(self.learning_steps) == 0: no learning steps defined so move card to Review state
-            # card.step > len(self.learning_steps): handles the edge-case when a card was originally scheduled with a scheduler with more
-            # learnning steps than the current scheduler
+            # len(self.relearning_steps) == 0: no relearning steps defined so move card to Review state
+            # card.step > len(self.relearning_steps): handles the edge-case when a card was originally scheduled with a scheduler with more
+            # relearning steps than the current scheduler
             if len(self.relearning_steps) == 0 or card.step > len(
                 self.relearning_steps
             ):
@@ -574,10 +542,6 @@ class Scheduler:
                 card.step = None
 
                 next_interval_days = self._next_interval(stability=card.stability)
-
-                if self.enable_fuzzing:
-                    next_interval_days = self._get_fuzzed_interval(next_interval_days)
-
                 next_interval = timedelta(days=next_interval_days)
 
             else:
@@ -605,12 +569,6 @@ class Scheduler:
                         next_interval_days = self._next_interval(
                             stability=card.stability
                         )
-
-                        if self.enable_fuzzing:
-                            next_interval_days = self._get_fuzzed_interval(
-                                next_interval_days
-                            )
-
                         next_interval = timedelta(days=next_interval_days)
 
                     else:
@@ -622,16 +580,13 @@ class Scheduler:
                     card.step = None
 
                     next_interval_days = self._next_interval(stability=card.stability)
-
-                    if self.enable_fuzzing:
-                        next_interval_days = self._get_fuzzed_interval(
-                            next_interval_days
-                        )
-
                     next_interval = timedelta(days=next_interval_days)
 
-            card.due = review_datetime + next_interval
-            card.last_review = review_datetime
+        if self.enable_fuzzing and card.state == State.Review:
+            next_interval = self._get_fuzzed_interval(next_interval)
+
+        card.due = review_datetime + next_interval
+        card.last_review = review_datetime
 
         return card, review_log
 
@@ -801,22 +756,24 @@ class Scheduler:
             * easy_bonus
         )
 
-    def _get_fuzzed_interval(self, interval: int) -> int:
+    def _get_fuzzed_interval(self, interval: timedelta) -> timedelta:
         """
         Takes the current calculated interval and adds a small amount of random fuzz to it.
         For example, a card that would've been due in 50 days, after fuzzing, might be due in 49, or 51 days.
 
         Args:
-            interval (int): The calculated next interval, before fuzzing.
+            interval (timedelta): The calculated next interval, before fuzzing.
 
         Returns:
-            int: The new interval, after fuzzing.
+            timedelta: The new interval, after fuzzing.
         """
 
-        if interval < 2.5:  # fuzz is not applied to intervals less than 2.5
+        interval_days = interval.days
+
+        if interval_days < 2.5:  # fuzz is not applied to intervals less than 2.5
             return interval
 
-        def _get_fuzz_range(interval: int) -> tuple[int, int]:
+        def _get_fuzz_range(interval_days: int) -> tuple[int, int]:
             """
             Helper function that computes the possible upper and lower bounds of the interval after fuzzing.
             """
@@ -824,11 +781,11 @@ class Scheduler:
             delta = 1.0
             for fuzz_range in FUZZ_RANGES:
                 delta += fuzz_range["factor"] * max(
-                    min(interval, fuzz_range["end"]) - fuzz_range["start"], 0.0
+                    min(interval_days, fuzz_range["end"]) - fuzz_range["start"], 0.0
                 )
 
-            min_ivl = int(round(interval - delta))
-            max_ivl = int(round(interval + delta))
+            min_ivl = int(round(interval_days - delta))
+            max_ivl = int(round(interval_days + delta))
 
             # make sure the min_ivl and max_ivl fall into a valid range
             min_ivl = max(2, min_ivl)
@@ -837,12 +794,14 @@ class Scheduler:
 
             return min_ivl, max_ivl
 
-        min_ivl, max_ivl = _get_fuzz_range(interval)
+        min_ivl, max_ivl = _get_fuzz_range(interval_days)
 
-        fuzzed_interval = (
+        fuzzed_interval_days = (
             random.random() * (max_ivl - min_ivl + 1)
         ) + min_ivl  # the next interval is a random value between min_ivl and max_ivl
 
-        fuzzed_interval = min(round(fuzzed_interval), self.maximum_interval)
+        fuzzed_interval_days = min(round(fuzzed_interval_days), self.maximum_interval)
+
+        fuzzed_interval = timedelta(days=fuzzed_interval_days)
 
         return fuzzed_interval

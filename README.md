@@ -181,6 +181,18 @@ Rating.Good # (==3) remembered the card after a hesitation
 Rating.Easy # (==4) remembered the card easily
 ```
 
+## Other FSRS implementations
+
+You can find various other FSRS implementations and projects [here](https://github.com/orgs/open-spaced-repetition/repositories?q=fsrs+sort%3Astars).
+
+## Other SRS python packages
+
+The following spaced repetition schedulers are also available as python packages:
+
+- [SM-2](https://github.com/open-spaced-repetition/sm-2)
+- [Leitner System](https://github.com/open-spaced-repetition/leitner-box)
+- [Anki Default Scheduler](https://github.com/open-spaced-repetition/anki-sm-2)
+
 ## Contribute
 
 Checkout [CONTRIBUTING](CONTRIBUTING.md) to help improve Py-FSRS!

@@ -193,11 +193,9 @@ class Card:
         if current_datetime is None:
             current_datetime = datetime.now(timezone.utc)
 
-        if self.state in (State.Learning, State.Review, State.Relearning):
-            elapsed_days = max(0, (current_datetime - self.last_review).days)
-            return (1 + FACTOR * elapsed_days / self.stability) ** DECAY
-        else:
-            return 0
+        elapsed_days = max(0, (current_datetime - self.last_review).days)
+
+        return (1 + FACTOR * elapsed_days / self.stability) ** DECAY
 
 
 class ReviewLog:

@@ -193,11 +193,9 @@ class Card:
         if current_datetime is None:
             current_datetime = datetime.now(timezone.utc)
 
-        if self.state in (State.Learning, State.Review, State.Relearning):
-            elapsed_days = max(0, (current_datetime - self.last_review).days)
-            return (1 + FACTOR * elapsed_days / self.stability) ** DECAY
-        else:
-            return 0
+        elapsed_days = max(0, (current_datetime - self.last_review).days)
+
+        return (1 + FACTOR * elapsed_days / self.stability) ** DECAY
 
 
 class ReviewLog:
@@ -281,8 +279,8 @@ class Scheduler:
     Attributes:
         parameters (tuple[float, ...]): The 19 model weights of the FSRS scheduler.
         desired_retention (float): The desired retention rate of cards scheduled with the scheduler.
-        learning_steps (list[timedelta]): Small time intervals that schedule cards in the Learning state.
-        relearning_steps (list[timedelta]): Small time intervals that schedule cards in the Relearning state.
+        learning_steps (tuple[timedelta, ...]): Small time intervals that schedule cards in the Learning state.
+        relearning_steps (tuple[timedelta, ...]): Small time intervals that schedule cards in the Relearning state.
         maximum_interval (int): The maximum number of days a Review-state card can be scheduled into the future.
         enable_fuzzing (bool): Whether to apply a small amount of random 'fuzz' to calculated intervals.
     """
@@ -380,7 +378,7 @@ class Scheduler:
         )
 
         if card.state == State.Learning:
-            assert type(card.step) == int
+            assert type(card.step) is int
 
             # update the card's stability and difficulty
             if card.stability is None and card.difficulty is None:
@@ -388,8 +386,8 @@ class Scheduler:
                 card.difficulty = self._initial_difficulty(rating)
 
             elif days_since_last_review is not None and days_since_last_review < 1:
-                assert type(card.stability) == float  # mypy
-                assert type(card.difficulty) == float  # mypy
+                assert type(card.stability) is float  # mypy
+                assert type(card.difficulty) is float  # mypy
                 card.stability = self._short_term_stability(
                     stability=card.stability, rating=rating
                 )
@@ -398,8 +396,8 @@ class Scheduler:
                 )
 
             else:
-                assert type(card.stability) == float  # mypy
-                assert type(card.difficulty) == float  # mypy
+                assert type(card.stability) is float  # mypy
+                assert type(card.difficulty) is float  # mypy
                 card.stability = self._next_stability(
                     difficulty=card.difficulty,
                     stability=card.stability,
@@ -462,8 +460,8 @@ class Scheduler:
                     next_interval = timedelta(days=next_interval_days)
 
         elif card.state == State.Review:
-            assert type(card.stability) == float  # mypy
-            assert type(card.difficulty) == float  # mypy
+            assert type(card.stability) is float  # mypy
+            assert type(card.difficulty) is float  # mypy
 
             # update the card's stability and difficulty
             if days_since_last_review is not None and days_since_last_review < 1:
@@ -505,9 +503,9 @@ class Scheduler:
                 next_interval = timedelta(days=next_interval_days)
 
         elif card.state == State.Relearning:
-            assert type(card.step) == int
-            assert type(card.stability) == float  # mypy
-            assert type(card.difficulty) == float  # mypy
+            assert type(card.step) is int
+            assert type(card.stability) is float  # mypy
+            assert type(card.difficulty) is float  # mypy
 
             # update the card's stability and difficulty
             if days_since_last_review is not None and days_since_last_review < 1:

@@ -144,7 +144,7 @@ class TestPyFSRS:
             json.dumps(card.__dict__)
 
         # card object's to_dict() method makes it JSON serializable
-        assert type(json.dumps(card.to_dict())) == str
+        assert type(json.dumps(card.to_dict())) is str
 
         # we can reconstruct a copy of the card object equivalent to the original
         card_dict = card.to_dict()
@@ -161,7 +161,7 @@ class TestPyFSRS:
         with pytest.raises(TypeError):
             json.dumps(reviewed_card.__dict__)
 
-        assert type(json.dumps(reviewed_card.to_dict())) == str
+        assert type(json.dumps(reviewed_card.to_dict())) is str
 
         reviewed_card_dict = reviewed_card.to_dict()
         copied_reviewed_card = Card.from_dict(reviewed_card_dict)
@@ -186,7 +186,7 @@ class TestPyFSRS:
             json.dumps(review_log.__dict__)
 
         # review_log object's to_dict() method makes it JSON serializable
-        assert type(json.dumps(review_log.to_dict())) == str
+        assert type(json.dumps(review_log.to_dict())) is str
 
         # we can reconstruct a copy of the review_log object equivalent to the original
         review_log_dict = review_log.to_dict()
@@ -202,7 +202,7 @@ class TestPyFSRS:
         with pytest.raises(TypeError):
             json.dumps(next_review_log.__dict__)
 
-        assert type(json.dumps(next_review_log.to_dict())) == str
+        assert type(json.dumps(next_review_log.to_dict())) is str
 
         next_review_log_dict = next_review_log.to_dict()
         copied_next_review_log = ReviewLog.from_dict(next_review_log_dict)
@@ -312,7 +312,7 @@ class TestPyFSRS:
         scheduler = Scheduler()
 
         # Scheduler objects are json-serializable through its .to_dict() method
-        assert type(json.dumps(scheduler.to_dict())) == str
+        assert type(json.dumps(scheduler.to_dict())) is str
 
         # scheduler can be serialized and de-serialized while remaining the same
         scheduler_dict = scheduler.to_dict()

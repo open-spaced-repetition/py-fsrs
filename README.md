@@ -48,12 +48,10 @@ card = Card()
 
 Choose a rating and review the card with the scheduler
 ```python
-"""
-Rating.Again # (==0) forgot the card
-Rating.Hard # (==1) remembered the card, but with serious difficulty
-Rating.Good # (==2) remembered the card after a hesitation
-Rating.Easy # (==3) remembered the card easily
-"""
+# Rating.Again (==1) forgot the card
+# Rating.Hard (==2) remembered the card with serious difficulty
+# Rating.Good (==3) remembered the card after a hesitation
+# Rating.Easy (==4) remembered the card easily
 
 rating = Rating.Good
 
@@ -75,10 +73,8 @@ time_delta = due - datetime.now(timezone.utc)
 print(f"Card due on {due}")
 print(f"Card due in {time_delta.seconds} seconds")
 
-"""
-> Card due on 2024-11-30 18:42:36.070712+00:00
-> Card due in 599 seconds
-"""
+# > Card due on 2024-11-30 18:42:36.070712+00:00
+# > Card due in 599 seconds
 ```
 
 ## Usage
@@ -172,17 +168,17 @@ new_review_log = ReviewLog.from_dict(review_log_dict)
 
 Card objects have one of three possible states
 ```python
-State.Learning # new card being studied for the first time
-State.Review # card that has "graduated" from the Learning state
-State.Relearning # card that has lapsed from the Review state
+State.Learning # (==1) new card being studied for the first time
+State.Review # (==2) card that has "graduated" from the Learning state
+State.Relearning # (==3) card that has "lapsed" from the Review state
 ```
 
 There are four possible ratings when reviewing a card object:
 ```python
-Rating.Again # (==0) forgot the card
-Rating.Hard # (==1) remembered the card, but with serious difficulty
-Rating.Good # (==2) remembered the card after a hesitation
-Rating.Easy # (==3) remembered the card easily
+Rating.Again # (==1) forgot the card
+Rating.Hard # (==2) remembered the card with serious difficulty
+Rating.Good # (==3) remembered the card after a hesitation
+Rating.Easy # (==4) remembered the card easily
 ```
 
 ## Contribute

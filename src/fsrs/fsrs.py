@@ -281,8 +281,8 @@ class Scheduler:
     Attributes:
         parameters (tuple[float, ...]): The 19 model weights of the FSRS scheduler.
         desired_retention (float): The desired retention rate of cards scheduled with the scheduler.
-        learning_steps (list[timedelta]): Small time intervals that schedule cards in the Learning state.
-        relearning_steps (list[timedelta]): Small time intervals that schedule cards in the Relearning state.
+        learning_steps (tuple[timedelta, ...]): Small time intervals that schedule cards in the Learning state.
+        relearning_steps (tuple[timedelta, ...]): Small time intervals that schedule cards in the Relearning state.
         maximum_interval (int): The maximum number of days a Review-state card can be scheduled into the future.
         enable_fuzzing (bool): Whether to apply a small amount of random 'fuzz' to calculated intervals.
     """

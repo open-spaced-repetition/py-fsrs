@@ -731,11 +731,20 @@ class Scheduler:
     def _next_forget_stability(
         self, difficulty: float, stability: float, retrievability: float
     ) -> float:
-        return (
+        next_forget_stability_long_term_params = (
             self.parameters[11]
             * math.pow(difficulty, -self.parameters[12])
             * (math.pow(stability + 1, self.parameters[13]) - 1)
             * math.exp((1 - retrievability) * self.parameters[14])
+        )
+
+        next_forget_stability_short_term_params = stability / math.exp(
+            self.parameters[17] * self.parameters[18]
+        )
+
+        return min(
+            next_forget_stability_long_term_params,
+            next_forget_stability_short_term_params,
         )
 
     def _next_recall_stability(

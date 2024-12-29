@@ -663,7 +663,7 @@ class Scheduler:
         )
 
         # bound initial_difficulty between 1 and 10
-        initial_difficulty = min(max(initial_difficulty, 1), 10)
+        initial_difficulty = min(max(initial_difficulty, 1.0), 10.0)
 
         return initial_difficulty
 
@@ -704,7 +704,7 @@ class Scheduler:
         next_difficulty = _mean_reversion(arg_1=arg_1, arg_2=arg_2)
 
         # bound next_difficulty between 1 and 10
-        next_difficulty = min(max(next_difficulty, 1), 10)
+        next_difficulty = min(max(next_difficulty, 1.0), 10.0)
 
         return next_difficulty
 

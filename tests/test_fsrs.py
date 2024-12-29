@@ -55,6 +55,21 @@ class TestPyFSRS:
             142,
         ]
 
+    def test_repeated_correct_reviews(self):
+        scheduler = Scheduler(enable_fuzzing=False)
+
+        card = Card()
+        review_datetimes = [
+            datetime(2022, 11, 29, 12, 30, 0, i, timezone.utc) for i in range(10)
+        ]
+
+        for review_datetime in review_datetimes:
+            card, _ = scheduler.review_card(
+                card=card, rating=Rating.Easy, review_datetime=review_datetime
+            )
+
+        assert card.difficulty == 1.0
+
     def test_memo_state(self):
         scheduler = Scheduler()
 

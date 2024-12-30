@@ -390,8 +390,7 @@ class Scheduler:
                 card.step = None
 
                 assert card.stability is not None  # mypy
-                next_interval_days = self._next_interval(stability=card.stability)
-                next_interval = timedelta(days=next_interval_days)
+                next_interval = self._next_interval(card.stability)
 
             else:
                 if rating == Rating.Again:
@@ -415,10 +414,7 @@ class Scheduler:
                         card.state = State.Review
                         card.step = None
 
-                        next_interval_days = self._next_interval(
-                            stability=card.stability
-                        )
-                        next_interval = timedelta(days=next_interval_days)
+                        next_interval = self._next_interval(card.stability)
 
                     else:
                         card.step += 1
@@ -428,8 +424,7 @@ class Scheduler:
                     card.state = State.Review
                     card.step = None
 
-                    next_interval_days = self._next_interval(stability=card.stability)
-                    next_interval = timedelta(days=next_interval_days)
+                    next_interval = self._next_interval(card.stability)
 
         elif card.state == State.Review:
             assert type(card.stability) is float  # mypy
@@ -438,15 +433,11 @@ class Scheduler:
             card.stability = self._next_stability(card, rating, review_datetime)
             card.difficulty = self._next_difficulty(card.difficulty, rating)
 
-            # card.difficulty = self._next_difficulty(card.difficulty, rating)
-            # card.stability = self._next_stability(card, rating, review_datetime)
-
             # calculate the card's next interval
             if rating == Rating.Again:
                 # if there are no relearning steps (they were left blank)
                 if len(self.relearning_steps) == 0:
-                    next_interval_days = self._next_interval(stability=card.stability)
-                    next_interval = timedelta(days=next_interval_days)
+                    next_interval = self._next_interval(card.stability)
 
                 else:
                     card.state = State.Relearning
@@ -455,8 +446,7 @@ class Scheduler:
                     next_interval = self.relearning_steps[card.step]
 
             elif rating in (Rating.Hard, Rating.Good, Rating.Easy):
-                next_interval_days = self._next_interval(stability=card.stability)
-                next_interval = timedelta(days=next_interval_days)
+                next_interval = self._next_interval(card.stability)
 
         elif card.state == State.Relearning:
             assert type(card.step) is int
@@ -476,8 +466,7 @@ class Scheduler:
                 card.state = State.Review
                 card.step = None
 
-                next_interval_days = self._next_interval(stability=card.stability)
-                next_interval = timedelta(days=next_interval_days)
+                next_interval = self._next_interval(card.stability)
 
             else:
                 if rating == Rating.Again:
@@ -501,10 +490,7 @@ class Scheduler:
                         card.state = State.Review
                         card.step = None
 
-                        next_interval_days = self._next_interval(
-                            stability=card.stability
-                        )
-                        next_interval = timedelta(days=next_interval_days)
+                        next_interval = self._next_interval(card.stability)
 
                     else:
                         card.step += 1
@@ -514,8 +500,7 @@ class Scheduler:
                     card.state = State.Review
                     card.step = None
 
-                    next_interval_days = self._next_interval(stability=card.stability)
-                    next_interval = timedelta(days=next_interval_days)
+                    next_interval = self._next_interval(card.stability)
 
         if self.enable_fuzzing and card.state == State.Review:
             next_interval = self._get_fuzzed_interval(next_interval)
@@ -586,11 +571,11 @@ class Scheduler:
             enable_fuzzing=enable_fuzzing,
         )
 
-    def _next_interval(self, stability: float) -> int:
+    def _next_interval(self, stability: float) -> timedelta:
         next_interval = (stability / FACTOR) * (
             (self.desired_retention ** (1 / DECAY)) - 1
         )
-        return min(max(round(next_interval), 1), self.maximum_interval)
+        return timedelta(days=min(max(round(next_interval), 1), self.maximum_interval))
 
     def _short_term_stability(self, stability: float, rating: Rating) -> float:
         return stability * math.exp(

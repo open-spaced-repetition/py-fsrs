@@ -372,6 +372,8 @@ class Scheduler:
             review_duration=review_duration,
         )
 
+        retrievability = card.get_retrievability(current_datetime=review_datetime)
+
         if card.state == State.Learning:
             assert type(card.step) is int
 
@@ -396,9 +398,7 @@ class Scheduler:
                 card.stability = self._next_stability(
                     difficulty=card.difficulty,
                     stability=card.stability,
-                    retrievability=card.get_retrievability(
-                        current_datetime=review_datetime
-                    ),
+                    retrievability=retrievability,
                     rating=rating,
                 )
                 card.difficulty = self._next_difficulty(
@@ -471,9 +471,7 @@ class Scheduler:
                 card.stability = self._next_stability(
                     difficulty=card.difficulty,
                     stability=card.stability,
-                    retrievability=card.get_retrievability(
-                        current_datetime=review_datetime
-                    ),
+                    retrievability=retrievability,
                     rating=rating,
                 )
                 card.difficulty = self._next_difficulty(
@@ -515,9 +513,7 @@ class Scheduler:
                 card.stability = self._next_stability(
                     difficulty=card.difficulty,
                     stability=card.stability,
-                    retrievability=card.get_retrievability(
-                        current_datetime=review_datetime
-                    ),
+                    retrievability=retrievability,
                     rating=rating,
                 )
                 card.difficulty = self._next_difficulty(

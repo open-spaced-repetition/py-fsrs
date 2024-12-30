@@ -648,25 +648,11 @@ class Scheduler:
         )
 
     def _next_difficulty(self, difficulty: float, rating: Rating) -> float:
-        def _linear_damping(delta_difficulty: float, difficulty: float) -> float:
-            return (10.0 - difficulty) * delta_difficulty / 9.0
-
-        def _mean_reversion(arg_1: float, arg_2: float) -> float:
-            return self.parameters[7] * arg_1 + (1 - self.parameters[7]) * arg_2
-
-        arg_1 = self.initial_difficulty[Rating.Easy]
-
         delta_difficulty = -(self.parameters[6] * (rating - 3))
-        arg_2 = difficulty + _linear_damping(
-            delta_difficulty=delta_difficulty, difficulty=difficulty
-        )
-
-        next_difficulty = _mean_reversion(arg_1=arg_1, arg_2=arg_2)
-
-        # bound next_difficulty between 1 and 10
-        next_difficulty = min(max(next_difficulty, 1.0), 10.0)
-
-        return next_difficulty
+        arg_1 = self.initial_difficulty[Rating.Easy]
+        arg_2 = difficulty + (10.0 - difficulty) * delta_difficulty / 9.0
+        mean_reversion = self.parameters[7] * arg_1 + (1 - self.parameters[7]) * arg_2
+        return min(max(mean_reversion, 1.0), 10.0)
 
     def _next_stability(
         self, card: Card, rating: Rating, review_datetime: datetime

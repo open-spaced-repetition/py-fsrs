@@ -363,10 +363,6 @@ class Scheduler:
         if review_datetime is None:
             review_datetime = datetime.now(timezone.utc)
 
-        days_since_last_review = (
-            (review_datetime - card.last_review).days if card.last_review else None
-        )
-
         review_log = ReviewLog(
             card=card,
             rating=rating,
@@ -393,6 +389,7 @@ class Scheduler:
                 card.state = State.Review
                 card.step = None
 
+                assert card.stability is not None  # mypy
                 next_interval_days = self._next_interval(stability=card.stability)
                 next_interval = timedelta(days=next_interval_days)
 
@@ -438,20 +435,11 @@ class Scheduler:
             assert type(card.stability) is float  # mypy
             assert type(card.difficulty) is float  # mypy
 
-            # update the card's stability and difficulty
-            if days_since_last_review is not None and days_since_last_review < 1:
-                card.stability = self._short_term_stability(
-                    stability=card.stability, rating=rating
-                )
-                card.difficulty = self._next_difficulty(
-                    difficulty=card.difficulty, rating=rating
-                )
+            card.stability = self._next_stability(card, rating, review_datetime)
+            card.difficulty = self._next_difficulty(card.difficulty, rating)
 
-            else:
-                card.stability = self._next_stability(card, rating, review_datetime)
-                card.difficulty = self._next_difficulty(
-                    difficulty=card.difficulty, rating=rating
-                )
+            # card.difficulty = self._next_difficulty(card.difficulty, rating)
+            # card.stability = self._next_stability(card, rating, review_datetime)
 
             # calculate the card's next interval
             if rating == Rating.Again:
@@ -475,20 +463,8 @@ class Scheduler:
             assert type(card.stability) is float  # mypy
             assert type(card.difficulty) is float  # mypy
 
-            # update the card's stability and difficulty
-            if days_since_last_review is not None and days_since_last_review < 1:
-                card.stability = self._short_term_stability(
-                    stability=card.stability, rating=rating
-                )
-                card.difficulty = self._next_difficulty(
-                    difficulty=card.difficulty, rating=rating
-                )
-
-            else:
-                card.stability = self._next_stability(card, rating, review_datetime)
-                card.difficulty = self._next_difficulty(
-                    difficulty=card.difficulty, rating=rating
-                )
+            card.stability = self._next_stability(card, rating, review_datetime)
+            card.difficulty = self._next_difficulty(card.difficulty, rating)
 
             # calculate the card's next interval
             # len(self.relearning_steps) == 0: no relearning steps defined so move card to Review state
@@ -634,7 +610,10 @@ class Scheduler:
         assert card.difficulty is not None  # mypy
         assert card.stability is not None  # mypy
 
-        if card.last_review and (review_datetime - card.last_review).days < 1:
+        days_since_last_review = (
+            (review_datetime - card.last_review).days if card.last_review else None
+        )
+        if days_since_last_review is not None and days_since_last_review < 1:
             return self._short_term_stability(card.stability, rating)
 
         retrievability = card.get_retrievability(review_datetime)

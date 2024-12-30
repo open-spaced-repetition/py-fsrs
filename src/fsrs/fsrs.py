@@ -631,16 +631,7 @@ class Scheduler:
         next_interval = (stability / FACTOR) * (
             (self.desired_retention ** (1 / DECAY)) - 1
         )
-
-        next_interval = round(next_interval)  # intervals are full days
-
-        # must be at least 1 day long
-        next_interval = max(next_interval, 1)
-
-        # can not be longer than the maximum interval
-        next_interval = min(next_interval, self.maximum_interval)
-
-        return next_interval
+        return min(max(round(next_interval), 1), self.maximum_interval)
 
     def _short_term_stability(self, stability: float, rating: Rating) -> float:
         return stability * math.exp(

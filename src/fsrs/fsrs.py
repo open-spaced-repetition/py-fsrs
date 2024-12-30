@@ -327,6 +327,8 @@ class Scheduler:
         self.initial_difficulty = {
             rating + 1: (w[4] - math.exp(w[5] * rating) + 1) for rating in range(4)
         }
+        self.hard_penalty = w[15]
+        self.easy_bonus = w[16]
 
     def review_card(
         self,
@@ -698,17 +700,14 @@ class Scheduler:
 
             return min(long_term_forget_stability, short_term_forget_stability)
 
-        hard_penalty = self.parameters[15] if rating == Rating.Hard else 1
-        easy_bonus = self.parameters[16] if rating == Rating.Easy else 1
-
         return stability * (
             1
             + math.exp(self.parameters[8])
             * (11 - difficulty)
             * math.pow(stability, -self.parameters[9])
             * (math.exp((1 - retrievability) * self.parameters[10]) - 1)
-            * hard_penalty
-            * easy_bonus
+            * (self.hard_penalty if rating == Rating.Hard else 1)
+            * (self.easy_bonus if rating == Rating.Easy else 1)
         )
 
     def _get_fuzzed_interval(self, interval: timedelta) -> timedelta:

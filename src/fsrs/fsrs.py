@@ -23,21 +23,9 @@ DECAY = -0.5
 FACTOR = 0.9 ** (1 / DECAY) - 1
 
 FUZZ_RANGES = [
-    {
-        "start": 2.5,
-        "end": 7.0,
-        "factor": 0.15,
-    },
-    {
-        "start": 7.0,
-        "end": 20.0,
-        "factor": 0.1,
-    },
-    {
-        "start": 20.0,
-        "end": math.inf,
-        "factor": 0.05,
-    },
+    {"start": 2.5, "end": 7.0, "factor": 0.15},
+    {"start": 7.0, "end": 20.0, "factor": 0.1},
+    {"start": 20.0, "end": math.inf, "factor": 0.05},
 ]
 
 

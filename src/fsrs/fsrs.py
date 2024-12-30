@@ -381,24 +381,9 @@ class Scheduler:
             if card.stability is None and card.difficulty is None:
                 card.stability = self.initial_stability[rating]
                 card.difficulty = self.initial_difficulty[rating]
-
-            elif days_since_last_review is not None and days_since_last_review < 1:
-                assert type(card.stability) is float  # mypy
-                assert type(card.difficulty) is float  # mypy
-                card.stability = self._short_term_stability(
-                    stability=card.stability, rating=rating
-                )
-                card.difficulty = self._next_difficulty(
-                    difficulty=card.difficulty, rating=rating
-                )
-
-            else:
-                assert type(card.stability) is float  # mypy
-                assert type(card.difficulty) is float  # mypy
+            elif card.stability is not None and card.difficulty is not None:
+                card.difficulty = self._next_difficulty(card.difficulty, rating)
                 card.stability = self._next_stability(card, rating, review_datetime)
-                card.difficulty = self._next_difficulty(
-                    difficulty=card.difficulty, rating=rating
-                )
 
             # calculate the card's next interval
             # len(self.learning_steps) == 0: no learning steps defined so move card to Review state
@@ -648,6 +633,9 @@ class Scheduler:
     ) -> float:
         assert card.difficulty is not None  # mypy
         assert card.stability is not None  # mypy
+
+        if card.last_review and (review_datetime - card.last_review).days < 1:
+            return self._short_term_stability(card.stability, rating)
 
         retrievability = card.get_retrievability(review_datetime)
 

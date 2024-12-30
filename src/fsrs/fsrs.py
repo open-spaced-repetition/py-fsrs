@@ -381,50 +381,9 @@ class Scheduler:
                 card.difficulty = self._next_difficulty(card.difficulty, rating)
                 card.stability = self._next_stability(card, rating, review_datetime)
 
-            # calculate the card's next interval
-            # len(self.learning_steps) == 0: no learning steps defined so move card to Review state
-            # card.step > len(self.learning_steps): handles the edge-case when a card was originally scheduled with a scheduler with more
-            # learning steps than the current scheduler
-            if len(self.learning_steps) == 0 or card.step > len(self.learning_steps):
-                card.state = State.Review
-                card.step = None
-
-                assert card.stability is not None  # mypy
-                next_interval = self._next_interval(card.stability)
-
-            else:
-                if rating == Rating.Again:
-                    card.step = 0
-                    next_interval = self.learning_steps[card.step]
-
-                elif rating == Rating.Hard:
-                    # card step stays the same
-
-                    if card.step == 0 and len(self.learning_steps) == 1:
-                        next_interval = self.learning_steps[0] * 1.5
-                    elif card.step == 0 and len(self.learning_steps) >= 2:
-                        next_interval = (
-                            self.learning_steps[0] + self.learning_steps[1]
-                        ) / 2.0
-                    else:
-                        next_interval = self.learning_steps[card.step]
-
-                elif rating == Rating.Good:
-                    if card.step + 1 == len(self.learning_steps):  # the last step
-                        card.state = State.Review
-                        card.step = None
-
-                        next_interval = self._next_interval(card.stability)
-
-                    else:
-                        card.step += 1
-                        next_interval = self.learning_steps[card.step]
-
-                elif rating == Rating.Easy:
-                    card.state = State.Review
-                    card.step = None
-
-                    next_interval = self._next_interval(card.stability)
+            next_interval = self._update_from_steps(
+                card, rating, review_datetime, self.learning_steps
+            )
 
         elif card.state == State.Review:
             assert type(card.stability) is float  # mypy
@@ -456,51 +415,9 @@ class Scheduler:
             card.stability = self._next_stability(card, rating, review_datetime)
             card.difficulty = self._next_difficulty(card.difficulty, rating)
 
-            # calculate the card's next interval
-            # len(self.relearning_steps) == 0: no relearning steps defined so move card to Review state
-            # card.step > len(self.relearning_steps): handles the edge-case when a card was originally scheduled with a scheduler with more
-            # relearning steps than the current scheduler
-            if len(self.relearning_steps) == 0 or card.step > len(
-                self.relearning_steps
-            ):
-                card.state = State.Review
-                card.step = None
-
-                next_interval = self._next_interval(card.stability)
-
-            else:
-                if rating == Rating.Again:
-                    card.step = 0
-                    next_interval = self.relearning_steps[card.step]
-
-                elif rating == Rating.Hard:
-                    # card step stays the same
-
-                    if card.step == 0 and len(self.relearning_steps) == 1:
-                        next_interval = self.relearning_steps[0] * 1.5
-                    elif card.step == 0 and len(self.relearning_steps) >= 2:
-                        next_interval = (
-                            self.relearning_steps[0] + self.relearning_steps[1]
-                        ) / 2.0
-                    else:
-                        next_interval = self.relearning_steps[card.step]
-
-                elif rating == Rating.Good:
-                    if card.step + 1 == len(self.relearning_steps):  # the last step
-                        card.state = State.Review
-                        card.step = None
-
-                        next_interval = self._next_interval(card.stability)
-
-                    else:
-                        card.step += 1
-                        next_interval = self.relearning_steps[card.step]
-
-                elif rating == Rating.Easy:
-                    card.state = State.Review
-                    card.step = None
-
-                    next_interval = self._next_interval(card.stability)
+            next_interval = self._update_from_steps(
+                card, rating, review_datetime, self.relearning_steps
+            )
 
         if self.enable_fuzzing and card.state == State.Review:
             next_interval = self._get_fuzzed_interval(next_interval)
@@ -509,6 +426,45 @@ class Scheduler:
         card.last_review = review_datetime
 
         return card, review_log
+
+    def _update_from_steps(
+        self,
+        card: Card,
+        rating: Rating,
+        review_datetime: datetime,
+        steps: tuple[timedelta, ...],
+    ) -> timedelta:
+        assert card.step is not None  # mypy
+        assert card.stability is not None  # mypy
+
+        if len(steps) == 0 or card.step > len(steps):
+            card.state = State.Review
+            card.step = None
+            return self._next_interval(card.stability)
+        else:
+            if rating == Rating.Again:
+                card.step = 0
+                return steps[card.step]
+            elif rating == Rating.Hard:
+                # card step stays the same
+                if card.step == 0 and len(steps) == 1:
+                    return steps[0] * 1.5
+                elif card.step == 0 and len(steps) >= 2:
+                    return (steps[0] + steps[1]) / 2.0
+                else:
+                    return steps[card.step]
+            elif rating == Rating.Good:
+                if card.step + 1 == len(steps):  # the last step
+                    card.state = State.Review
+                    card.step = None
+                    return self._next_interval(card.stability)
+                else:
+                    card.step += 1
+                    return steps[card.step]
+            elif rating == Rating.Easy:
+                card.state = State.Review
+                card.step = None
+                return self._next_interval(card.stability)
 
     def to_dict(self) -> dict[str, Any]:
         """

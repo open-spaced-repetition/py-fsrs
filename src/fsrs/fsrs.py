@@ -397,12 +397,7 @@ class Scheduler:
             else:
                 assert type(card.stability) is float  # mypy
                 assert type(card.difficulty) is float  # mypy
-                card.stability = self._next_stability(
-                    difficulty=card.difficulty,
-                    stability=card.stability,
-                    retrievability=retrievability,
-                    rating=rating,
-                )
+                card.stability = self._next_stability(card, rating, review_datetime)
                 card.difficulty = self._next_difficulty(
                     difficulty=card.difficulty, rating=rating
                 )
@@ -470,12 +465,7 @@ class Scheduler:
                 )
 
             else:
-                card.stability = self._next_stability(
-                    difficulty=card.difficulty,
-                    stability=card.stability,
-                    retrievability=retrievability,
-                    rating=rating,
-                )
+                card.stability = self._next_stability(card, rating, review_datetime)
                 card.difficulty = self._next_difficulty(
                     difficulty=card.difficulty, rating=rating
                 )
@@ -512,12 +502,7 @@ class Scheduler:
                 )
 
             else:
-                card.stability = self._next_stability(
-                    difficulty=card.difficulty,
-                    stability=card.stability,
-                    retrievability=retrievability,
-                    rating=rating,
-                )
+                card.stability = self._next_stability(card, rating, review_datetime)
                 card.difficulty = self._next_difficulty(
                     difficulty=card.difficulty, rating=rating
                 )
@@ -684,27 +669,32 @@ class Scheduler:
         return next_difficulty
 
     def _next_stability(
-        self, difficulty: float, stability: float, retrievability: float, rating: Rating
+        self, card: Card, rating: Rating, review_datetime: datetime
     ) -> float:
+        assert card.difficulty is not None  # mypy
+        assert card.stability is not None  # mypy
+
+        retrievability = card.get_retrievability(review_datetime)
+
         if rating == Rating.Again:
             long_term_forget_stability = (
                 self.parameters[11]
-                * math.pow(difficulty, -self.parameters[12])
-                * (math.pow(stability + 1, self.parameters[13]) - 1)
+                * math.pow(card.difficulty, -self.parameters[12])
+                * (math.pow(card.stability + 1, self.parameters[13]) - 1)
                 * math.exp((1 - retrievability) * self.parameters[14])
             )
 
-            short_term_forget_stability = stability / math.exp(
+            short_term_forget_stability = card.stability / math.exp(
                 self.parameters[17] * self.parameters[18]
             )
 
             return min(long_term_forget_stability, short_term_forget_stability)
 
-        return stability * (
+        return card.stability * (
             1
             + math.exp(self.parameters[8])
-            * (11 - difficulty)
-            * math.pow(stability, -self.parameters[9])
+            * (11 - card.difficulty)
+            * math.pow(card.stability, -self.parameters[9])
             * (math.exp((1 - retrievability) * self.parameters[10]) - 1)
             * (self.hard_penalty if rating == Rating.Hard else 1)
             * (self.easy_bonus if rating == Rating.Easy else 1)

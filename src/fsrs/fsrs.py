@@ -374,8 +374,6 @@ class Scheduler:
             review_duration=review_duration,
         )
 
-        retrievability = card.get_retrievability(current_datetime=review_datetime)
-
         if card.state == State.Learning:
             assert type(card.step) is int
 

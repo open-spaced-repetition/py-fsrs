@@ -661,11 +661,10 @@ class Scheduler:
                 * math.exp((1 - retrievability) * self.parameters[14])
             )
 
-            short_term_forget_stability = card.stability / math.exp(
-                self.parameters[17] * self.parameters[18]
+            return min(
+                long_term_forget_stability,
+                self._short_term_stability(card.stability, Rating.Good),
             )
-
-            return min(long_term_forget_stability, short_term_forget_stability)
 
         return card.stability * (
             1

@@ -689,44 +689,19 @@ class Scheduler:
         self, difficulty: float, stability: float, retrievability: float, rating: Rating
     ) -> float:
         if rating == Rating.Again:
-            next_stability = self._next_forget_stability(
-                difficulty=difficulty,
-                stability=stability,
-                retrievability=retrievability,
+            long_term_forget_stability = (
+                self.parameters[11]
+                * math.pow(difficulty, -self.parameters[12])
+                * (math.pow(stability + 1, self.parameters[13]) - 1)
+                * math.exp((1 - retrievability) * self.parameters[14])
             )
 
-        elif rating in (Rating.Hard, Rating.Good, Rating.Easy):
-            next_stability = self._next_recall_stability(
-                difficulty=difficulty,
-                stability=stability,
-                retrievability=retrievability,
-                rating=rating,
+            short_term_forget_stability = stability / math.exp(
+                self.parameters[17] * self.parameters[18]
             )
 
-        return next_stability
+            return min(long_term_forget_stability, short_term_forget_stability)
 
-    def _next_forget_stability(
-        self, difficulty: float, stability: float, retrievability: float
-    ) -> float:
-        next_forget_stability_long_term_params = (
-            self.parameters[11]
-            * math.pow(difficulty, -self.parameters[12])
-            * (math.pow(stability + 1, self.parameters[13]) - 1)
-            * math.exp((1 - retrievability) * self.parameters[14])
-        )
-
-        next_forget_stability_short_term_params = stability / math.exp(
-            self.parameters[17] * self.parameters[18]
-        )
-
-        return min(
-            next_forget_stability_long_term_params,
-            next_forget_stability_short_term_params,
-        )
-
-    def _next_recall_stability(
-        self, difficulty: float, stability: float, retrievability: float, rating: Rating
-    ) -> float:
         hard_penalty = self.parameters[15] if rating == Rating.Hard else 1
         easy_bonus = self.parameters[16] if rating == Rating.Easy else 1
 

@@ -333,6 +333,8 @@ class Scheduler:
         self.maximum_interval = maximum_interval
         self.enable_fuzzing = enable_fuzzing
 
+        self.initial_stability = self.parameters[:4]
+
     def review_card(
         self,
         card: Card,
@@ -382,7 +384,7 @@ class Scheduler:
 
             # update the card's stability and difficulty
             if card.stability is None and card.difficulty is None:
-                card.stability = self._initial_stability(rating)
+                card.stability = self.initial_stability[rating - 1]
                 card.difficulty = self._initial_difficulty(rating)
 
             elif days_since_last_review is not None and days_since_last_review < 1:
@@ -648,14 +650,6 @@ class Scheduler:
             maximum_interval=maximum_interval,
             enable_fuzzing=enable_fuzzing,
         )
-
-    def _initial_stability(self, rating: Rating) -> float:
-        initial_stability = self.parameters[rating - 1]
-
-        # initial_stability >= 0.1
-        initial_stability = max(initial_stability, 0.1)
-
-        return initial_stability
 
     def _initial_difficulty(self, rating: Rating) -> float:
         initial_difficulty = (

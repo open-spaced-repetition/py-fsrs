@@ -333,7 +333,12 @@ class Scheduler:
         self.maximum_interval = maximum_interval
         self.enable_fuzzing = enable_fuzzing
 
-        self.initial_stability = self.parameters[:4]
+        w = self.parameters
+
+        self.initial_stability = {rating + 1: w[rating] for rating in range(4)}
+        self.initial_difficulty = {
+            rating + 1: (w[4] - math.exp(w[5] * rating) + 1) for rating in range(4)
+        }
 
     def review_card(
         self,
@@ -384,8 +389,8 @@ class Scheduler:
 
             # update the card's stability and difficulty
             if card.stability is None and card.difficulty is None:
-                card.stability = self.initial_stability[rating - 1]
-                card.difficulty = self._initial_difficulty(rating)
+                card.stability = self.initial_stability[rating]
+                card.difficulty = self.initial_difficulty[rating]
 
             elif days_since_last_review is not None and days_since_last_review < 1:
                 assert type(card.stability) is float  # mypy
@@ -651,16 +656,6 @@ class Scheduler:
             enable_fuzzing=enable_fuzzing,
         )
 
-    def _initial_difficulty(self, rating: Rating) -> float:
-        initial_difficulty = (
-            self.parameters[4] - math.exp(self.parameters[5] * (rating - 1)) + 1
-        )
-
-        # bound initial_difficulty between 1 and 10
-        initial_difficulty = min(max(initial_difficulty, 1.0), 10.0)
-
-        return initial_difficulty
-
     def _next_interval(self, stability: float) -> int:
         next_interval = (stability / FACTOR) * (
             (self.desired_retention ** (1 / DECAY)) - 1
@@ -688,7 +683,7 @@ class Scheduler:
         def _mean_reversion(arg_1: float, arg_2: float) -> float:
             return self.parameters[7] * arg_1 + (1 - self.parameters[7]) * arg_2
 
-        arg_1 = self._initial_difficulty(Rating.Easy)
+        arg_1 = self.initial_difficulty[Rating.Easy]
 
         delta_difficulty = -(self.parameters[6] * (rating - 3))
         arg_2 = difficulty + _linear_damping(

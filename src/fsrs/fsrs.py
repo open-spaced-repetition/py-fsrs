@@ -372,8 +372,11 @@ class Scheduler:
 
         card.stability = self._next_stability(card, rating, review_datetime)
         card.difficulty = self._next_difficulty(card, rating)
+
         if card.state == State.Learning:
             next_interval = self._update_from_steps(card, rating, self.learning_steps)
+        elif card.state == State.Relearning:
+            next_interval = self._update_from_steps(card, rating, self.relearning_steps)
         elif card.state == State.Review:
             if rating == Rating.Again and len(self.relearning_steps) > 0:
                 card.state = State.Relearning
@@ -381,8 +384,6 @@ class Scheduler:
                 next_interval = self.relearning_steps[card.step]
             else:
                 next_interval = self._next_interval(card.stability)
-        elif card.state == State.Relearning:
-            next_interval = self._update_from_steps(card, rating, self.relearning_steps)
 
         if self.enable_fuzzing and card.state == State.Review:
             next_interval = self._get_fuzzed_interval(next_interval)

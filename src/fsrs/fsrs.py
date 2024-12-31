@@ -174,15 +174,11 @@ class Card:
         Returns:
             float: The retrievability of the Card object.
         """
-
         if self.last_review is None:
             return 0
 
-        if current_datetime is None:
-            current_datetime = datetime.now(timezone.utc)
-
+        current_datetime = current_datetime or datetime.now(timezone.utc)
         elapsed_days = max(0, (current_datetime - self.last_review).days)
-
         return (1 + FACTOR * elapsed_days / self.stability) ** DECAY
 
 

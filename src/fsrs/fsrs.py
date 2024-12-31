@@ -413,8 +413,11 @@ class Scheduler:
 
         if rating == Rating.Again:
             card.step = 0
-        elif rating == Rating.Hard and card.step == 0:
-            return steps[0] * 1.5 if len(steps) == 1 else (steps[0] + steps[1]) / 2.0
+        elif rating == Rating.Hard:
+            if card.step + 1 == len(steps):
+                return steps[card.step] * 1.5
+            else:
+                return (steps[card.step] + steps[card.step + 1]) / 2.0
         else:  # Good with pending step
             card.step += 1
 

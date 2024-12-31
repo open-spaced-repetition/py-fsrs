@@ -425,15 +425,10 @@ class Scheduler:
                         return (steps[0] + steps[1]) / 2.0
                 else:
                     return steps[card.step]
-            elif rating == Rating.Good:
-                if card.step + 1 == len(steps):  # the last step
-                    card.state = State.Review
-                    card.step = None
-                    return self._next_interval(card.stability)
-                else:
-                    card.step += 1
-                    return steps[card.step]
-            elif rating == Rating.Easy:
+            elif rating == Rating.Good and card.step + 1 != len(steps):
+                card.step += 1
+                return steps[card.step]
+            else:  # Easy or Good on last step
                 card.state = State.Review
                 card.step = None
                 return self._next_interval(card.stability)

@@ -374,7 +374,7 @@ class Scheduler:
             if card.stability is None and card.difficulty is None:
                 card.stability = self.initial_stability[rating]
                 card.difficulty = self.initial_difficulty[rating]
-            elif card.stability is not None and card.difficulty is not None:
+            else:
                 card.difficulty = self._next_difficulty(card, rating)
                 card.stability = self._next_stability(card, rating, review_datetime)
             next_interval = self._update_from_steps(card, rating, self.learning_steps)

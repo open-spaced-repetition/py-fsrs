@@ -380,57 +380,52 @@ class Scheduler:
     def _next_due(
         self, card: Card, rating: Rating, review_datetime: datetime
     ) -> datetime:
-        next_interval = self.next_interval(card, rating)
+        next_interval = self._next_interval(card, rating)
 
         if self.enable_fuzzing and card.state == State.Review:
             next_interval = self._get_fuzzed_interval(next_interval)
 
         return review_datetime + next_interval
 
-    def next_interval(self, card: Card, rating: Rating) -> timedelta:
-        assert card.stability is not None  # mypy
+    def _next_interval(self, card: Card, rating: Rating) -> timedelta:
+        ivl = (card.stability / FACTOR) * ((self.desired_retention ** (1 / DECAY)) - 1)
+        next_interval = timedelta(days=clamp(round(ivl), 1, self.maximum_interval))
+
+        def update_from_steps(steps: tuple[timedelta, ...]) -> timedelta:
+            assert card.step is not None  # mypy
+
+            if (
+                card.step >= len(steps)
+                or rating == Rating.Easy
+                or (rating == Rating.Good and card.step + 1 == len(steps))
+            ):
+                card.state = State.Review
+                card.step = None
+                return next_interval
+
+            if rating == Rating.Again:
+                card.step = 0
+            elif rating == Rating.Hard:
+                if card.step + 1 == len(steps):
+                    return steps[card.step] * 1.5
+                else:
+                    return (steps[card.step] + steps[card.step + 1]) / 2.0
+            else:  # Good with pending step
+                card.step += 1
+
+            return steps[card.step]
 
         if card.state == State.Learning:
-            return self._update_from_steps(card, rating, self.learning_steps)
+            return update_from_steps(self.learning_steps)
         elif card.state == State.Relearning:
-            return self._update_from_steps(card, rating, self.relearning_steps)
+            return update_from_steps(self.relearning_steps)
         elif card.state == State.Review:
             if rating == Rating.Again and len(self.relearning_steps) > 0:
                 card.state = State.Relearning
                 card.step = 0
                 return self.relearning_steps[card.step]
             else:
-                return self._next_interval(card.stability)
-
-    def _update_from_steps(
-        self,
-        card: Card,
-        rating: Rating,
-        steps: tuple[timedelta, ...],
-    ) -> timedelta:
-        assert card.step is not None  # mypy
-        assert card.stability is not None  # mypy
-
-        if (
-            card.step >= len(steps)
-            or rating == Rating.Easy
-            or (rating == Rating.Good and card.step + 1 == len(steps))
-        ):
-            card.state = State.Review
-            card.step = None
-            return self._next_interval(card.stability)
-
-        if rating == Rating.Again:
-            card.step = 0
-        elif rating == Rating.Hard:
-            if card.step + 1 == len(steps):
-                return steps[card.step] * 1.5
-            else:
-                return (steps[card.step] + steps[card.step + 1]) / 2.0
-        else:  # Good with pending step
-            card.step += 1
-
-        return steps[card.step]
+                return next_interval
 
     def to_dict(self) -> dict[str, Any]:
         """
@@ -492,12 +487,6 @@ class Scheduler:
             maximum_interval=maximum_interval,
             enable_fuzzing=enable_fuzzing,
         )
-
-    def _next_interval(self, stability: float) -> timedelta:
-        next_interval = (stability / FACTOR) * (
-            (self.desired_retention ** (1 / DECAY)) - 1
-        )
-        return timedelta(days=min(max(round(next_interval), 1), self.maximum_interval))
 
     def _next_difficulty(self, card: Card, rating: Rating) -> float:
         if card.difficulty is None:
@@ -599,3 +588,7 @@ class Scheduler:
         fuzzed_interval = timedelta(days=fuzzed_interval_days)
 
         return fuzzed_interval
+
+
+def clamp(value, min_value, max_value):
+    return max(min(value, max_value), min_value)

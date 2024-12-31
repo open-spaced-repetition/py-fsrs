@@ -370,17 +370,11 @@ class Scheduler:
             review_duration=review_duration,
         )
 
+        card.stability = self._next_stability(card, rating, review_datetime)
+        card.difficulty = self._next_difficulty(card, rating)
         if card.state == State.Learning:
-            if card.stability is None and card.difficulty is None:
-                card.stability = self.initial_stability[rating]
-                card.difficulty = self.initial_difficulty[rating]
-            else:
-                card.difficulty = self._next_difficulty(card, rating)
-                card.stability = self._next_stability(card, rating, review_datetime)
             next_interval = self._update_from_steps(card, rating, self.learning_steps)
         elif card.state == State.Review:
-            card.stability = self._next_stability(card, rating, review_datetime)
-            card.difficulty = self._next_difficulty(card, rating)
             if rating == Rating.Again and len(self.relearning_steps) > 0:
                 card.state = State.Relearning
                 card.step = 0
@@ -388,8 +382,6 @@ class Scheduler:
             else:
                 next_interval = self._next_interval(card.stability)
         elif card.state == State.Relearning:
-            card.stability = self._next_stability(card, rating, review_datetime)
-            card.difficulty = self._next_difficulty(card, rating)
             next_interval = self._update_from_steps(card, rating, self.relearning_steps)
 
         if self.enable_fuzzing and card.state == State.Review:
@@ -500,7 +492,9 @@ class Scheduler:
         )
 
     def _next_difficulty(self, card: Card, rating: Rating) -> float:
-        assert card.difficulty is not None  # mypy
+        if card.difficulty is None:
+            return self.initial_difficulty[rating]
+
         delta_difficulty = -(self.parameters[6] * (rating - 3))
         arg_1 = self.initial_difficulty[Rating.Easy]
         arg_2 = card.difficulty + (10.0 - card.difficulty) * delta_difficulty / 9.0
@@ -510,8 +504,10 @@ class Scheduler:
     def _next_stability(
         self, card: Card, rating: Rating, review_datetime: datetime
     ) -> float:
+        if card.stability is None:
+            return self.initial_stability[rating]
+
         assert card.difficulty is not None  # mypy
-        assert card.stability is not None  # mypy
 
         days_since_last_review = (
             (review_datetime - card.last_review).days if card.last_review else None

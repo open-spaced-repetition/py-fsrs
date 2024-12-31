@@ -358,10 +358,10 @@ class Scheduler:
         ):
             raise ValueError("datetime must be timezone-aware and set to UTC")
 
-        card = deepcopy(card)
-
         if review_datetime is None:
             review_datetime = datetime.now(timezone.utc)
+
+        card = deepcopy(card)
 
         review_log = ReviewLog(
             card=card,
@@ -402,14 +402,13 @@ class Scheduler:
                 card.state = State.Review
                 card.step = None
                 return next_interval
-
-            if rating == Rating.Again:
-                card.step = 0
             elif rating == Rating.Hard:
                 if card.step + 1 == len(steps):
                     return steps[card.step] * 1.5
                 else:
                     return (steps[card.step] + steps[card.step + 1]) / 2.0
+            elif rating == Rating.Again:
+                card.step = 0
             else:  # Good with pending step
                 card.step += 1
 

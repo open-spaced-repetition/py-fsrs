@@ -509,10 +509,7 @@ class Scheduler:
             self.parameters[17] * (rating - 3 + self.parameters[18])
         )
 
-        days_since_last_review = (
-            (review_datetime - card.last_review).days if card.last_review else None
-        )
-        if days_since_last_review is not None and days_since_last_review < 1:
+        if card.last_review and (review_datetime - card.last_review).days < 1:
             return short_term_stability
 
         retrievability = card.get_retrievability(review_datetime)

@@ -418,11 +418,11 @@ class Scheduler:
                 card.step = 0
                 return steps[card.step]
             elif rating == Rating.Hard:
-                # card step stays the same
-                if card.step == 0 and len(steps) == 1:
-                    return steps[0] * 1.5
-                elif card.step == 0 and len(steps) >= 2:
-                    return (steps[0] + steps[1]) / 2.0
+                if card.step == 0:
+                    if len(steps) == 1:
+                        return steps[0] * 1.5
+                    else:
+                        return (steps[0] + steps[1]) / 2.0
                 else:
                     return steps[card.step]
             elif rating == Rating.Good:

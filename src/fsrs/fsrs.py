@@ -409,29 +409,23 @@ class Scheduler:
         assert card.step is not None  # mypy
         assert card.stability is not None  # mypy
 
-        if len(steps) == 0 or card.step > len(steps):
+        if (
+            card.step >= len(steps)
+            or rating == Rating.Easy
+            or (rating == Rating.Good and card.step + 1 == len(steps))
+        ):
             card.state = State.Review
             card.step = None
             return self._next_interval(card.stability)
-        else:
-            if rating == Rating.Again:
-                card.step = 0
-                return steps[card.step]
-            elif rating == Rating.Hard:
-                if card.step == 0:
-                    if len(steps) == 1:
-                        return steps[0] * 1.5
-                    else:
-                        return (steps[0] + steps[1]) / 2.0
-                else:
-                    return steps[card.step]
-            elif rating == Rating.Good and card.step + 1 != len(steps):
-                card.step += 1
-                return steps[card.step]
-            else:  # Easy or Good on last step
-                card.state = State.Review
-                card.step = None
-                return self._next_interval(card.stability)
+
+        if rating == Rating.Again:
+            card.step = 0
+        elif rating == Rating.Hard and card.step == 0:
+            return steps[0] * 1.5 if len(steps) == 1 else (steps[0] + steps[1]) / 2.0
+        else:  # Good with pending step
+            card.step += 1
+
+        return steps[card.step]
 
     def to_dict(self) -> dict[str, Any]:
         """

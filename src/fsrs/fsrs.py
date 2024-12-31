@@ -499,11 +499,6 @@ class Scheduler:
         )
         return timedelta(days=min(max(round(next_interval), 1), self.maximum_interval))
 
-    def _short_term_stability(self, stability: float, rating: Rating) -> float:
-        return stability * math.exp(
-            self.parameters[17] * (rating - 3 + self.parameters[18])
-        )
-
     def _next_difficulty(self, card: Card, rating: Rating) -> float:
         if card.difficulty is None:
             return self.initial_difficulty[rating]
@@ -522,11 +517,16 @@ class Scheduler:
 
         assert card.difficulty is not None  # mypy
 
+        def _short_term_stability(stability: float, rating: Rating) -> float:
+            return stability * math.exp(
+                self.parameters[17] * (rating - 3 + self.parameters[18])
+            )
+
         days_since_last_review = (
             (review_datetime - card.last_review).days if card.last_review else None
         )
         if days_since_last_review is not None and days_since_last_review < 1:
-            return self._short_term_stability(card.stability, rating)
+            return _short_term_stability(card.stability, rating)
 
         retrievability = card.get_retrievability(review_datetime)
 
@@ -540,7 +540,7 @@ class Scheduler:
 
             return min(
                 long_term_forget_stability,
-                self._short_term_stability(card.stability, Rating.Good),
+                _short_term_stability(card.stability, Rating.Good),
             )
 
         return card.stability * (

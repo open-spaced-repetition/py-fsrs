@@ -372,26 +372,35 @@ class Scheduler:
 
         card.stability = self._next_stability(card, rating, review_datetime)
         card.difficulty = self._next_difficulty(card, rating)
+        card.due = self._next_due(card, rating, review_datetime)
+        card.last_review = review_datetime
 
-        if card.state == State.Learning:
-            next_interval = self._update_from_steps(card, rating, self.learning_steps)
-        elif card.state == State.Relearning:
-            next_interval = self._update_from_steps(card, rating, self.relearning_steps)
-        elif card.state == State.Review:
-            if rating == Rating.Again and len(self.relearning_steps) > 0:
-                card.state = State.Relearning
-                card.step = 0
-                next_interval = self.relearning_steps[card.step]
-            else:
-                next_interval = self._next_interval(card.stability)
+        return card, review_log
+
+    def _next_due(
+        self, card: Card, rating: Rating, review_datetime: datetime
+    ) -> datetime:
+        next_interval = self.next_interval(card, rating)
 
         if self.enable_fuzzing and card.state == State.Review:
             next_interval = self._get_fuzzed_interval(next_interval)
 
-        card.due = review_datetime + next_interval
-        card.last_review = review_datetime
+        return review_datetime + next_interval
 
-        return card, review_log
+    def next_interval(self, card: Card, rating: Rating) -> timedelta:
+        assert card.stability is not None  # mypy
+
+        if card.state == State.Learning:
+            return self._update_from_steps(card, rating, self.learning_steps)
+        elif card.state == State.Relearning:
+            return self._update_from_steps(card, rating, self.relearning_steps)
+        elif card.state == State.Review:
+            if rating == Rating.Again and len(self.relearning_steps) > 0:
+                card.state = State.Relearning
+                card.step = 0
+                return self.relearning_steps[card.step]
+            else:
+                return self._next_interval(card.stability)
 
     def _update_from_steps(
         self,

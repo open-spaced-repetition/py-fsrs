@@ -517,16 +517,15 @@ class Scheduler:
 
         assert card.difficulty is not None  # mypy
 
-        def _short_term_stability(stability: float, rating: Rating) -> float:
-            return stability * math.exp(
-                self.parameters[17] * (rating - 3 + self.parameters[18])
-            )
+        short_term_stability = card.stability * math.exp(
+            self.parameters[17] * (rating - 3 + self.parameters[18])
+        )
 
         days_since_last_review = (
             (review_datetime - card.last_review).days if card.last_review else None
         )
         if days_since_last_review is not None and days_since_last_review < 1:
-            return _short_term_stability(card.stability, rating)
+            return short_term_stability
 
         retrievability = card.get_retrievability(review_datetime)
 
@@ -538,10 +537,8 @@ class Scheduler:
                 * math.exp((1 - retrievability) * self.parameters[14])
             )
 
-            return min(
-                long_term_forget_stability,
-                _short_term_stability(card.stability, Rating.Good),
-            )
+            # FIXME: I changed how the short term stability is calculated, so this might be wrong
+            return min(long_term_forget_stability, short_term_stability)
 
         return card.stability * (
             1

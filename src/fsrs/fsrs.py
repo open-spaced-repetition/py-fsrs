@@ -379,27 +379,14 @@ class Scheduler:
                 card.stability = self._next_stability(card, rating, review_datetime)
             next_interval = self._update_from_steps(card, rating, self.learning_steps)
         elif card.state == State.Review:
-            assert type(card.stability) is float  # mypy
-            assert type(card.difficulty) is float  # mypy
-
             card.stability = self._next_stability(card, rating, review_datetime)
             card.difficulty = self._next_difficulty(card, rating)
-
-            # calculate the card's next interval
-            if rating == Rating.Again:
-                # if there are no relearning steps (they were left blank)
-                if len(self.relearning_steps) == 0:
-                    next_interval = self._next_interval(card.stability)
-
-                else:
-                    card.state = State.Relearning
-                    card.step = 0
-
-                    next_interval = self.relearning_steps[card.step]
-
-            elif rating in (Rating.Hard, Rating.Good, Rating.Easy):
+            if rating == Rating.Again and len(self.relearning_steps) > 0:
+                card.state = State.Relearning
+                card.step = 0
+                next_interval = self.relearning_steps[card.step]
+            else:
                 next_interval = self._next_interval(card.stability)
-
         elif card.state == State.Relearning:
             card.stability = self._next_stability(card, rating, review_datetime)
             card.difficulty = self._next_difficulty(card, rating)

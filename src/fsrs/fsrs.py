@@ -371,26 +371,19 @@ class Scheduler:
         )
 
         if card.state == State.Learning:
-            assert type(card.step) is int
-
-            # update the card's stability and difficulty
             if card.stability is None and card.difficulty is None:
                 card.stability = self.initial_stability[rating]
                 card.difficulty = self.initial_difficulty[rating]
             elif card.stability is not None and card.difficulty is not None:
-                card.difficulty = self._next_difficulty(card.difficulty, rating)
+                card.difficulty = self._next_difficulty(card, rating)
                 card.stability = self._next_stability(card, rating, review_datetime)
-
-            next_interval = self._update_from_steps(
-                card, rating, review_datetime, self.learning_steps
-            )
-
+            next_interval = self._update_from_steps(card, rating, self.learning_steps)
         elif card.state == State.Review:
             assert type(card.stability) is float  # mypy
             assert type(card.difficulty) is float  # mypy
 
             card.stability = self._next_stability(card, rating, review_datetime)
-            card.difficulty = self._next_difficulty(card.difficulty, rating)
+            card.difficulty = self._next_difficulty(card, rating)
 
             # calculate the card's next interval
             if rating == Rating.Again:
@@ -408,16 +401,9 @@ class Scheduler:
                 next_interval = self._next_interval(card.stability)
 
         elif card.state == State.Relearning:
-            assert type(card.step) is int
-            assert type(card.stability) is float  # mypy
-            assert type(card.difficulty) is float  # mypy
-
             card.stability = self._next_stability(card, rating, review_datetime)
-            card.difficulty = self._next_difficulty(card.difficulty, rating)
-
-            next_interval = self._update_from_steps(
-                card, rating, review_datetime, self.relearning_steps
-            )
+            card.difficulty = self._next_difficulty(card, rating)
+            next_interval = self._update_from_steps(card, rating, self.relearning_steps)
 
         if self.enable_fuzzing and card.state == State.Review:
             next_interval = self._get_fuzzed_interval(next_interval)
@@ -431,7 +417,6 @@ class Scheduler:
         self,
         card: Card,
         rating: Rating,
-        review_datetime: datetime,
         steps: tuple[timedelta, ...],
     ) -> timedelta:
         assert card.step is not None  # mypy
@@ -538,10 +523,11 @@ class Scheduler:
             self.parameters[17] * (rating - 3 + self.parameters[18])
         )
 
-    def _next_difficulty(self, difficulty: float, rating: Rating) -> float:
+    def _next_difficulty(self, card: Card, rating: Rating) -> float:
+        assert card.difficulty is not None  # mypy
         delta_difficulty = -(self.parameters[6] * (rating - 3))
         arg_1 = self.initial_difficulty[Rating.Easy]
-        arg_2 = difficulty + (10.0 - difficulty) * delta_difficulty / 9.0
+        arg_2 = card.difficulty + (10.0 - card.difficulty) * delta_difficulty / 9.0
         mean_reversion = self.parameters[7] * arg_1 + (1 - self.parameters[7]) * arg_2
         return min(max(mean_reversion, 1.0), 10.0)
 

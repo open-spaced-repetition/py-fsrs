@@ -521,15 +521,9 @@ class Scheduler:
         return clamp(D_double_prime, 1, 10)
 
     def _recall_stability(self, S: float, D: float, R: float, rating: Rating) -> float:
-        return S * (
-            1
-            + exp(self.w[8])
-            * (11 - D)
-            * pow(S, -self.w[9])
-            * (exp((1 - R) * self.w[10]) - 1)
-            * self._hard_penalty(rating)  # Is this correct,
-            * self._easy_bonus(rating)  # or should it be outside the parentheses?
-        )
+        w8, w9, w10 = self.w[8], self.w[9], self.w[10]
+        S = S * (1 + exp(w8) * (11 - D) * pow(S, -w9) * (exp((1 - R) * w10) - 1))
+        return S * self._hard_penalty(rating) * self._easy_bonus(rating)
 
     def _long_term_forget_stability(self, S: float, D: float, R: float) -> float:
         w11, w12, w13, w14 = self.w[11], self.w[12], self.w[13], self.w[14]

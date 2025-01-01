@@ -332,7 +332,6 @@ class Scheduler:
         w = self.parameters
         self.w = w
 
-        self.initial_stability = {rating + 1: w[rating] for rating in range(4)}
         self.hard_penalty = defaultdict(lambda: 1, {Rating.Hard: w[15]})
         self.easy_bonus = defaultdict(lambda: 1, {Rating.Easy: w[16]})
 
@@ -497,7 +496,7 @@ class Scheduler:
         self, card: Card, rating: Rating, review_datetime: datetime
     ) -> float:
         if card.stability is None:
-            return self.initial_stability[rating]
+            return self.initial_stability(rating)
 
         if card.last_review and (review_datetime - card.last_review).days < 1:
             return self.short_term_stability(card.stability, rating)
@@ -509,6 +508,12 @@ class Scheduler:
             )
 
         return self.recall_stability(*card.SDR(review_datetime), rating)
+
+    def initial_stability(self, rating: Rating) -> float:
+        w0, w1, w2, w3 = self.w[0], self.w[1], self.w[2], self.w[3]
+        return {Rating.Again: w0, Rating.Hard: w1, Rating.Good: w2, Rating.Easy: w3}[
+            rating
+        ]
 
     def initial_difficulty(self, rating: Rating) -> float:
         w4, w5 = self.w[4], self.w[5]

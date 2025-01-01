@@ -182,6 +182,17 @@ class Card:
         elapsed_days = max(0, (current_datetime - self.last_review).days)
         return (1 + FACTOR * elapsed_days / self.stability) ** DECAY
 
+    def SDR(
+        self, current_datetime: datetime | None = None
+    ) -> tuple[float, float, float]:
+        assert self.stability is not None  # mypy
+        assert self.difficulty is not None  # mypy
+        return (
+            self.stability,
+            self.difficulty,
+            self.get_retrievability(current_datetime),
+        )
+
 
 class ReviewLog:
     """
@@ -501,21 +512,18 @@ class Scheduler:
         if card.stability is None:
             return self.initial_stability[rating]
 
-        assert card.difficulty is not None  # mypy
-
-        # what if last_review is None?
         if card.last_review and (review_datetime - card.last_review).days < 1:
             return self.short_term_stability(card.stability, rating)
 
-        retrievability = card.get_retrievability(review_datetime)
-
         if rating == Rating.Again:
             return min(
-                self.long_term_forget_stability(card, retrievability),
-                self.short_term_stability(card.stability, rating),  # Is this correct?
+                self.long_term_forget_stability(*card.SDR(review_datetime)),
+                self.short_term_stability(card.stability, rating),
             )
 
-        D, S, R = card.difficulty, card.stability, retrievability
+        return self.recall_stability(*card.SDR(review_datetime), rating)
+
+    def recall_stability(self, S: float, D: float, R: float, rating: Rating) -> float:
         w8, w9, w10 = self.w[8], self.w[9], self.w[10]
         return S * (
             1
@@ -523,24 +531,17 @@ class Scheduler:
             * (11 - D)
             * pow(S, -w9)
             * (exp((1 - R) * w10) - 1)
-            * self.hard_penalty[rating]
-            * self.easy_bonus[rating]
+            * self.hard_penalty[rating]  # Is this correct,
+            * self.easy_bonus[rating]  # or should it be outside the parentheses?
         )
 
-    def short_term_stability(self, S: float, G: float) -> float:
-        return S * exp(self.w[17] * (G - 3 + self.w[18]))
-
-    def long_term_forget_stability(self, card: Card, retrievability: float) -> float:
-        S, D, R = card.stability, card.difficulty, retrievability
-        assert S is not None and D is not None  # mypy
+    def long_term_forget_stability(self, S: float, D: float, R: float) -> float:
         w11, w12, w13, w14 = self.w[11], self.w[12], self.w[13], self.w[14]
         return w11 * pow(D, -w12) * (pow(S + 1, w13) - 1) * exp((1 - R) * w14)
 
-    def recall_stability(self, card: Card, retrievability: float) -> float:
-        S, D, R = card.stability, card.difficulty, retrievability
-        assert S is not None and D is not None  # mypy
-
-        return w15 * pow(D, -w16) * (pow(S + 1, w17) - 1) * exp((1 - R) * w18)
+    def short_term_stability(self, S: float, G: float) -> float:
+        w17, w18 = self.w[17], self.w[18]
+        return S * exp(w17 * (G - 3 + w18))
 
     def _get_fuzzed_interval(self, interval: timedelta) -> timedelta:
         """

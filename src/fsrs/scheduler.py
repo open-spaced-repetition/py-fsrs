@@ -113,14 +113,13 @@ class Scheduler:
             tuple[Card, ReviewLog]: A tuple containing the updated, reviewed card and its corresponding review log.
         """
 
-        if review_datetime is not None:
+        if review_datetime is None:
+            review_datetime = datetime.now(timezone.utc)
+        else:
             if review_datetime.tzinfo is None:
                 review_datetime = review_datetime.replace(tzinfo=timezone.utc)
             elif review_datetime.tzinfo != timezone.utc:
                 review_datetime = review_datetime.astimezone(timezone.utc)
-
-        if review_datetime is None:
-            review_datetime = datetime.now(timezone.utc)
 
         card = deepcopy(card)
 

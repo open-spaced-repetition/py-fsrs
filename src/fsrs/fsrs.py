@@ -377,7 +377,7 @@ class Scheduler:
         )
 
         card.stability = self._next_stability(card, rating, review_datetime)
-        card.difficulty = self._next_difficulty(card.difficulty, rating)
+        card.difficulty = self.next_difficulty(card.difficulty, rating)
         card.due = self._next_due(card, rating, review_datetime)
         card.last_review = review_datetime
 
@@ -493,16 +493,6 @@ class Scheduler:
             enable_fuzzing=enable_fuzzing,
         )
 
-    def _next_difficulty(self, difficulty: float | None, rating: Rating) -> float:
-        if difficulty is None:
-            return self.initial_difficulty(rating)
-
-        delta_difficulty = -(self.parameters[6] * (rating - 3))
-        arg_1 = self.initial_difficulty(Rating.Easy)
-        arg_2 = difficulty + (10.0 - difficulty) * delta_difficulty / 9.0
-        mean_reversion = self.parameters[7] * arg_1 + (1 - self.parameters[7]) * arg_2
-        return min(max(mean_reversion, 1.0), 10.0)
-
     def _next_stability(
         self, card: Card, rating: Rating, review_datetime: datetime
     ) -> float:
@@ -523,6 +513,32 @@ class Scheduler:
     def initial_difficulty(self, rating: Rating) -> float:
         w4, w5 = self.w[4], self.w[5]
         return w4 - exp(w5 * (rating - 1)) + 1
+
+    def next_difficulty(self, difficulty: float | None, rating: Rating) -> float:
+        """
+        Calculates the next difficulty value for a card based on its current difficulty and rating.
+
+        The formula used is:
+        ΔD(G) = -w₆⋅(G-3)
+        D' = D + ΔD⋅(10-D)/9
+        D'' = w₇⋅D₀(4) + (1-w₇)⋅D'
+
+        First calculates the linear damping ΔD based on the rating G. Then applies this
+        damping proportionally to the remaining difficulty range to get D'. Finally applies
+        mean reversion towards D₀(4) to get D'' and avoid "ease hell".
+        """
+
+        if difficulty is None:
+            return self.initial_difficulty(rating)
+
+        w6, w7, G, D = self.w[6], self.w[7], rating, difficulty
+        D04 = self.initial_difficulty(Rating.Easy)
+
+        delta_D = -w6 * (G - 3)
+        D_prime = D + delta_D * (10 - D) / 9
+        D_double_prime = w7 * D04 + (1 - w7) * D_prime
+
+        return clamp(D_double_prime, 1, 10)
 
     def recall_stability(self, S: float, D: float, R: float, rating: Rating) -> float:
         w8, w9, w10 = self.w[8], self.w[9], self.w[10]

@@ -158,14 +158,13 @@ class Scheduler:
                 or rating == Rating.Easy
                 or (rating == Rating.Good and card.step + 1 == len(steps))
             ):
-                card.state = State.Review
-                card.step = None
+                card.state, card.step = State.Review, None
                 return next_interval
             elif rating == Rating.Hard:
-                if card.step + 1 == len(steps):
-                    return steps[card.step] * 1.5
-                else:
+                if card.step + 1 < len(steps):
                     return (steps[card.step] + steps[card.step + 1]) / 2.0
+                else:
+                    return steps[card.step] * 1.5
             elif rating == Rating.Again:
                 card.step = 0
             else:  # Good with pending step

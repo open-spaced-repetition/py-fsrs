@@ -178,9 +178,8 @@ class Scheduler:
             return update_from_steps(self.relearning_steps)
         elif card.state == State.Review:
             if rating == Rating.Again and len(self.relearning_steps) > 0:
-                card.state = State.Relearning
-                card.step = 0
-                return self.relearning_steps[card.step]
+                card.state, card.step = State.Relearning, 0
+                return self.relearning_steps[0]
             else:
                 return next_interval
 

@@ -189,64 +189,28 @@ class Scheduler:
                 return next_interval
 
     def to_dict(self) -> dict[str, Any]:
-        """
-        Returns a JSON-serializable dictionary representation of the Scheduler object.
-
-        This method is specifically useful for storing Scheduler objects in a database.
-
-        Returns:
-            dict: A dictionary representation of the Scheduler object.
-        """
-
-        return_dict = {
+        """Returns a JSON-serializable dictionary representation of the Scheduler."""
+        return {
             "parameters": self.parameters,
             "desired_retention": self.desired_retention,
-            "learning_steps": [
-                int(learning_step.total_seconds())
-                for learning_step in self.learning_steps
-            ],
+            "learning_steps": [step.total_seconds() for step in self.learning_steps],
             "relearning_steps": [
-                int(relearning_step.total_seconds())
-                for relearning_step in self.relearning_steps
+                step.total_seconds() for step in self.relearning_steps
             ],
             "maximum_interval": self.maximum_interval,
             "enable_fuzzing": self.enable_fuzzing,
         }
 
-        return return_dict
-
     @staticmethod
-    def from_dict(source_dict: dict[str, Any]) -> "Scheduler":
-        """
-        Creates a Scheduler object from an existing dictionary.
-
-        Args:
-            source_dict (dict[str, Any]): A dictionary representing an existing Scheduler object.
-
-        Returns:
-            Scheduler: A Scheduler object created from the provided dictionary.
-        """
-
-        parameters = source_dict["parameters"]
-        desired_retention = source_dict["desired_retention"]
-        learning_steps = [
-            timedelta(seconds=learning_step)
-            for learning_step in source_dict["learning_steps"]
-        ]
-        relearning_steps = [
-            timedelta(seconds=relearning_step)
-            for relearning_step in source_dict["relearning_steps"]
-        ]
-        maximum_interval = source_dict["maximum_interval"]
-        enable_fuzzing = source_dict["enable_fuzzing"]
-
+    def from_dict(d: dict[str, Any]) -> "Scheduler":
+        """Creates a Scheduler object from a dictionary."""
         return Scheduler(
-            parameters=parameters,
-            desired_retention=desired_retention,
-            learning_steps=learning_steps,
-            relearning_steps=relearning_steps,
-            maximum_interval=maximum_interval,
-            enable_fuzzing=enable_fuzzing,
+            parameters=d["parameters"],
+            desired_retention=d["desired_retention"],
+            learning_steps=[timedelta(seconds=s) for s in d["learning_steps"]],
+            relearning_steps=[timedelta(seconds=s) for s in d["relearning_steps"]],
+            maximum_interval=d["maximum_interval"],
+            enable_fuzzing=d["enable_fuzzing"],
         )
 
     def _get_fuzzed_interval(self, interval: timedelta) -> timedelta:

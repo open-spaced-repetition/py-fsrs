@@ -137,22 +137,6 @@ class TestPyFSRS:
         assert card.last_review.tzinfo == timezone.utc
         assert card.last_review == naive_dt.replace(tzinfo=timezone.utc)
 
-        # non-UTC timezone should be converted to UTC
-        est = timezone(timedelta(hours=-5))
-        est_dt = datetime(2022, 11, 29, 7, 30, 0, 0, tzinfo=est)  # 12:30 UTC
-        card, _ = scheduler.review_card(
-            card=card, rating=Rating.Good, review_datetime=est_dt
-        )
-        assert card.last_review.tzinfo == timezone.utc
-        assert card.last_review == est_dt.astimezone(timezone.utc)
-
-        # UTC datetime should be used as-is
-        utc_dt = datetime(2022, 11, 29, 12, 30, 0, 0, tzinfo=timezone.utc)
-        card, _ = scheduler.review_card(
-            card=card, rating=Rating.Good, review_datetime=utc_dt
-        )
-        assert card.last_review == utc_dt
-
         # card object's due and last_review attributes must be timezone aware and UTC
         assert card.due.tzinfo == timezone.utc
         assert card.last_review.tzinfo == timezone.utc

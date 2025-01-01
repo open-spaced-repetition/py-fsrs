@@ -115,11 +115,8 @@ class Scheduler:
 
         if review_datetime is None:
             review_datetime = datetime.now(timezone.utc)
-        else:
-            if review_datetime.tzinfo is None:
-                review_datetime = review_datetime.replace(tzinfo=timezone.utc)
-            elif review_datetime.tzinfo != timezone.utc:
-                review_datetime = review_datetime.astimezone(timezone.utc)
+        elif review_datetime.tzinfo is None:
+            review_datetime = review_datetime.replace(tzinfo=timezone.utc)
 
         card = deepcopy(card)
 

@@ -532,12 +532,8 @@ class Scheduler:
         )
 
     def _long_term_forget_stability(self, S: float, D: float, R: float) -> float:
-        return (
-            self.w[11]
-            * pow(D, -self.w[12])
-            * (pow(S + 1, self.w[13]) - 1)
-            * exp((1 - R) * self.w[14])
-        )
+        w11, w12, w13, w14 = self.w[11], self.w[12], self.w[13], self.w[14]
+        return w11 * pow(D, -w12) * (pow(S + 1, w13) - 1) * exp((1 - R) * w14)
 
     def _hard_penalty(self, rating: Rating) -> float:
         return self.w[15] if rating == Rating.Hard else 1

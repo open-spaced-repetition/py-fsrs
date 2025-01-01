@@ -522,7 +522,7 @@ class Scheduler:
 
     def _recall_stability(self, S: float, D: float, R: float, rating: Rating) -> float:
         w8, w9, w10 = self.w[8], self.w[9], self.w[10]
-        S = S * (1 + exp(w8) * (11 - D) * pow(S, -w9) * (exp((1 - R) * w10) - 1))
+        S *= 1 + exp(w8) * (11 - D) * pow(S, -w9) * (exp((1 - R) * w10) - 1)
         return S * self._hard_penalty(rating) * self._easy_bonus(rating)
 
     def _long_term_forget_stability(self, S: float, D: float, R: float) -> float:

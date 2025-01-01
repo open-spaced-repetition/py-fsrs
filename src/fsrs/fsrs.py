@@ -504,13 +504,10 @@ class Scheduler:
 
         return self._recall_stability(*card.SDR(review_datetime), rating)
 
+    # Methods using the model weights
+
     def _initial_stability(self, G: Rating) -> float:
-        return {
-            Rating.Again: self.w[0],
-            Rating.Hard: self.w[1],
-            Rating.Good: self.w[2],
-            Rating.Easy: self.w[3],
-        }[G]
+        return [self.w[0], self.w[1], self.w[2], self.w[3]][G - 1]
 
     def _initial_difficulty(self, G: Rating) -> float:
         return self.w[4] - exp(self.w[5] * (G - 1)) + 1

@@ -12,7 +12,6 @@ Classes:
     Scheduler: The FSRS spaced-repetition scheduler.
 """
 
-from collections import defaultdict
 from datetime import datetime, timezone, timedelta
 from math import exp, inf, pow
 from copy import deepcopy
@@ -492,17 +491,15 @@ class Scheduler:
     ) -> float:
         if card.stability is None:
             return self._initial_stability(rating)
-
-        if card.last_review and (review_datetime - card.last_review).days < 1:
+        elif card.last_review and (review_datetime - card.last_review).days < 1:
             return self._short_term_stability(card.stability, rating)
-
-        if rating == Rating.Again:
+        elif rating == Rating.Again:
             return min(
                 self._long_term_forget_stability(*card.SDR(review_datetime)),
                 self._short_term_stability(card.stability, rating),
             )
-
-        return self._recall_stability(*card.SDR(review_datetime), rating)
+        else:
+            return self._recall_stability(*card.SDR(review_datetime), rating)
 
     # Methods using the model weights
 

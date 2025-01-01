@@ -125,22 +125,33 @@ class TestPyFSRS:
         # new cards should be due immediately after creation
         assert datetime.now(timezone.utc) >= card.due
 
-        # comparing timezone aware cards with deprecated datetime.utcnow() should raise a TypeError
+        # comparing timezone aware cards with naive datetime should raise TypeError
         with pytest.raises(TypeError):
             datetime.now() >= card.due
 
-        # repeating a card with a non-utc, non-timezone-aware datetime object should raise a Value Error
-        with pytest.raises(ValueError):
-            scheduler.review_card(
-                card=card,
-                rating=Rating.Good,
-                review_datetime=datetime(2022, 11, 29, 12, 30, 0, 0),
-            )
-
-        # review a card with rating good before next tests
+        # naive datetime should be converted to UTC
+        naive_dt = datetime(2022, 11, 29, 12, 30, 0, 0)
         card, _ = scheduler.review_card(
-            card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc)
+            card=card, rating=Rating.Good, review_datetime=naive_dt
         )
+        assert card.last_review.tzinfo == timezone.utc
+        assert card.last_review == naive_dt.replace(tzinfo=timezone.utc)
+
+        # non-UTC timezone should be converted to UTC
+        est = timezone(timedelta(hours=-5))
+        est_dt = datetime(2022, 11, 29, 7, 30, 0, 0, tzinfo=est)  # 12:30 UTC
+        card, _ = scheduler.review_card(
+            card=card, rating=Rating.Good, review_datetime=est_dt
+        )
+        assert card.last_review.tzinfo == timezone.utc
+        assert card.last_review == est_dt.astimezone(timezone.utc)
+
+        # UTC datetime should be used as-is
+        utc_dt = datetime(2022, 11, 29, 12, 30, 0, 0, tzinfo=timezone.utc)
+        card, _ = scheduler.review_card(
+            card=card, rating=Rating.Good, review_datetime=utc_dt
+        )
+        assert card.last_review == utc_dt
 
         # card object's due and last_review attributes must be timezone aware and UTC
         assert card.due.tzinfo == timezone.utc

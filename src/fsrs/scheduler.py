@@ -111,13 +111,13 @@ class Scheduler:
 
         Returns:
             tuple[Card, ReviewLog]: A tuple containing the updated, reviewed card and its corresponding review log.
-
-        Raises:
-            ValueError: If the `review_datetime` argument is not timezone-aware and set to UTC.
         """
 
-        if review_datetime is not None and review_datetime.tzinfo != timezone.utc:
-            raise ValueError("datetime must be timezone-aware and set to UTC")
+        if review_datetime is not None:
+            if review_datetime.tzinfo is None:
+                review_datetime = review_datetime.replace(tzinfo=timezone.utc)
+            elif review_datetime.tzinfo != timezone.utc:
+                review_datetime = review_datetime.astimezone(timezone.utc)
 
         if review_datetime is None:
             review_datetime = datetime.now(timezone.utc)

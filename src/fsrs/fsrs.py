@@ -333,9 +333,6 @@ class Scheduler:
         self.w = w
 
         self.initial_stability = {rating + 1: w[rating] for rating in range(4)}
-        self.initial_difficulty = {
-            rating + 1: (w[4] - exp(w[5] * rating) + 1) for rating in range(4)
-        }
         self.hard_penalty = defaultdict(lambda: 1, {Rating.Hard: w[15]})
         self.easy_bonus = defaultdict(lambda: 1, {Rating.Easy: w[16]})
 
@@ -498,10 +495,10 @@ class Scheduler:
 
     def _next_difficulty(self, difficulty: float | None, rating: Rating) -> float:
         if difficulty is None:
-            return self.initial_difficulty[rating]
+            return self.initial_difficulty(rating)
 
         delta_difficulty = -(self.parameters[6] * (rating - 3))
-        arg_1 = self.initial_difficulty[Rating.Easy]
+        arg_1 = self.initial_difficulty(Rating.Easy)
         arg_2 = difficulty + (10.0 - difficulty) * delta_difficulty / 9.0
         mean_reversion = self.parameters[7] * arg_1 + (1 - self.parameters[7]) * arg_2
         return min(max(mean_reversion, 1.0), 10.0)
@@ -522,6 +519,10 @@ class Scheduler:
             )
 
         return self.recall_stability(*card.SDR(review_datetime), rating)
+
+    def initial_difficulty(self, rating: Rating) -> float:
+        w4, w5 = self.w[4], self.w[5]
+        return w4 - exp(w5 * (rating - 1)) + 1
 
     def recall_stability(self, S: float, D: float, R: float, rating: Rating) -> float:
         w8, w9, w10 = self.w[8], self.w[9], self.w[10]

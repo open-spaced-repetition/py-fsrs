@@ -13,14 +13,14 @@ Classes:
 """
 
 from datetime import datetime, timezone, timedelta
-from math import exp, inf, pow
 from copy import deepcopy
+from math import inf
 from typing import Any
 from enum import IntEnum
 import random
 
-DECAY = -0.5
-FACTOR = 0.9 ** (1 / DECAY) - 1
+from fsrs.fsrs_v5 import Rating, FSRSv5
+
 
 FUZZ_RANGES = [
     {"start": 2.5, "end": 7.0, "factor": 0.15},
@@ -37,17 +37,6 @@ class State(IntEnum):
     Learning = 1
     Review = 2
     Relearning = 3
-
-
-class Rating(IntEnum):
-    """
-    Enum representing the four possible ratings when reviewing a card.
-    """
-
-    Again = 1
-    Hard = 2
-    Good = 3
-    Easy = 4
 
 
 class Card:
@@ -160,36 +149,6 @@ class Card:
             difficulty=difficulty,
             due=due,
             last_review=last_review,
-        )
-
-    def get_retrievability(self, current_datetime: datetime | None = None) -> float:
-        """
-        Calculates the Card object's current retrievability for a given date and time.
-
-        The retrievability of a card is the predicted probability that the card is correctly recalled at the provided datetime.
-
-        Args:
-            current_datetime (datetime): The current date and time
-
-        Returns:
-            float: The retrievability of the Card object.
-        """
-        if self.last_review is None:
-            return 0
-
-        current_datetime = current_datetime or datetime.now(timezone.utc)
-        elapsed_days = max(0, (current_datetime - self.last_review).days)
-        return (1 + FACTOR * elapsed_days / self.stability) ** DECAY
-
-    def SDR(
-        self, current_datetime: datetime | None = None
-    ) -> tuple[float, float, float]:
-        assert self.stability is not None  # mypy
-        assert self.difficulty is not None  # mypy
-        return (
-            self.stability,
-            self.difficulty,
-            self.get_retrievability(current_datetime),
         )
 
 
@@ -322,7 +281,7 @@ class Scheduler:
         enable_fuzzing: bool = True,
     ) -> None:
         self.parameters = tuple(parameters)
-        self.w = self.parameters
+        self.fsrs = FSRSv5(self.parameters)
         self.desired_retention = desired_retention
         self.learning_steps = tuple(learning_steps)
         self.relearning_steps = tuple(relearning_steps)
@@ -369,8 +328,9 @@ class Scheduler:
             review_duration=review_duration,
         )
 
-        card.stability = self._next_stability(card, rating, review_datetime)
-        card.difficulty = self._next_difficulty(card.difficulty, rating)
+        card.stability, card.difficulty = self.fsrs.next_stability_and_difficulty(
+            card.stability, card.difficulty, review_datetime, card.last_review, rating
+        )
         card.due = self._next_due(card, rating, review_datetime)
         card.last_review = review_datetime
 
@@ -387,7 +347,8 @@ class Scheduler:
         return review_datetime + next_interval
 
     def _next_interval(self, card: Card, rating: Rating) -> timedelta:
-        ivl = (card.stability / FACTOR) * ((self.desired_retention ** (1 / DECAY)) - 1)
+        assert card.stability is not None
+        ivl = self.fsrs.interval(card.stability, self.desired_retention)
         next_interval = timedelta(days=clamp(round(ivl), 1, self.maximum_interval))
 
         def update_from_steps(steps: tuple[timedelta, ...]) -> timedelta:
@@ -485,60 +446,6 @@ class Scheduler:
             maximum_interval=maximum_interval,
             enable_fuzzing=enable_fuzzing,
         )
-
-    def _next_stability(
-        self, card: Card, rating: Rating, review_datetime: datetime
-    ) -> float:
-        if card.stability is None:
-            return self._initial_stability(rating)
-        elif card.last_review and (review_datetime - card.last_review).days < 1:
-            return self._short_term_stability(card.stability, rating)
-        elif rating == Rating.Again:
-            return min(
-                self._long_term_forget_stability(*card.SDR(review_datetime)),
-                self._short_term_stability(card.stability, rating),
-            )
-        else:
-            return self._recall_stability(*card.SDR(review_datetime), rating)
-
-    # Methods using the model weights
-
-    def _initial_stability(self, G: Rating) -> float:
-        return [self.w[0], self.w[1], self.w[2], self.w[3]][G - 1]
-
-    def _initial_difficulty(self, G: Rating) -> float:
-        return self.w[4] - exp(self.w[5] * (G - 1)) + 1
-
-    def _next_difficulty(self, D: float | None, G: Rating) -> float:
-        if D is None:
-            return self._initial_difficulty(G)
-
-        D04 = self._initial_difficulty(Rating.Easy)
-        delta_D = -self.w[6] * (G - 3)
-        D_prime = D + delta_D * (10 - D) / 9
-        D_double_prime = self.w[7] * D04 + (1 - self.w[7]) * D_prime
-
-        return clamp(D_double_prime, 1, 10)
-
-    def _recall_stability(self, S: float, D: float, R: float, rating: Rating) -> float:
-        w8, w9, w10 = self.w[8], self.w[9], self.w[10]
-        factor = self._hard_penalty(rating) * self._easy_bonus(rating)
-        return S * (
-            1 + exp(w8) * (11 - D) * pow(S, -w9) * (exp((1 - R) * w10) - 1) * factor
-        )
-
-    def _long_term_forget_stability(self, S: float, D: float, R: float) -> float:
-        w11, w12, w13, w14 = self.w[11], self.w[12], self.w[13], self.w[14]
-        return w11 * pow(D, -w12) * (pow(S + 1, w13) - 1) * exp((1 - R) * w14)
-
-    def _hard_penalty(self, rating: Rating) -> float:
-        return self.w[15] if rating == Rating.Hard else 1
-
-    def _easy_bonus(self, rating: Rating) -> float:
-        return self.w[16] if rating == Rating.Easy else 1
-
-    def _short_term_stability(self, S: float, G: float) -> float:
-        return S * exp(self.w[17] * (G - 3 + self.w[18]))
 
     def _get_fuzzed_interval(self, interval: timedelta) -> timedelta:
         """

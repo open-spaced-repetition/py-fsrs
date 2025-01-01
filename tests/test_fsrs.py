@@ -298,30 +298,31 @@ class TestPyFSRS:
     def test_retrievability(self):
         scheduler = Scheduler()
 
+        def retrievability(card: Card) -> float:
+            return scheduler.fsrs._retrievability(
+                card.stability, card.due, card.last_review
+            )
+
         card = Card()
 
         # retrievabiliy of New card
         assert card.state == State.Learning
-        retrievability = card.get_retrievability()
-        assert retrievability == 0
+        assert retrievability(card) == 0
 
         # retrievabiliy of Learning card
         card, _ = scheduler.review_card(card, Rating.Good)
         assert card.state == State.Learning
-        retrievability = card.get_retrievability()
-        assert 0 <= retrievability <= 1
+        assert 0 <= retrievability(card) <= 1
 
         # retrievabiliy of Review card
         card, _ = scheduler.review_card(card, Rating.Good)
         assert card.state == State.Review
-        retrievability = card.get_retrievability()
-        assert 0 <= retrievability <= 1
+        assert 0 <= retrievability(card) <= 1
 
         # retrievabiliy of Relearning card
         card, _ = scheduler.review_card(card, Rating.Again)
         assert card.state == State.Relearning
-        retrievability = card.get_retrievability()
-        assert 0 <= retrievability <= 1
+        assert 0 <= retrievability(card) <= 1
 
     def test_Scheduler_serialize(self):
         scheduler = Scheduler()
@@ -332,7 +333,11 @@ class TestPyFSRS:
         # scheduler can be serialized and de-serialized while remaining the same
         scheduler_dict = scheduler.to_dict()
         copied_scheduler = Scheduler.from_dict(scheduler_dict)
-        assert vars(scheduler) == vars(copied_scheduler)
+        scheduler_dict = vars(scheduler)
+        copied_scheduler_dict = vars(copied_scheduler)
+        del scheduler_dict["fsrs"]
+        del copied_scheduler_dict["fsrs"]
+        assert scheduler_dict == copied_scheduler_dict
         assert scheduler.to_dict() == copied_scheduler.to_dict()
 
     def test_good_learning_steps(self):

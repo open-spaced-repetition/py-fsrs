@@ -151,7 +151,7 @@ class Scheduler:
     def _next_interval(self, card: Card, rating: Rating) -> timedelta:
         assert card.stability is not None
         ivl = self.fsrs.interval(card.stability, self.desired_retention)
-        next_interval = timedelta(days=clamp(round(ivl), 1, self.maximum_interval))
+        next_interval = timedelta(days=max(1, min(round(ivl), self.maximum_interval)))
 
         def update_from_steps(steps: tuple[timedelta, ...]) -> timedelta:
             assert card.step is not None  # mypy
@@ -298,7 +298,3 @@ class Scheduler:
         fuzzed_interval = timedelta(days=fuzzed_interval_days)
 
         return fuzzed_interval
-
-
-def clamp(value, min_value, max_value):
-    return max(min(value, max_value), min_value)

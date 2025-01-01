@@ -323,17 +323,12 @@ class Scheduler:
         enable_fuzzing: bool = True,
     ) -> None:
         self.parameters = tuple(parameters)
+        self.w = self.parameters
         self.desired_retention = desired_retention
         self.learning_steps = tuple(learning_steps)
         self.relearning_steps = tuple(relearning_steps)
         self.maximum_interval = maximum_interval
         self.enable_fuzzing = enable_fuzzing
-
-        w = self.parameters
-        self.w = w
-
-        self.hard_penalty = defaultdict(lambda: 1, {Rating.Hard: w[15]})
-        self.easy_bonus = defaultdict(lambda: 1, {Rating.Easy: w[16]})
 
     def review_card(
         self,
@@ -376,7 +371,7 @@ class Scheduler:
         )
 
         card.stability = self._next_stability(card, rating, review_datetime)
-        card.difficulty = self.next_difficulty(card.difficulty, rating)
+        card.difficulty = self._next_difficulty(card.difficulty, rating)
         card.due = self._next_due(card, rating, review_datetime)
         card.last_review = review_datetime
 
@@ -496,30 +491,31 @@ class Scheduler:
         self, card: Card, rating: Rating, review_datetime: datetime
     ) -> float:
         if card.stability is None:
-            return self.initial_stability(rating)
+            return self._initial_stability(rating)
 
         if card.last_review and (review_datetime - card.last_review).days < 1:
-            return self.short_term_stability(card.stability, rating)
+            return self._short_term_stability(card.stability, rating)
 
         if rating == Rating.Again:
             return min(
-                self.long_term_forget_stability(*card.SDR(review_datetime)),
-                self.short_term_stability(card.stability, rating),
+                self._long_term_forget_stability(*card.SDR(review_datetime)),
+                self._short_term_stability(card.stability, rating),
             )
 
-        return self.recall_stability(*card.SDR(review_datetime), rating)
+        return self._recall_stability(*card.SDR(review_datetime), rating)
 
-    def initial_stability(self, rating: Rating) -> float:
-        w0, w1, w2, w3 = self.w[0], self.w[1], self.w[2], self.w[3]
-        return {Rating.Again: w0, Rating.Hard: w1, Rating.Good: w2, Rating.Easy: w3}[
-            rating
-        ]
+    def _initial_stability(self, G: Rating) -> float:
+        return {
+            Rating.Again: self.w[0],
+            Rating.Hard: self.w[1],
+            Rating.Good: self.w[2],
+            Rating.Easy: self.w[3],
+        }[G]
 
-    def initial_difficulty(self, rating: Rating) -> float:
-        w4, w5 = self.w[4], self.w[5]
-        return w4 - exp(w5 * (rating - 1)) + 1
+    def _initial_difficulty(self, G: Rating) -> float:
+        return self.w[4] - exp(self.w[5] * (G - 1)) + 1
 
-    def next_difficulty(self, difficulty: float | None, rating: Rating) -> float:
+    def _next_difficulty(self, D: float | None, G: Rating) -> float:
         """
         Calculates the next difficulty value for a card based on its current difficulty and rating.
 
@@ -533,37 +529,43 @@ class Scheduler:
         mean reversion towards D₀(4) to get D'' and avoid "ease hell".
         """
 
-        if difficulty is None:
-            return self.initial_difficulty(rating)
+        if D is None:
+            return self._initial_difficulty(G)
 
-        w6, w7, G, D = self.w[6], self.w[7], rating, difficulty
-        D04 = self.initial_difficulty(Rating.Easy)
-
-        delta_D = -w6 * (G - 3)
+        D04 = self._initial_difficulty(Rating.Easy)
+        delta_D = -self.w[6] * (G - 3)
         D_prime = D + delta_D * (10 - D) / 9
-        D_double_prime = w7 * D04 + (1 - w7) * D_prime
+        D_double_prime = self.w[7] * D04 + (1 - self.w[7]) * D_prime
 
         return clamp(D_double_prime, 1, 10)
 
-    def recall_stability(self, S: float, D: float, R: float, rating: Rating) -> float:
-        w8, w9, w10 = self.w[8], self.w[9], self.w[10]
+    def _recall_stability(self, S: float, D: float, R: float, rating: Rating) -> float:
         return S * (
             1
-            + exp(w8)
+            + exp(self.w[8])
             * (11 - D)
-            * pow(S, -w9)
-            * (exp((1 - R) * w10) - 1)
-            * self.hard_penalty[rating]  # Is this correct,
-            * self.easy_bonus[rating]  # or should it be outside the parentheses?
+            * pow(S, -self.w[9])
+            * (exp((1 - R) * self.w[10]) - 1)
+            * self._hard_penalty(rating)  # Is this correct,
+            * self._easy_bonus(rating)  # or should it be outside the parentheses?
         )
 
-    def long_term_forget_stability(self, S: float, D: float, R: float) -> float:
-        w11, w12, w13, w14 = self.w[11], self.w[12], self.w[13], self.w[14]
-        return w11 * pow(D, -w12) * (pow(S + 1, w13) - 1) * exp((1 - R) * w14)
+    def _long_term_forget_stability(self, S: float, D: float, R: float) -> float:
+        return (
+            self.w[11]
+            * pow(D, -self.w[12])
+            * (pow(S + 1, self.w[13]) - 1)
+            * exp((1 - R) * self.w[14])
+        )
 
-    def short_term_stability(self, S: float, G: float) -> float:
-        w17, w18 = self.w[17], self.w[18]
-        return S * exp(w17 * (G - 3 + w18))
+    def _hard_penalty(self, rating: Rating) -> float:
+        return self.w[15] if rating == Rating.Hard else 1
+
+    def _easy_bonus(self, rating: Rating) -> float:
+        return self.w[16] if rating == Rating.Easy else 1
+
+    def _short_term_stability(self, S: float, G: float) -> float:
+        return S * exp(self.w[17] * (G - 3 + self.w[18]))
 
     def _get_fuzzed_interval(self, interval: timedelta) -> timedelta:
         """

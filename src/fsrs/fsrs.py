@@ -516,19 +516,6 @@ class Scheduler:
         return self.w[4] - exp(self.w[5] * (G - 1)) + 1
 
     def _next_difficulty(self, D: float | None, G: Rating) -> float:
-        """
-        Calculates the next difficulty value for a card based on its current difficulty and rating.
-
-        The formula used is:
-        ΔD(G) = -w₆⋅(G-3)
-        D' = D + ΔD⋅(10-D)/9
-        D'' = w₇⋅D₀(4) + (1-w₇)⋅D'
-
-        First calculates the linear damping ΔD based on the rating G. Then applies this
-        damping proportionally to the remaining difficulty range to get D'. Finally applies
-        mean reversion towards D₀(4) to get D'' and avoid "ease hell".
-        """
-
         if D is None:
             return self._initial_difficulty(G)
 

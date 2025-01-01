@@ -116,9 +116,7 @@ class Scheduler:
             ValueError: If the `review_datetime` argument is not timezone-aware and set to UTC.
         """
 
-        if review_datetime is not None and (
-            (review_datetime.tzinfo is None) or (review_datetime.tzinfo != timezone.utc)
-        ):
+        if review_datetime is not None and review_datetime.tzinfo != timezone.utc:
             raise ValueError("datetime must be timezone-aware and set to UTC")
 
         if review_datetime is None:

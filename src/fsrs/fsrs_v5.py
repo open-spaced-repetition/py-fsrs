@@ -11,26 +11,28 @@ class FSRSv5:
     This class implements the FSRS v5 algorithm for spaced repetition scheduling.
     It calculates stability and difficulty values for flashcards based on review ratings.
 
-    Attributes:
-        w (tuple[float, ...]): The 19 model weights used in the algorithm calculations
-        factor (float): Calculated factor used in retrievability formula
-        decay (float): Decay parameter used in retrievability formula, defaults to -0.5
-
     The algorithm uses the following key concepts:
-    - Retrievability (R): Probability of recall
-    - Stability (S): Interval when R=90%
-    - Difficulty (D): Value between 1-10 indicating card difficulty
-    - Rating (G): Review rating (1=Again, 2=Hard, 3=Good, 4=Easy)
+    - Retrievability (R): Probability of recall at a given time
+    - Stability (S): Memory strength, measured as the time interval when R=0.9
+    - Difficulty (D): Value between 1-10 indicating card difficulty, affects stability changes
+    - Rating (G): Review rating (Again=1, Hard=2, Good=3, Easy=4)
+
+    The scheduler uses 19 model weights (w0-w18) to calculate:
+    - Initial difficulty and stability for new cards
+    - Stability changes after successful/failed reviews
+    - Difficulty adjustments based on ratings
+    - Short-term stability changes for same-day reviews
+
+    Attributes:
+        w (tuple[float, ...]): The 19 model weights used in calculations
+        decay (float): Power law decay rate for memory, fixed at -0.5
+        factor (float): Scaling factor derived from decay rate and 0.9 retrievability
     """
 
-    def __init__(
-        self,
-        parameters: tuple[float, ...] | list[float],
-        decay: float = -0.5,
-    ):
+    def __init__(self, parameters: tuple[float, ...] | list[float]):
         self.w = parameters
-        self.factor = 0.9 ** (1 / decay) - 1
-        self.decay = decay
+        self.decay = -0.5
+        self.factor = 0.9 ** (1 / self.decay) - 1
 
     def next_stability_and_difficulty(
         self,

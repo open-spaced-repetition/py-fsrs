@@ -12,26 +12,26 @@ class FSRSv5:
     It calculates stability and difficulty values for flashcards based on review ratings.
 
     The algorithm uses the following key concepts:
-    - Retrievability (R): Probability of recall at a given time
-    - Stability (S): Memory strength, measured as the time interval when R=0.9
-    - Difficulty (D): Value between 1-10 indicating card difficulty, affects stability changes
+    - Retrievability (R): Probability of recall at a given time, calculated using a power function
+      that better models the superposition of multiple exponential forgetting curves
+    - Stability (S): Memory strength, measured as the time interval when R=0.9. Stability increases
+      are larger for easier cards, newer memories, and when reviewing at lower retrievability
+    - Difficulty (D): Value between 1-10 indicating card difficulty. Higher difficulty results in
+      smaller stability increases. Difficulty changes based on ratings and reverts toward an optimal value
     - Rating (G): Review rating (Again=1, Hard=2, Good=3, Easy=4)
 
     The scheduler uses 19 model weights (w0-w18) to calculate:
-    - Initial difficulty and stability for new cards
-    - Stability changes after successful/failed reviews
+    - Initial difficulty and stability for new cards (w0-w5)
+    - Stability changes after successful/failed reviews (w6-w16)
     - Difficulty adjustments based on ratings
-    - Short-term stability changes for same-day reviews
-
-    Attributes:
-        w (tuple[float, ...]): The 19 model weights used in calculations
-        decay (float): Power law decay rate for memory, fixed at -0.5
-        factor (float): Scaling factor derived from decay rate and 0.9 retrievability
+    - Short-term stability changes for same-day reviews (w17-w18)
     """
 
     def __init__(self, parameters: tuple[float, ...] | list[float]):
         self.w = parameters
+        # Power law decay rate fixed at -0.5 for optimal forgetting curve fit
         self.decay = -0.5
+        # Factor derived to ensure R=0.9 when t=S
         self.factor = 0.9 ** (1 / self.decay) - 1
 
     def next_stability_and_difficulty(
@@ -44,6 +44,10 @@ class FSRSv5:
     ) -> tuple[float, float]:
         """
         Calculate the next stability and difficulty values after a review.
+
+        For first reviews, uses initial stability/difficulty formulas.
+        For subsequent reviews, calculates retrievability and updates both values
+        based on the rating and time elapsed.
 
         Args:
             stability: Current stability value or None if first review
@@ -64,7 +68,8 @@ class FSRSv5:
         """
         Calculate the next interval given stability and desired retention.
 
-        Uses the formula: I(r,S) = (S/FACTOR) * (r^(1/DECAY) - 1)
+        Uses the power function formula: I(r,S) = (S/FACTOR) * (r^(1/DECAY) - 1)
+        This provides optimal spacing by targeting the desired retention probability.
 
         Args:
             stability: Current stability value
@@ -81,8 +86,13 @@ class FSRSv5:
         """
         Calculate the next stability value based on current state and rating.
 
-        For same-day reviews uses: S' = S * e^(w17 * (G-3 + w18))
-        For regular reviews uses recall or forget stability formulas.
+        For same-day reviews: S' = S * e^(w17 * (G-3 + w18))
+        For regular reviews:
+        - If Again: Uses minimum of forget and short-term stability formulas
+        - If Hard/Good/Easy: Uses recall stability formula that factors in:
+          - Higher D -> smaller increase
+          - Higher S -> harder to increase further
+          - Lower R -> larger increase (spacing effect)
 
         Args:
             S: Current stability
@@ -109,7 +119,8 @@ class FSRSv5:
         """
         Calculate retrievability (probability of recall) after time interval.
 
-        Uses formula: R(t,S) = (1 + FACTOR*t/S)^DECAY
+        Uses power function: R(t,S) = (1 + FACTOR*t/S)^DECAY
+        This provides better fit than exponential, especially for mixed memory strengths.
 
         Args:
             S: Current stability
@@ -128,6 +139,7 @@ class FSRSv5:
         Get initial stability value based on first rating.
 
         Uses weights w0-w3 for ratings 1-4 respectively.
+        These weights are first estimated by curve fitting, then fine-tuned by gradient descent.
 
         Args:
             G: Rating given
@@ -143,6 +155,8 @@ class FSRSv5:
         Calculate initial difficulty based on first rating.
 
         Uses formula: D0(G) = w4 - e^(w5*(G-1)) + 1
+        This is a change from FSRS 4.5 that provides better fit.
+        Values <1 are clamped to 1, values >10 are clamped to 10.
 
         Args:
             G: Rating given
@@ -158,8 +172,11 @@ class FSRSv5:
 
         Uses formulas:
         ΔD = -w6*(G-3)
-        D' = D + ΔD*(10-D)/9
-        D'' = w7*D0(4) + (1-w7)*D'
+        D' = D + ΔD*(10-D)/9  # Linear damping term
+        D'' = w7*D0(4) + (1-w7)*D'  # Mean reversion to Easy initial difficulty
+
+        The (10-D)/9 term makes difficulty approach 10 asymptotically.
+        Mean reversion uses unclamped D0(4) value.
 
         Args:
             D: Current difficulty
@@ -178,15 +195,14 @@ class FSRSv5:
         """
         Calculate new stability after successful recall (Hard, Good or Easy ratings).
 
-        The stability increase (S_inc) is determined by several factors:
-        - Higher difficulty (D) results in smaller stability increase
-        - Higher current stability (S) makes it harder to further increase stability
-        - Lower retrievability (R) results in larger stability increase (spacing effect)
-        - S_inc is always >= 1 for successful reviews
-        - For overdue cards (low R), stability increase converges to an upper limit
-          rather than increasing linearly with delay
-
         Formula: S'_r(D,S,R,G) = S * (e^w8 * (11-D) * S^-w9 * (e^(w10*(1-R)) - 1) * w15^(if G=2) * w16^(if G=4) + 1)
+
+        Key effects:
+        - Higher D -> smaller increase (linear: 11-D)
+        - Higher S -> harder to increase (power law: S^-w9)
+        - Lower R -> larger increase (exponential: e^(w10*(1-R)))
+        - Hard rating applies penalty w15
+        - Easy rating applies bonus w16
 
         Args:
             S: Current stability
@@ -207,7 +223,10 @@ class FSRSv5:
         """
         Calculate new stability after forgetting (post-lapse stability).
 
-        Uses formula: S'_f(D,S,R) = w11 * D^(-w12) * ((S+1)^w13 - 1) * e^(w14*(1-R))
+        Formula: S'_f(D,S,R) = w11 * D^(-w12) * ((S+1)^w13 - 1) * e^(w14*(1-R))
+        Result is capped at current stability S.
+
+        Uses nonlinear difficulty function D^(-w12) unlike recall stability.
 
         Args:
             S: Current stability
@@ -221,11 +240,11 @@ class FSRSv5:
         return w11 * pow(D, -w12) * (pow(S + 1, w13) - 1) * exp((1 - R) * w14)
 
     def _hard_penalty(self, rating: Rating) -> float:
-        """Apply penalty multiplier for Hard rating."""
+        """Apply penalty multiplier for Hard rating (0 < w15 < 1)."""
         return self.w[15] if rating == Rating.Hard else 1
 
     def _easy_bonus(self, rating: Rating) -> float:
-        """Apply bonus multiplier for Easy rating."""
+        """Apply bonus multiplier for Easy rating (1 < w16 < 6)."""
         return self.w[16] if rating == Rating.Easy else 1
 
     def _short_term_stability(self, S: float, G: float) -> float:
@@ -233,6 +252,7 @@ class FSRSv5:
         Calculate stability for same-day reviews.
 
         Uses formula: S' = S * e^(w17 * (G-3 + w18))
+        This is new in FSRS 5 to handle same-day reviews when exact intervals unknown.
 
         Args:
             S: Current stability

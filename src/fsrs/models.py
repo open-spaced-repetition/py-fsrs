@@ -66,21 +66,17 @@ class Card:
         }
 
     @staticmethod
-    def from_dict(source_dict: dict[str, Any]) -> "Card":
+    def from_dict(d: dict[str, Any]) -> "Card":
         """Create a Card from a dictionary."""
         return Card(
-            card_id=int(source_dict["card_id"]),
-            state=State(int(source_dict["state"])),
-            step=source_dict["step"],
-            stability=float(source_dict["stability"])
-            if source_dict["stability"]
-            else None,
-            difficulty=float(source_dict["difficulty"])
-            if source_dict["difficulty"]
-            else None,
-            due=datetime.fromisoformat(source_dict["due"]),
-            last_review=datetime.fromisoformat(source_dict["last_review"])
-            if source_dict["last_review"]
+            card_id=int(d["card_id"]),
+            state=State(int(d["state"])),
+            step=d["step"],
+            stability=float(d["stability"]) if d["stability"] else None,
+            difficulty=float(d["difficulty"]) if d["difficulty"] else None,
+            due=datetime.fromisoformat(d["due"]),
+            last_review=datetime.fromisoformat(d["last_review"])
+            if d["last_review"]
             else None,
         )
 
@@ -118,11 +114,11 @@ class ReviewLog:
         }
 
     @staticmethod
-    def from_dict(source_dict: dict[str, Any]) -> "ReviewLog":
+    def from_dict(d: dict[str, Any]) -> "ReviewLog":
         """Create a ReviewLog from a dictionary."""
         return ReviewLog(
-            card=Card.from_dict(source_dict["card"]),
-            rating=Rating(int(source_dict["rating"])),
-            review_datetime=datetime.fromisoformat(source_dict["review_datetime"]),
-            review_duration=source_dict["review_duration"],
+            card=Card.from_dict(d["card"]),
+            rating=Rating(int(d["rating"])),
+            review_datetime=datetime.fromisoformat(d["review_datetime"]),
+            review_duration=d["review_duration"],
         )

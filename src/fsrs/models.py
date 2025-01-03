@@ -53,6 +53,21 @@ class Card:
         self.due = due or datetime.now(timezone.utc)
         self.last_review = last_review
 
+    def get_retrievability(self, current_datetime: datetime | None = None) -> float:
+        """Method kept for compatibility with the original implementation."""
+        if self.last_review is None:
+            return 0
+
+        if current_datetime is None:
+            current_datetime = datetime.now(timezone.utc)
+
+        elapsed_days = max(0, (current_datetime - self.last_review).days)
+
+        DECAY = 0.5
+        FACTOR = 0.9 ** (1 / DECAY) - 1
+
+        return (1 + FACTOR * elapsed_days / self.stability) ** DECAY
+
     def to_dict(self) -> dict[str, int | float | str | None]:
         """Convert card to a JSON-serializable dictionary."""
         return {

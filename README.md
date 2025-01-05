@@ -21,8 +21,14 @@
 **Py-FSRS is a python package that allows developers to easily create their own spaced repetition system using the <a href="https://github.com/open-spaced-repetition/free-spaced-repetition-scheduler">Free Spaced Repetition Scheduler algorithm</a>.**
 
 
----
-
+## Table of Contents
+- [Installation](#installation)
+- [Quickstart](#quickstart)
+- [Usage](#usage)
+- [Reference](#reference)
+- [Other FSRS implementations](#other-fsrs-implementations)
+- [Other SRS python packages](#other-srs-python-packages)
+- [Contribute](#contribute)
 
 ## Installation
 You can install the `fsrs` python package from [PyPI](https://pypi.org/project/fsrs/) using pip:

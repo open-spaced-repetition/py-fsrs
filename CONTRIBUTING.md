@@ -30,7 +30,7 @@ Install `fsrs` locally in editable mode along with the dev dependencies
 pip install -e ".[dev]"
 ```
 
-Now you're ready to make changes to `src/fsrs` and see your changes reflected immediately!
+Now you're ready to make changes to files in the `fsrs` directory and see your changes reflected immediately!
 
 ### Bump the version number
 

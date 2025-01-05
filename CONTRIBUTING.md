@@ -25,9 +25,9 @@ Once you've confirmed your version, please report your issue in the [issues tab]
 
 ### Develop
 
-Install the `fsrs` python package locally in editable mode from the src with
+Install `fsrs` locally in editable mode along with the dev dependencies
 ```
-pip install -e .
+pip install -e ".[dev]"
 ```
 
 Now you're ready to make changes to `src/fsrs` and see your changes reflected immediately!
@@ -39,11 +39,6 @@ This project follows [semantic versioning](https://semver.org/), so please make 
 ### Lint, type-check, format and test
 
 Py-FSRS uses [Ruff](https://github.com/astral-sh/ruff) for linting and formatting, [mypy](https://mypy-lang.org/) for static type-checking and [pytest](https://docs.pytest.org) to run its tests. In order for your contribution to be accepted, your code must pass the linting, type-checking and formatting checks as well as the tests.
-
-You can install these packages with
-```
-pip install ruff mypy pytest
-```
 
 Lint your code with:
 ```

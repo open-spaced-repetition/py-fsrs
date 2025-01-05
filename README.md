@@ -201,4 +201,4 @@ The following spaced repetition schedulers are also available as python packages
 
 ## Contribute
 
-Checkout [CONTRIBUTING](CONTRIBUTING.md) to help improve Py-FSRS!
+Checkout [CONTRIBUTING](https://github.com/open-spaced-repetition/py-fsrs/blob/main/CONTRIBUTING.md) to help improve Py-FSRS!

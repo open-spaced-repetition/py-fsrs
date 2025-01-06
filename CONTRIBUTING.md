@@ -1,9 +1,5 @@
 # Contributing to Py-FSRS
 
-Welcome to Py-FSRS!
-
-In this short guide, you will get a quick overview of how you can contribute to the Py-FSRS project.
-
 ## Reporting issues
 
 If you encounter an issue with Py-FSRS and would like to report it, you'll first want to make sure you're using the latest version of Py-FSRS.
@@ -17,28 +13,18 @@ Once you've confirmed your version, please report your issue in the [issues tab]
 
 ## Contributing code
 
-### Local setup
+### Set up local environment
 
-**Step 1**: Start by forking this repo, then cloning it to your local machine.
-
-**Step 2**: Create a new local branch where you will implement your changes.
-
-### Develop
-
-Install `fsrs` locally in editable mode along with the dev dependencies
+After cloning this repo, install `fsrs` locally in editable mode along with the dev dependencies
 ```
 pip install -e ".[dev]"
 ```
 
-Now you're ready to make changes to `src/fsrs` and see your changes reflected immediately!
+Now you're ready to make changes to files in the `fsrs` directory and see your changes reflected immediately.
 
-### Bump the version number
+### Pass the checks
 
-This project follows [semantic versioning](https://semver.org/), so please make sure to increment the version number in [pyproject.toml](pyproject.toml) when contributing new code.
-
-### Lint, type-check, format and test
-
-Py-FSRS uses [Ruff](https://github.com/astral-sh/ruff) for linting and formatting, [mypy](https://mypy-lang.org/) for static type-checking and [pytest](https://docs.pytest.org) to run its tests. In order for your contribution to be accepted, your code must pass the linting, type-checking and formatting checks as well as the tests.
+In order for your contribution to be accepted, your code must pass the linting, type-checking and formatting checks as well as the unit tests.
 
 Lint your code with:
 ```
@@ -60,8 +46,4 @@ Run the tests with:
 pytest
 ```
 
-Additionally, you are encouraged to contribute your own tests to [tests/test_fsrs.py](tests/test_fsrs.py) to help make Py-FSRS more reliable!
-
-### Submit a pull request
-
-To submit a pull request, commit your local changes to your branch then push the branch to your fork. You can now open a pull request.
+Additionally, you are strongly encouraged to contribute your own tests to [tests/test_fsrs.py](tests/test_fsrs.py) to help make Py-FSRS more reliable.

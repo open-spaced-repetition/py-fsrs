@@ -24,7 +24,7 @@ Homepage = "https://github.com/open-spaced-repetition/py-fsrs"
 dev = ["pytest", "mypy", "ruff"]
 
 [tool.pytest.ini_options]
-pythonpath = "src"
+pythonpath = "fsrs"
 
 [tool.mypy]
 ignore_missing_imports = true

@@ -659,7 +659,7 @@ class Scheduler:
 
     def _initial_difficulty(self, rating: Rating) -> float:
         initial_difficulty = (
-            self.parameters[4] - math.exp(self.parameters[5] * (rating - 1)) + 1
+            self.parameters[4] - (math.e ** (self.parameters[5] * (rating - 1))) + 1
         )
 
         # bound initial_difficulty between 1 and 10
@@ -683,8 +683,8 @@ class Scheduler:
         return next_interval
 
     def _short_term_stability(self, stability: float, rating: Rating) -> float:
-        return stability * math.exp(
-            self.parameters[17] * (rating - 3 + self.parameters[18])
+        return stability * (
+            math.e ** (self.parameters[17] * (rating - 3 + self.parameters[18]))
         )
 
     def _next_difficulty(self, difficulty: float, rating: Rating) -> float:
@@ -733,13 +733,13 @@ class Scheduler:
     ) -> float:
         next_forget_stability_long_term_params = (
             self.parameters[11]
-            * math.pow(difficulty, -self.parameters[12])
-            * (math.pow(stability + 1, self.parameters[13]) - 1)
-            * math.exp((1 - retrievability) * self.parameters[14])
+            * (difficulty ** -self.parameters[12])
+            * (((stability + 1) ** (self.parameters[13])) - 1)
+            * (math.e ** ((1 - retrievability) * self.parameters[14]))
         )
 
-        next_forget_stability_short_term_params = stability / math.exp(
-            self.parameters[17] * self.parameters[18]
+        next_forget_stability_short_term_params = stability / (
+            math.e ** (self.parameters[17] * self.parameters[18])
         )
 
         return min(
@@ -755,10 +755,10 @@ class Scheduler:
 
         return stability * (
             1
-            + math.exp(self.parameters[8])
+            + (math.e ** (self.parameters[8]))
             * (11 - difficulty)
-            * math.pow(stability, -self.parameters[9])
-            * (math.exp((1 - retrievability) * self.parameters[10]) - 1)
+            * (stability ** -self.parameters[9])
+            * ((math.e ** ((1 - retrievability) * self.parameters[10])) - 1)
             * hard_penalty
             * easy_bonus
         )

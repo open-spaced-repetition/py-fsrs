@@ -21,7 +21,7 @@ requires-python = ">=3.10"
 Homepage = "https://github.com/open-spaced-repetition/py-fsrs"
 
 [project.optional-dependencies]
-dev = ["pytest", "mypy", "ruff"]
+dev = ["pytest", "mypy", "ruff", "setuptools"]
 
 [tool.pytest.ini_options]
 pythonpath = "fsrs"

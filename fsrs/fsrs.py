@@ -378,16 +378,12 @@ class Scheduler:
         )
 
         if card.state == State.Learning:
-            assert type(card.step) is int
-
             # update the card's stability and difficulty
             if card.stability is None and card.difficulty is None:
                 card.stability = self._initial_stability(rating)
                 card.difficulty = self._initial_difficulty(rating)
 
             elif days_since_last_review is not None and days_since_last_review < 1:
-                assert type(card.stability) is float  # mypy
-                assert type(card.difficulty) is float  # mypy
                 card.stability = self._short_term_stability(
                     stability=card.stability, rating=rating
                 )
@@ -396,8 +392,6 @@ class Scheduler:
                 )
 
             else:
-                assert type(card.stability) is float  # mypy
-                assert type(card.difficulty) is float  # mypy
                 card.stability = self._next_stability(
                     difficulty=card.difficulty,
                     stability=card.stability,
@@ -460,9 +454,6 @@ class Scheduler:
                     next_interval = timedelta(days=next_interval_days)
 
         elif card.state == State.Review:
-            assert type(card.stability) is float  # mypy
-            assert type(card.difficulty) is float  # mypy
-
             # update the card's stability and difficulty
             if days_since_last_review is not None and days_since_last_review < 1:
                 card.stability = self._short_term_stability(
@@ -503,10 +494,6 @@ class Scheduler:
                 next_interval = timedelta(days=next_interval_days)
 
         elif card.state == State.Relearning:
-            assert type(card.step) is int
-            assert type(card.stability) is float  # mypy
-            assert type(card.difficulty) is float  # mypy
-
             # update the card's stability and difficulty
             if days_since_last_review is not None and days_since_last_review < 1:
                 card.stability = self._short_term_stability(

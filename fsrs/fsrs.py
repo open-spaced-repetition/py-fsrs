@@ -12,6 +12,7 @@ Classes:
     Scheduler: The FSRS spaced-repetition scheduler.
 """
 
+from __future__ import annotations
 import math
 from datetime import datetime, timezone, timedelta
 from copy import deepcopy
@@ -136,7 +137,7 @@ class Card:
         return return_dict
 
     @staticmethod
-    def from_dict(source_dict: dict[str, int | float | str | None]) -> "Card":
+    def from_dict(source_dict: dict[str, int | float | str | None]) -> Card:
         """
         Creates a Card object from an existing dictionary.
 
@@ -249,7 +250,7 @@ class ReviewLog:
     @staticmethod
     def from_dict(
         source_dict: dict[str, dict | int | str | None],
-    ) -> "ReviewLog":
+    ) -> ReviewLog:
         """
         Creates a ReviewLog object from an existing dictionary.
 
@@ -608,7 +609,7 @@ class Scheduler:
         return return_dict
 
     @staticmethod
-    def from_dict(source_dict: dict[str, list | float | int | bool]) -> "Scheduler":
+    def from_dict(source_dict: dict[str, list | float | int | bool]) -> Scheduler:
         """
         Creates a Scheduler object from an existing dictionary.
 

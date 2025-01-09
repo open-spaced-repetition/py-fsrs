@@ -12,6 +12,7 @@
 <br />
 <div align="center" style="text-decoration: none;">
     <a href="https://pypi.org/project/fsrs/"><img src="https://img.shields.io/pypi/v/fsrs"></a>
+    <a href="https://pypi.org/project/fsrs/"><img src="https://img.shields.io/badge/python-3.10%2B-blue"></a>
     <a href="https://github.com/open-spaced-repetition/py-fsrs/blob/main/LICENSE" style="text-decoration: none;"><img src="https://img.shields.io/badge/License-MIT-brightgreen.svg"></a>
     <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json"></a>
 </div>

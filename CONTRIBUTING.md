@@ -24,26 +24,21 @@ Now you're ready to make changes to files in the `fsrs` directory and see your c
 
 ### Pass the checks
 
-In order for your contribution to be accepted, your code must pass the linting, type-checking and formatting checks as well as the unit tests.
+In order for your contribution to be accepted, your code must pass the linting checks and unit tests.
 
 Lint your code with:
 ```
 ruff check --fix
 ```
 
-Run the type-checker:
-```
-mypy .
-```
-
-Format your code with:
-```
-ruff format
-```
-
 Run the tests with:
 ```
 pytest
+```
+
+Also, don't forget to format your code with:
+```
+ruff format
 ```
 
 Additionally, you are strongly encouraged to contribute your own tests to [tests/test_fsrs.py](tests/test_fsrs.py) to help make Py-FSRS more reliable.

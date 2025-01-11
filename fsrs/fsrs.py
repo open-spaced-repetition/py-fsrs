@@ -12,10 +12,10 @@ Classes:
     Scheduler: The FSRS spaced-repetition scheduler.
 """
 
+from __future__ import annotations
 import math
 from datetime import datetime, timezone, timedelta
 from copy import deepcopy
-from typing import Any
 from enum import IntEnum
 import random
 
@@ -137,12 +137,12 @@ class Card:
         return return_dict
 
     @staticmethod
-    def from_dict(source_dict: dict[str, Any]) -> "Card":
+    def from_dict(source_dict: dict[str, int | float | str | None]) -> Card:
         """
         Creates a Card object from an existing dictionary.
 
         Args:
-            source_dict (dict[str, Any]): A dictionary representing an existing Card object.
+            source_dict (dict[str, int | float | str | None]): A dictionary representing an existing Card object.
 
         Returns:
             Card: A Card object created from the provided dictionary.
@@ -226,7 +226,9 @@ class ReviewLog:
         self.review_datetime = review_datetime
         self.review_duration = review_duration
 
-    def to_dict(self) -> dict[str, dict[str, Any] | int | str | None]:
+    def to_dict(
+        self,
+    ) -> dict[str, dict | int | str | None]:
         """
         Returns a JSON-serializable dictionary representation of the ReviewLog object.
 
@@ -246,12 +248,14 @@ class ReviewLog:
         return return_dict
 
     @staticmethod
-    def from_dict(source_dict: dict[str, Any]) -> "ReviewLog":
+    def from_dict(
+        source_dict: dict[str, dict | int | str | None],
+    ) -> ReviewLog:
         """
         Creates a ReviewLog object from an existing dictionary.
 
         Args:
-            source_dict (dict[str, Any]): A dictionary representing an existing ReviewLog object.
+            source_dict (dict[str, dict | int | str | None]): A dictionary representing an existing ReviewLog object.
 
         Returns:
             ReviewLog: A ReviewLog object created from the provided dictionary.
@@ -378,16 +382,12 @@ class Scheduler:
         )
 
         if card.state == State.Learning:
-            assert type(card.step) is int
-
             # update the card's stability and difficulty
             if card.stability is None and card.difficulty is None:
                 card.stability = self._initial_stability(rating)
                 card.difficulty = self._initial_difficulty(rating)
 
             elif days_since_last_review is not None and days_since_last_review < 1:
-                assert type(card.stability) is float  # mypy
-                assert type(card.difficulty) is float  # mypy
                 card.stability = self._short_term_stability(
                     stability=card.stability, rating=rating
                 )
@@ -396,8 +396,6 @@ class Scheduler:
                 )
 
             else:
-                assert type(card.stability) is float  # mypy
-                assert type(card.difficulty) is float  # mypy
                 card.stability = self._next_stability(
                     difficulty=card.difficulty,
                     stability=card.stability,
@@ -460,9 +458,6 @@ class Scheduler:
                     next_interval = timedelta(days=next_interval_days)
 
         elif card.state == State.Review:
-            assert type(card.stability) is float  # mypy
-            assert type(card.difficulty) is float  # mypy
-
             # update the card's stability and difficulty
             if days_since_last_review is not None and days_since_last_review < 1:
                 card.stability = self._short_term_stability(
@@ -503,10 +498,6 @@ class Scheduler:
                 next_interval = timedelta(days=next_interval_days)
 
         elif card.state == State.Relearning:
-            assert type(card.step) is int
-            assert type(card.stability) is float  # mypy
-            assert type(card.difficulty) is float  # mypy
-
             # update the card's stability and difficulty
             if days_since_last_review is not None and days_since_last_review < 1:
                 card.stability = self._short_term_stability(
@@ -588,7 +579,9 @@ class Scheduler:
 
         return card, review_log
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(
+        self,
+    ) -> dict[str, list | float | int | bool]:
         """
         Returns a JSON-serializable dictionary representation of the Scheduler object.
 
@@ -599,7 +592,7 @@ class Scheduler:
         """
 
         return_dict = {
-            "parameters": self.parameters,
+            "parameters": list(self.parameters),
             "desired_retention": self.desired_retention,
             "learning_steps": [
                 int(learning_step.total_seconds())
@@ -616,12 +609,12 @@ class Scheduler:
         return return_dict
 
     @staticmethod
-    def from_dict(source_dict: dict[str, Any]) -> "Scheduler":
+    def from_dict(source_dict: dict[str, list | float | int | bool]) -> Scheduler:
         """
         Creates a Scheduler object from an existing dictionary.
 
         Args:
-            source_dict (dict[str, Any]): A dictionary representing an existing Scheduler object.
+            source_dict (dict[str, list | float | int | bool]): A dictionary representing an existing Scheduler object.
 
         Returns:
             Scheduler: A Scheduler object created from the provided dictionary.

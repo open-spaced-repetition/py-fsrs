@@ -15,7 +15,7 @@ Classes:
 from __future__ import annotations
 import math
 from datetime import datetime, timezone, timedelta
-from copy import deepcopy
+from copy import copy, deepcopy
 from enum import IntEnum
 import random
 
@@ -221,7 +221,7 @@ class ReviewLog:
         review_datetime: datetime,
         review_duration: int | None = None,
     ) -> None:
-        self.card = deepcopy(card)
+        self.card = copy(card)
         self.rating = rating
         self.review_datetime = review_datetime
         self.review_duration = review_duration
@@ -365,7 +365,7 @@ class Scheduler:
         ):
             raise ValueError("datetime must be timezone-aware and set to UTC")
 
-        card = deepcopy(card)
+        card = copy(card)
 
         if review_datetime is None:
             review_datetime = datetime.now(timezone.utc)
@@ -665,7 +665,7 @@ class Scheduler:
             (self.desired_retention ** (1 / DECAY)) - 1
         )
 
-        next_interval = round(next_interval)  # intervals are full days
+        next_interval = round(float(next_interval))  # intervals are full days
 
         # must be at least 1 day long
         next_interval = max(next_interval, 1)

@@ -17,7 +17,7 @@ import math
 from datetime import datetime, timezone, timedelta
 from copy import copy, deepcopy
 from enum import IntEnum
-from random import random, Random, shuffle
+from random import random, Random
 try:
     import torch
     TORCH_AVAILABLE = True
@@ -1033,8 +1033,8 @@ if TORCH_AVAILABLE:
                     
                         review = card_review_history[i]
         
-                        review_datetime = card_review_history[i][0][0]
-                        rating = card_review_history[i][0][1]
+                        review_datetime = review[0][0]
+                        rating = review[0][1]
                 
                         # if this is the first review, create the Card object
                         if i == 0:

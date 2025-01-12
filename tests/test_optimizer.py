@@ -1,5 +1,4 @@
-from fsrs import Scheduler, Card, ReviewLog, State, Rating, Optimizer
-import pytest
+from fsrs import Optimizer
 
 starting_parameters = [
             0.40255,

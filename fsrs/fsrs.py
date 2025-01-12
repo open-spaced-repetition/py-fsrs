@@ -1162,3 +1162,11 @@ if TORCH_AVAILABLE:
                     best_params = detached_params
 
             return best_params
+        
+else:
+
+    class Optimizer:
+
+        def __init__(self, *args, **kwargs) -> None:
+
+            raise ImportError("The Optimizer class requires torch be installed.")

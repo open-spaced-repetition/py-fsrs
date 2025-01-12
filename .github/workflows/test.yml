@@ -48,4 +48,4 @@ jobs:
           pip install ".[optimizer]"
       - name: Test with pytest
         run: |
-          pytest tests/test_optimizer.py
+          pytest

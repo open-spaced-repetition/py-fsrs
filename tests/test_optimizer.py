@@ -2,6 +2,7 @@ from fsrs import Card, ReviewLog, Optimizer, DEFAULT_PARAMETERS
 import pandas as pd
 from copy import deepcopy
 from random import shuffle
+import numpy as np
 
 def get_revlogs():
 
@@ -40,6 +41,8 @@ class TestOptimizer:
 
         review_logs = get_revlogs()
 
+        expected_optimal_parameters = [0.23208226892734607, 1.18385, 2.7590022385301265, 15.69105, 7.373950517392055, 0.18294447762211594, 1.6359746876224006, 0.02952158524456623, 1.367112769749986, 0.12368175679507303, 0.8929755138890001, 1.988122539398675, 0.05860330733934807, 0.25667204438750396, 2.4925160572061986, 0.49585743031522345, 2.9898, 0.21648579472395696, 1.0657776194680773]
+
         optimizer = Optimizer(review_logs)
 
         optimal_parameters = optimizer.compute_optimal_parameters()
@@ -48,7 +51,7 @@ class TestOptimizer:
         assert optimal_parameters != DEFAULT_PARAMETERS
 
         # the output is expected
-        assert optimal_parameters == [0.23208226892734607, 1.18385, 2.7590022385301265, 15.69105, 7.373950517392055, 0.18294447762211594, 1.6359746876224006, 0.02952158524456623, 1.367112769749986, 0.12368175679507303, 0.8929755138890001, 1.988122539398675, 0.05860330733934807, 0.25667204438750396, 2.4925160572061986, 0.49585743031522345, 2.9898, 0.21648579472395696, 1.0657776194680773]
+        assert np.allclose(optimal_parameters, expected_optimal_parameters)
 
         # the computed loss with the optimized parameters are less than that of the starting parameters
         starting_loss = optimizer._compute_batch_loss(DEFAULT_PARAMETERS)

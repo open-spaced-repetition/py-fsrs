@@ -4,7 +4,11 @@ from copy import deepcopy
 from random import shuffle
 import numpy as np
 
-def get_revlogs():
+def get_revlogs() -> list[ReviewLog]:
+    """
+    reads a csv of prepared exported anki review logs
+    and returns them as a list of ReviewLog objects
+    """
 
     df = pd.read_csv('tests/review_logs_josh_1711744352250_to_1728234780857.csv')
 
@@ -25,9 +29,10 @@ def get_revlogs():
 class TestOptimizer:
 
     def test_zero_revlogs(self):
-
-        # if no review logs are provided, the optimal parameters should not change
-        # from the starting parameters
+        """
+        if no review logs are provided, the optimal parameters should not change
+        from the starting parameters
+        """
 
         review_logs = []
 
@@ -38,6 +43,9 @@ class TestOptimizer:
         assert optimal_parameters == DEFAULT_PARAMETERS
 
     def test_review_logs(self):
+        """
+        test the optimizer on a set of exported anki review logs
+        """
 
         review_logs = get_revlogs()
 
@@ -68,6 +76,9 @@ class TestOptimizer:
         assert optimal_parameters == optimal_parameters_new
 
     def test_few_review_logs(self):
+        """
+        if very few review logs are provided to the optimizer, return unchanged default parameters
+        """
 
         review_logs = get_revlogs()
 
@@ -81,6 +92,10 @@ class TestOptimizer:
         assert optimal_parameters == DEFAULT_PARAMETERS
 
     def test_unordered_review_logs(self):
+        """
+        the order of the ReviewLog objects passed to the Optimizer doesn't matter
+        as they're sorted within the object
+        """
 
         review_logs = get_revlogs()
 

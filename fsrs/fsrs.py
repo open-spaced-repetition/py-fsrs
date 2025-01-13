@@ -24,6 +24,28 @@ try:
 except ImportError:
     TORCH_AVAILABLE = False
 
+DEFAULT_PARAMETERS = [
+            0.40255,
+            1.18385,
+            3.173,
+            15.69105,
+            7.1949,
+            0.5345,
+            1.4604,
+            0.0046,
+            1.54575,
+            0.1192,
+            1.01925,
+            1.9395,
+            0.11,
+            0.29605,
+            2.2698,
+            0.2315,
+            2.9898,
+            0.51655,
+            0.6621,
+        ]
+
 DECAY = -0.5
 FACTOR = 0.9 ** (1 / DECAY) - 1
 
@@ -303,27 +325,7 @@ class Scheduler:
 
     def __init__(
         self,
-        parameters: tuple[float, ...] | list[float] = (
-            0.40255,
-            1.18385,
-            3.173,
-            15.69105,
-            7.1949,
-            0.5345,
-            1.4604,
-            0.0046,
-            1.54575,
-            0.1192,
-            1.01925,
-            1.9395,
-            0.11,
-            0.29605,
-            2.2698,
-            0.2315,
-            2.9898,
-            0.51655,
-            0.6621,
-        ),
+        parameters: tuple[float, ...] | list[float] = DEFAULT_PARAMETERS,
         desired_retention: float = 0.9,
         learning_steps: tuple[timedelta, ...] | list[timedelta] = (
             timedelta(minutes=1),
@@ -870,28 +872,6 @@ if TORCH_AVAILABLE:
     learning_rate = 4e-2
     max_seq_len = 64 # up to the first 64 reviews of each card are used for optimization
 
-    starting_parameters = [
-                0.40255,
-                1.18385,
-                3.173,
-                15.69105,
-                7.1949,
-                0.5345,
-                1.4604,
-                0.0046,
-                1.54575,
-                0.1192,
-                1.01925,
-                1.9395,
-                0.11,
-                0.29605,
-                2.2698,
-                0.2315,
-                2.9898,
-                0.51655,
-                0.6621,
-    ]
-
     class Optimizer:
         """
         The FSRS optimizer.
@@ -1074,10 +1054,10 @@ if TORCH_AVAILABLE:
             num_reviews = _num_reviews()
 
             if num_reviews < mini_batch_size:
-                return starting_parameters
+                return DEFAULT_PARAMETERS
             
             # Define FSRS Scheduler parameters as torch tensors with gradients
-            params = torch.tensor(starting_parameters, requires_grad=True, dtype=torch.float64)
+            params = torch.tensor(DEFAULT_PARAMETERS, requires_grad=True, dtype=torch.float64)
             
             loss_fn = BCELoss()
             adam_optimizer = optim.Adam([params], lr=learning_rate)

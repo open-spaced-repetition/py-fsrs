@@ -1,29 +1,7 @@
-from fsrs import Card, ReviewLog, Optimizer
+from fsrs import Card, ReviewLog, Optimizer, DEFAULT_PARAMETERS
 import pandas as pd
 from copy import deepcopy
 from random import shuffle
-
-starting_parameters = [
-            0.40255,
-            1.18385,
-            3.173,
-            15.69105,
-            7.1949,
-            0.5345,
-            1.4604,
-            0.0046,
-            1.54575,
-            0.1192,
-            1.01925,
-            1.9395,
-            0.11,
-            0.29605,
-            2.2698,
-            0.2315,
-            2.9898,
-            0.51655,
-            0.6621,
-]
 
 def get_revlogs():
 
@@ -56,7 +34,7 @@ class TestOptimizer:
 
         optimal_parameters = optimizer.compute_optimal_parameters()
 
-        assert optimal_parameters == starting_parameters
+        assert optimal_parameters == DEFAULT_PARAMETERS
 
     def test_review_logs(self):
 
@@ -67,13 +45,13 @@ class TestOptimizer:
         optimal_parameters = optimizer.compute_optimal_parameters()
 
         # the optimal paramaters are no longer equal to the starting parameters
-        assert optimal_parameters != starting_parameters
+        assert optimal_parameters != DEFAULT_PARAMETERS
 
         # the output is expected
         assert optimal_parameters == [0.23208226892734607, 1.18385, 2.7590022385301265, 15.69105, 7.373950517392055, 0.18294447762211594, 1.6359746876224006, 0.02952158524456623, 1.367112769749986, 0.12368175679507303, 0.8929755138890001, 1.988122539398675, 0.05860330733934807, 0.25667204438750396, 2.4925160572061986, 0.49585743031522345, 2.9898, 0.21648579472395696, 1.0657776194680773]
 
         # the computed loss with the optimized parameters are less than that of the starting parameters
-        starting_loss = optimizer._compute_batch_loss(starting_parameters)
+        starting_loss = optimizer._compute_batch_loss(DEFAULT_PARAMETERS)
         optimized_loss = optimizer._compute_batch_loss(optimal_parameters)
         assert optimized_loss < starting_loss
 
@@ -97,7 +75,7 @@ class TestOptimizer:
 
         optimal_parameters = optimizer.compute_optimal_parameters()
 
-        optimal_parameters == starting_parameters
+        assert optimal_parameters == DEFAULT_PARAMETERS
 
     def test_unordered_review_logs(self):
 

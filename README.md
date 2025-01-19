@@ -26,6 +26,7 @@
 - [Installation](#installation)
 - [Quickstart](#quickstart)
 - [Usage](#usage)
+- [Optimizer (optional)](#optimizer-optional)
 - [Reference](#reference)
 - [Other FSRS implementations](#other-fsrs-implementations)
 - [Other SRS python packages](#other-srs-python-packages)
@@ -170,6 +171,36 @@ new_scheduler = Scheduler.from_dict(scheduler_dict)
 new_card = Card.from_dict(card_dict)
 new_review_log = ReviewLog.from_dict(review_log_dict)
 ```
+
+## Optimizer (optional)
+
+If you have a collection of `ReviewLog` objects, you can optionally reuse them to compute an optimal set of parameters for the `Scheduler` to make it more accurate at scheduling reviews.
+
+### Installation
+To install the optimizer, first ensure you're using `python 3.10-3.12`, then run:
+```
+pip install "fsrs[optimizer]"
+```
+
+### Usage
+
+```python
+from fsrs import ReviewLog, Optimizer, Scheduler
+
+# load your ReviewLog objects into a list (order doesn't matter)
+review_logs = [ReviewLog1, ReviewLog2, ...]
+
+# initialize the optimizer with the review logs
+optimizer = Optimizer(review_logs)
+
+# compute a set of optimized parameters
+optimal_parameters = optimizer.compute_optimal_parameters()
+
+# initialize a new scheduler with the optimized parameters!
+scheduler = Scheduler(parameters=optimal_parameters)
+```
+
+Note: The computed optimal parameters may be slightly different than the parameters computed by Anki for the same set of review logs. This is because the two implementations are slightly different and updated at different times. If you're interested in the official Rust-based Anki implementation, please see [here](https://github.com/open-spaced-repetition/fsrs-rs).
 
 ## Reference
 

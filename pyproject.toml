@@ -7,7 +7,10 @@ name = "fsrs"
 version = "5.0.0rc1"
 description = "Free Spaced Repetition Scheduler"
 readme = "README.md"
-authors = [{ name = "Jarrett Ye", email = "jarrett.ye@outlook.com" }]
+authors = [
+    { name = "Jarrett Ye", email = "jarrett.ye@outlook.com" },
+    { name = "Joshua Hamilton", email = "hamiltonjoshuadavid@gmail.com" }
+    ]
 license = { file = "LICENSE" }
 classifiers = [
     "License :: OSI Approved :: MIT License",

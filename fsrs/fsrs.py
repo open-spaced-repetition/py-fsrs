@@ -232,25 +232,25 @@ class ReviewLog:
     Represents the log entry of a Card object that has been reviewed.
 
     Attributes:
-        card (Card): Copy of the card object that was reviewed.
+        card_id (int): The id of the card being reviewed.
         rating (Rating): The rating given to the card during the review.
         review_datetime (datetime): The date and time of the review.
         review_duration (int | None): The number of miliseconds it took to review the card or None if unspecified.
     """
 
-    card: Card
+    card_id: int
     rating: Rating
     review_datetime: datetime
     review_duration: int | None
 
     def __init__(
         self,
-        card: Card,
+        card_id: int,
         rating: Rating,
         review_datetime: datetime,
         review_duration: int | None = None,
     ) -> None:
-        self.card = copy(card)
+        self.card_id = card_id
         self.rating = rating
         self.review_datetime = review_datetime
         self.review_duration = review_duration
@@ -264,11 +264,11 @@ class ReviewLog:
         This method is specifically useful for storing ReviewLog objects in a database.
 
         Returns:
-            dict: A dictionary representation of the Card object.
+            dict: A dictionary representation of the ReviewLog object.
         """
 
         return_dict = {
-            "card": self.card.to_dict(),
+            "card_id": self.card_id,
             "rating": self.rating.value,
             "review_datetime": self.review_datetime.isoformat(),
             "review_duration": self.review_duration,
@@ -290,13 +290,13 @@ class ReviewLog:
             ReviewLog: A ReviewLog object created from the provided dictionary.
         """
 
-        card = Card.from_dict(source_dict["card"])
+        card_id = source_dict["card_id"]
         rating = Rating(int(source_dict["rating"]))
         review_datetime = datetime.fromisoformat(source_dict["review_datetime"])
         review_duration = source_dict["review_duration"]
 
         return ReviewLog(
-            card=card,
+            card_id=card_id,
             rating=rating,
             review_datetime=review_datetime,
             review_duration=review_duration,
@@ -384,7 +384,7 @@ class Scheduler:
         )
 
         review_log = ReviewLog(
-            card=card,
+            card_id=card.card_id,
             rating=rating,
             review_datetime=review_datetime,
             review_duration=review_duration,
@@ -911,7 +911,7 @@ if TORCH_AVAILABLE:
                 revlogs_train = {}
                 for review_log in self.review_logs:
                     # pull data out of current ReviewLog object
-                    card_id = review_log.card.card_id
+                    card_id = review_log.card_id
                     rating = review_log.rating
                     review_datetime = review_log.review_datetime
                     review_duration = review_log.review_duration

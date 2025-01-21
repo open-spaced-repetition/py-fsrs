@@ -1,4 +1,4 @@
-from fsrs import Card, ReviewLog, Optimizer, DEFAULT_PARAMETERS
+from fsrs import ReviewLog, Optimizer, DEFAULT_PARAMETERS
 import pandas as pd
 from copy import deepcopy
 from random import shuffle
@@ -21,7 +21,7 @@ def get_revlogs() -> list[ReviewLog]:
         review_duration = row["review_duration"]
 
         review_log = ReviewLog(
-            card=Card(card_id),
+            card_id=card_id,
             rating=rating,
             review_datetime=review_datetime,
             review_duration=review_duration,

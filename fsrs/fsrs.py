@@ -96,7 +96,7 @@ class Card:
     Represents a flashcard in the FSRS system.
 
     Attributes:
-        card_id (int): The id of the card. Defaults to the epoch microseconds of when the card was created.
+        card_id (int): The id of the card. Defaults to the epoch milliseconds of when the card was created.
         state (State): The card's current learning state.
         step (int | None): The card's current learning or relearning step or None if the card is in the Review state.
         stability (float | None): Core mathematical parameter used for future scheduling.
@@ -124,8 +124,8 @@ class Card:
         last_review: datetime | None = None,
     ) -> None:
         if card_id is None:
-            # epoch microseconds of when the card was created
-            card_id = int(datetime.now(timezone.utc).timestamp() * 1000000)
+            # epoch milliseconds of when the card was created
+            card_id = int(datetime.now(timezone.utc).timestamp() * 1000)
         self.card_id = card_id
 
         self.state = state

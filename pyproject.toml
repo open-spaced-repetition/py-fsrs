@@ -4,10 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fsrs"
-version = "4.1.2"
+version = "5.0.0"
 description = "Free Spaced Repetition Scheduler"
 readme = "README.md"
-authors = [{ name = "Jarrett Ye", email = "jarrett.ye@outlook.com" }]
+authors = [
+    { name = "Jarrett Ye", email = "jarrett.ye@outlook.com" },
+    { name = "Joshua Hamilton", email = "hamiltonjoshuadavid@gmail.com" }
+    ]
 license = { file = "LICENSE" }
 classifiers = [
     "License :: OSI Approved :: MIT License",
@@ -21,7 +24,8 @@ requires-python = ">=3.10"
 Homepage = "https://github.com/open-spaced-repetition/py-fsrs"
 
 [project.optional-dependencies]
-dev = ["pytest", "ruff", "setuptools"]
+dev = ["pytest", "ruff", "setuptools", "torch", "numpy", "pandas", "poetry"]
+optimizer = ["torch", "numpy"]
 
 [tool.pytest.ini_options]
-pythonpath = "fsrs"
+pythonpath = "."

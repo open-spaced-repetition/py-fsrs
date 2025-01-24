@@ -15,9 +15,31 @@ Classes:
 from __future__ import annotations
 import math
 from datetime import datetime, timezone, timedelta
-from copy import deepcopy
+from copy import copy
 from enum import IntEnum
-import random
+from random import random
+
+DEFAULT_PARAMETERS = (
+    0.40255,
+    1.18385,
+    3.173,
+    15.69105,
+    7.1949,
+    0.5345,
+    1.4604,
+    0.0046,
+    1.54575,
+    0.1192,
+    1.01925,
+    1.9395,
+    0.11,
+    0.29605,
+    2.2698,
+    0.2315,
+    2.9898,
+    0.51655,
+    0.6621,
+)
 
 DECAY = -0.5
 FACTOR = 0.9 ** (1 / DECAY) - 1
@@ -67,7 +89,7 @@ class Card:
     Represents a flashcard in the FSRS system.
 
     Attributes:
-        card_id (int): The id of the card. Defaults to the epoch miliseconds of when the card was created.
+        card_id (int): The id of the card. Defaults to the epoch milliseconds of when the card was created.
         state (State): The card's current learning state.
         step (int | None): The card's current learning or relearning step or None if the card is in the Review state.
         stability (float | None): Core mathematical parameter used for future scheduling.
@@ -95,7 +117,7 @@ class Card:
         last_review: datetime | None = None,
     ) -> None:
         if card_id is None:
-            # epoch miliseconds of when the card was created
+            # epoch milliseconds of when the card was created
             card_id = int(datetime.now(timezone.utc).timestamp() * 1000)
         self.card_id = card_id
 
@@ -203,25 +225,25 @@ class ReviewLog:
     Represents the log entry of a Card object that has been reviewed.
 
     Attributes:
-        card (Card): Copy of the card object that was reviewed.
+        card_id (int): The id of the card being reviewed.
         rating (Rating): The rating given to the card during the review.
         review_datetime (datetime): The date and time of the review.
         review_duration (int | None): The number of miliseconds it took to review the card or None if unspecified.
     """
 
-    card: Card
+    card_id: int
     rating: Rating
     review_datetime: datetime
     review_duration: int | None
 
     def __init__(
         self,
-        card: Card,
+        card_id: int,
         rating: Rating,
         review_datetime: datetime,
         review_duration: int | None = None,
     ) -> None:
-        self.card = deepcopy(card)
+        self.card_id = card_id
         self.rating = rating
         self.review_datetime = review_datetime
         self.review_duration = review_duration
@@ -235,11 +257,11 @@ class ReviewLog:
         This method is specifically useful for storing ReviewLog objects in a database.
 
         Returns:
-            dict: A dictionary representation of the Card object.
+            dict: A dictionary representation of the ReviewLog object.
         """
 
         return_dict = {
-            "card": self.card.to_dict(),
+            "card_id": self.card_id,
             "rating": self.rating.value,
             "review_datetime": self.review_datetime.isoformat(),
             "review_duration": self.review_duration,
@@ -261,13 +283,13 @@ class ReviewLog:
             ReviewLog: A ReviewLog object created from the provided dictionary.
         """
 
-        card = Card.from_dict(source_dict["card"])
+        card_id = source_dict["card_id"]
         rating = Rating(int(source_dict["rating"]))
         review_datetime = datetime.fromisoformat(source_dict["review_datetime"])
         review_duration = source_dict["review_duration"]
 
         return ReviewLog(
-            card=card,
+            card_id=card_id,
             rating=rating,
             review_datetime=review_datetime,
             review_duration=review_duration,
@@ -298,27 +320,7 @@ class Scheduler:
 
     def __init__(
         self,
-        parameters: tuple[float, ...] | list[float] = (
-            0.40255,
-            1.18385,
-            3.173,
-            15.69105,
-            7.1949,
-            0.5345,
-            1.4604,
-            0.0046,
-            1.54575,
-            0.1192,
-            1.01925,
-            1.9395,
-            0.11,
-            0.29605,
-            2.2698,
-            0.2315,
-            2.9898,
-            0.51655,
-            0.6621,
-        ),
+        parameters: tuple[float, ...] | list[float] = DEFAULT_PARAMETERS,
         desired_retention: float = 0.9,
         learning_steps: tuple[timedelta, ...] | list[timedelta] = (
             timedelta(minutes=1),
@@ -365,7 +367,7 @@ class Scheduler:
         ):
             raise ValueError("datetime must be timezone-aware and set to UTC")
 
-        card = deepcopy(card)
+        card = copy(card)
 
         if review_datetime is None:
             review_datetime = datetime.now(timezone.utc)
@@ -375,7 +377,7 @@ class Scheduler:
         )
 
         review_log = ReviewLog(
-            card=card,
+            card_id=card.card_id,
             rating=rating,
             review_datetime=review_datetime,
             review_duration=review_duration,
@@ -665,7 +667,7 @@ class Scheduler:
             (self.desired_retention ** (1 / DECAY)) - 1
         )
 
-        next_interval = round(next_interval)  # intervals are full days
+        next_interval = round(float(next_interval))  # intervals are full days
 
         # must be at least 1 day long
         next_interval = max(next_interval, 1)
@@ -797,7 +799,7 @@ class Scheduler:
         min_ivl, max_ivl = _get_fuzz_range(interval_days)
 
         fuzzed_interval_days = (
-            random.random() * (max_ivl - min_ivl + 1)
+            random() * (max_ivl - min_ivl + 1)
         ) + min_ivl  # the next interval is a random value between min_ivl and max_ivl
 
         fuzzed_interval_days = min(round(fuzzed_interval_days), self.maximum_interval)

@@ -274,7 +274,7 @@ try:
             num_reviews = _num_reviews()
 
             if num_reviews < mini_batch_size:
-                return DEFAULT_PARAMETERS
+                return list(DEFAULT_PARAMETERS)
 
             # Define FSRS Scheduler parameters as torch tensors with gradients
             params = torch.tensor(

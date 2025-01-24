@@ -45,7 +45,7 @@ class TestOptimizer:
 
         optimal_parameters = optimizer.compute_optimal_parameters()
 
-        assert optimal_parameters == DEFAULT_PARAMETERS
+        assert optimal_parameters == list(DEFAULT_PARAMETERS)
 
     def test_review_logs(self):
         """
@@ -81,7 +81,7 @@ class TestOptimizer:
         optimal_parameters = optimizer.compute_optimal_parameters()
 
         # the optimal paramaters are no longer equal to the starting parameters
-        assert optimal_parameters != DEFAULT_PARAMETERS
+        assert optimal_parameters != list(DEFAULT_PARAMETERS)
 
         # the output is expected
         assert np.allclose(optimal_parameters, expected_optimal_parameters)
@@ -114,7 +114,7 @@ class TestOptimizer:
 
         optimal_parameters = optimizer.compute_optimal_parameters()
 
-        assert optimal_parameters == DEFAULT_PARAMETERS
+        assert optimal_parameters == list(DEFAULT_PARAMETERS)
 
     def test_unordered_review_logs(self):
         """

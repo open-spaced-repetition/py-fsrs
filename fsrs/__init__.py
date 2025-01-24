@@ -11,9 +11,10 @@ from .fsrs import (
     Rating,
     ReviewLog,
     State,
-    Optimizer,
     DEFAULT_PARAMETERS,
 )
+
+from .optimizer import Optimizer
 
 __all__ = [
     "Scheduler",

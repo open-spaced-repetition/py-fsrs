@@ -28,4 +28,4 @@ dev = ["pytest", "ruff", "setuptools", "torch", "numpy", "pandas", "poetry"]
 optimizer = ["torch", "numpy"]
 
 [tool.pytest.ini_options]
-pythonpath = "fsrs"
+pythonpath = "."

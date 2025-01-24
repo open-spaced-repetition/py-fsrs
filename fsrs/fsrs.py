@@ -19,7 +19,7 @@ from copy import copy
 from enum import IntEnum
 from random import random
 
-DEFAULT_PARAMETERS = [
+DEFAULT_PARAMETERS = (
     0.40255,
     1.18385,
     3.173,
@@ -39,7 +39,7 @@ DEFAULT_PARAMETERS = [
     2.9898,
     0.51655,
     0.6621,
-]
+)
 
 DECAY = -0.5
 FACTOR = 0.9 ** (1 / DECAY) - 1

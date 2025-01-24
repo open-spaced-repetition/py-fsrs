@@ -1,3 +1,10 @@
+"""
+fsrs.optimizer
+---------
+
+This module defines the optional Optimizer class.
+"""
+
 from .fsrs import Card, ReviewLog, Scheduler, Rating, State, DEFAULT_PARAMETERS
 import math
 from datetime import datetime

@@ -680,3 +680,16 @@ class TestPyFSRS:
             card=card, rating=Rating.Good, review_datetime=card.due
         )
         assert (card.due - card.last_review).days <= scheduler.maximum_interval
+
+    def test_class_repr(self):
+        card = Card()
+
+        assert str(card) == repr(card)
+
+        scheduler = Scheduler()
+
+        assert str(scheduler) == repr(scheduler)
+
+        card, review_log = scheduler.review_card(card=card, rating=Rating.Good)
+
+        assert str(review_log) == repr(review_log)

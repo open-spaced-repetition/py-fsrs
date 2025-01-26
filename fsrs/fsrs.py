@@ -136,6 +136,18 @@ class Card:
 
         self.last_review = last_review
 
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}("
+            f"card_id={self.card_id}, "
+            f"state={self.state}, "
+            f"step={self.step}, "
+            f"stability={self.stability}, "
+            f"difficulty={self.difficulty}, "
+            f"due={self.due}, "
+            f"last_review={self.last_review})"
+        )
+
     def to_dict(self) -> dict[str, int | float | str | None]:
         """
         Returns a JSON-serializable dictionary representation of the Card object.
@@ -248,6 +260,15 @@ class ReviewLog:
         self.review_datetime = review_datetime
         self.review_duration = review_duration
 
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}("
+            f"card_id={self.card_id}, "
+            f"rating={self.rating}, "
+            f"review_datetime={self.review_datetime}, "
+            f"review_duration={self.review_duration})"
+        )
+
     def to_dict(
         self,
     ) -> dict[str, dict | int | str | None]:
@@ -338,6 +359,17 @@ class Scheduler:
         self.relearning_steps = tuple(relearning_steps)
         self.maximum_interval = maximum_interval
         self.enable_fuzzing = enable_fuzzing
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}("
+            f"parameters={self.parameters}, "
+            f"desired_retention={self.desired_retention}, "
+            f"learning_steps={self.learning_steps}, "
+            f"relearning_steps={self.relearning_steps}, "
+            f"maximum_interval={self.maximum_interval}, "
+            f"enable_fuzzing={self.enable_fuzzing})"
+        )
 
     def review_card(
         self,

@@ -5,7 +5,7 @@ fsrs.optimizer
 This module defines the optional Optimizer class.
 """
 
-from .fsrs import Card, ReviewLog, Scheduler, Rating, State, DEFAULT_PARAMETERS
+from .fsrs import Card, ReviewLog, Scheduler, Rating, DEFAULT_PARAMETERS
 import math
 from datetime import datetime
 from copy import deepcopy
@@ -170,7 +170,7 @@ try:
                         y_retrievability, dtype=torch.float64
                     )
 
-                    if card.state == State.Review:
+                    if card.last_review and (x_date - card.last_review).days > 0:
                         step_loss = loss_fn(y_pred_retrievability, y_retrievability)
                         step_losses.append(step_loss)
 
@@ -230,8 +230,11 @@ try:
                         if i == 0:
                             card = Card(due=review_datetime)
 
-                        # only Review-state reviews count
-                        if card.state == State.Review:
+                        # only non-same-day reviews count
+                        if (
+                            card.last_review
+                            and (review_datetime - card.last_review).days > 0
+                        ):
                             num_reviews += 1
 
                         card, _ = scheduler.review_card(
@@ -327,8 +330,8 @@ try:
                             y_retrievability, dtype=torch.float64
                         )
 
-                        # only compute step-loss on Review-state cards
-                        if card.state == State.Review:
+                        # only compute step-loss on non-same-day reviews
+                        if card.last_review and (x_date - card.last_review).days > 0:
                             step_loss = loss_fn(y_pred_retrievability, y_retrievability)
                             step_losses.append(step_loss)
 

@@ -172,27 +172,6 @@ new_card = Card.from_dict(card_dict)
 new_review_log = ReviewLog.from_dict(review_log_dict)
 ```
 
-### Batch card creation
-
-If you batch create `Card` objects, ensure that you leave at least 1 millisecond between creating each individual card
-
-```python
-from fsrs import Card
-import time
-
-cards = []
-for i in range(100):
-
-    card = Card()
-
-    cards.append(card)
-    
-    # wait 1 millisecond
-    time.sleep(0.001)
-```
-
-Each `Card` object has a `card_id` attribute which is the epoch milliseconds of when the card was created. In order to keep each of the card id's unique, two cards must not be created within 1 millisecond of eachother.
-
 ## Optimizer (optional)
 
 If you have a collection of `ReviewLog` objects, you can optionally reuse them to compute an optimal set of parameters for the `Scheduler` to make it more accurate at scheduling reviews.

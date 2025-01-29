@@ -163,7 +163,7 @@ try:
                     u_rating = review[0][1]
 
                     if i == 0:
-                        card = Card(due=x_date)
+                        card = Card(card_id=card_id, due=x_date)
 
                     y_pred_retrievability = card.get_retrievability(x_date)
                     y_retrievability = torch.tensor(
@@ -228,7 +228,7 @@ try:
 
                         # if this is the first review, create the Card object
                         if i == 0:
-                            card = Card(due=review_datetime)
+                            card = Card(card_id=card_id, due=review_datetime)
 
                         # only non-same-day reviews count
                         if (
@@ -322,7 +322,7 @@ try:
 
                         # if this is the first review, create the Card object
                         if i == 0:
-                            card = Card(due=x_date)
+                            card = Card(card_id=card_id, due=x_date)
 
                         # predicted target
                         y_pred_retrievability = card.get_retrievability(x_date)

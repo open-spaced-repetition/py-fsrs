@@ -693,3 +693,12 @@ class TestPyFSRS:
         card, review_log = scheduler.review_card(card=card, rating=Rating.Good)
 
         assert str(review_log) == repr(review_log)
+
+    def test_unique_card_ids(self):
+        card_ids = []
+        for i in range(1000):
+            card = Card()
+            card_id = card.card_id
+            card_ids.append(card_id)
+
+        assert len(card_ids) == len(set(card_ids))

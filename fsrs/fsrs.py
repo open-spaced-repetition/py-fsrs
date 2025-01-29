@@ -18,6 +18,7 @@ from datetime import datetime, timezone, timedelta
 from copy import copy
 from enum import IntEnum
 from random import random
+import time
 
 DEFAULT_PARAMETERS = (
     0.40255,
@@ -119,6 +120,8 @@ class Card:
         if card_id is None:
             # epoch milliseconds of when the card was created
             card_id = int(datetime.now(timezone.utc).timestamp() * 1000)
+            # wait 1ms to prevent potential card_id collision on next Card creation
+            time.sleep(0.001)
         self.card_id = card_id
 
         self.state = state

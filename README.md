@@ -177,7 +177,7 @@ new_review_log = ReviewLog.from_dict(review_log_dict)
 If you have a collection of `ReviewLog` objects, you can optionally reuse them to compute an optimal set of parameters for the `Scheduler` to make it more accurate at scheduling reviews.
 
 ### Installation
-To install the optimizer, first ensure you're using `python 3.10-3.12`, then run:
+
 ```
 pip install "fsrs[optimizer]"
 ```

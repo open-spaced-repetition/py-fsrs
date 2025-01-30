@@ -20,8 +20,6 @@ After cloning this repo, install `fsrs` locally in editable mode along with the 
 pip install -e ".[dev]"
 ```
 
-Note: you may not be able to install all of the `dev` dependencies if you are using python 3.13 or 3.14. If this is causing trouble, consider trying to install the `dev` dependencies in a python 3.10-3.12 environment.
-
 Now you're ready to make changes to files in the `fsrs` directory and see your changes reflected immediately.
 
 ### Pass the checks

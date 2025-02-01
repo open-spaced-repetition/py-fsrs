@@ -17,8 +17,8 @@ def get_revlogs() -> list[ReviewLog]:
     review_logs = []
     for index, row in df.iterrows():
         card_id = row["card_id"]
-        rating = row["review_rating"]
-        review_datetime = row["review_time"]
+        rating = Rating(row["review_rating"])
+        review_datetime = datetime.fromisoformat(row["review_time"])
         review_duration = row["review_duration"]
 
         review_log = ReviewLog(
@@ -216,7 +216,7 @@ class TestOptimizer:
 
         review_logs = get_revlogs()
 
-        review_log_without_review_duration = ReviewLog(card_id=42, rating=2, review_datetime="2024-03-29T20:32:32.250000+00:00", review_duration=None)
+        review_log_without_review_duration = ReviewLog(card_id=42, rating=2, review_datetime=datetime(2025, 1, 1, 0, 0, 0, 0, timezone.utc), review_duration=None)
 
         review_logs.append(review_log_without_review_duration)
 

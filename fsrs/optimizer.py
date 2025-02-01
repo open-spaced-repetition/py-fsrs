@@ -128,11 +128,6 @@ try:
                         revlogs_train[card_id], key=lambda x: x[0][0]
                     )  # keep reviews sorted
 
-                # convert the timestamps in the json from isoformat to datetime variables
-                for key, values in revlogs_train.items():
-                    for entry in values:
-                        entry[0][0] = datetime.fromisoformat(entry[0][0])
-
                 # sort the dictionary in order of when each card history starts
                 revlogs_train = dict(sorted(revlogs_train.items()))
 

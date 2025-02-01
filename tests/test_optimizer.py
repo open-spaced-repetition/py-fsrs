@@ -138,3 +138,58 @@ class TestOptimizer:
         optimal_parameters2 = optimizer2.compute_optimal_parameters()
 
         assert optimal_parameters1 == optimal_parameters2
+
+    def test_optimal_retention(self):
+        review_logs = get_revlogs()
+
+        optimizer = Optimizer(review_logs)
+
+        expected_optimal_retention = 0.85
+
+        optimal_parameters = [
+            0.2363282014982659,
+            1.18385,
+            2.803907798259358,
+            15.69105,
+            7.450626954515589,
+            0.2002981626622733,
+            1.6499680903504104,
+            0.030489930904182852,
+            1.3726592620867732,
+            0.20407416745070098,
+            0.9003453768459656,
+            2.0169172501722157,
+            0.05052109238927132,
+            0.249798385275728,
+            2.3878771773930296,
+            0.47499255667044843,
+            2.9898,
+            0.19075214884576136,
+            1.0712483452116681,
+        ]
+
+        optimal_retention_optimal_parameters = optimizer.compute_optimal_retention(
+            parameters=optimal_parameters
+        )
+
+        # deterministic outcome
+        assert optimal_retention_optimal_parameters == expected_optimal_retention
+
+        # computing the optimal retention on a new optimizer with the same review logs and parameters will return
+        # the same result
+        optimizer_2 = Optimizer(review_logs)
+        optimal_retention_optimal_parameters_2 = optimizer_2.compute_optimal_retention(
+            parameters=optimal_parameters
+        )
+        assert (
+            optimal_retention_optimal_parameters_2
+            == optimal_retention_optimal_parameters
+        )
+
+        # computing the optimal retention with a different set of parameters can yield a different result
+        optimal_retention_default_parameters = optimizer_2.compute_optimal_retention(
+            parameters=DEFAULT_PARAMETERS
+        )
+        assert (
+            optimal_retention_default_parameters != optimal_retention_optimal_parameters
+        )

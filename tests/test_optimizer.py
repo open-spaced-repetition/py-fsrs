@@ -1,9 +1,10 @@
-from fsrs import ReviewLog, Optimizer, DEFAULT_PARAMETERS
+from fsrs import ReviewLog, Optimizer, DEFAULT_PARAMETERS, Rating
 import pandas as pd
 from copy import deepcopy
 from random import shuffle
 import numpy as np
-
+import pytest
+from datetime import datetime, timezone
 
 def get_revlogs() -> list[ReviewLog]:
     """
@@ -193,3 +194,32 @@ class TestOptimizer:
         assert (
             optimal_retention_default_parameters != optimal_retention_optimal_parameters
         )
+
+    def test_optimal_retention_zero_review_logs(self):
+
+        # can't compute optimal retention with zero review logs
+        zero_revlogs = []
+        optimizer = Optimizer(zero_revlogs)
+        with pytest.raises(ValueError):
+            optimal_retention = optimizer.compute_optimal_retention(parameters=DEFAULT_PARAMETERS)
+
+    def test_optimal_retention_few_review_logs(self):
+
+        review_logs = get_revlogs()
+        few_revlogs = review_logs[:100]
+
+        optimizer = Optimizer(few_revlogs)
+        with pytest.raises(ValueError):
+            optimal_retention = optimizer.compute_optimal_retention(parameters=DEFAULT_PARAMETERS)
+
+    def test_optimal_retention_no_review_duration(self):
+
+        review_logs = get_revlogs()
+
+        review_log_without_review_duration = ReviewLog(card_id=42, rating=2, review_datetime="2024-03-29T20:32:32.250000+00:00", review_duration=None)
+
+        review_logs.append(review_log_without_review_duration)
+
+        optimizer = Optimizer(review_logs)
+        with pytest.raises(ValueError):
+            optimal_retention = optimizer.compute_optimal_retention(parameters=DEFAULT_PARAMETERS)

@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 from datetime import datetime, timezone
 
+
 def get_revlogs() -> list[ReviewLog]:
     """
     reads a csv of prepared exported anki review logs
@@ -196,30 +197,32 @@ class TestOptimizer:
         )
 
     def test_optimal_retention_zero_review_logs(self):
-
         # can't compute optimal retention with zero review logs
         zero_revlogs = []
         optimizer = Optimizer(zero_revlogs)
         with pytest.raises(ValueError):
-            optimal_retention = optimizer.compute_optimal_retention(parameters=DEFAULT_PARAMETERS)
+            _ = optimizer.compute_optimal_retention(parameters=DEFAULT_PARAMETERS)
 
     def test_optimal_retention_few_review_logs(self):
-
         review_logs = get_revlogs()
         few_revlogs = review_logs[:100]
 
         optimizer = Optimizer(few_revlogs)
         with pytest.raises(ValueError):
-            optimal_retention = optimizer.compute_optimal_retention(parameters=DEFAULT_PARAMETERS)
+            _ = optimizer.compute_optimal_retention(parameters=DEFAULT_PARAMETERS)
 
     def test_optimal_retention_no_review_duration(self):
-
         review_logs = get_revlogs()
 
-        review_log_without_review_duration = ReviewLog(card_id=42, rating=2, review_datetime=datetime(2025, 1, 1, 0, 0, 0, 0, timezone.utc), review_duration=None)
+        review_log_without_review_duration = ReviewLog(
+            card_id=42,
+            rating=2,
+            review_datetime=datetime(2025, 1, 1, 0, 0, 0, 0, timezone.utc),
+            review_duration=None,
+        )
 
         review_logs.append(review_log_without_review_duration)
 
         optimizer = Optimizer(review_logs)
         with pytest.raises(ValueError):
-            optimal_retention = optimizer.compute_optimal_retention(parameters=DEFAULT_PARAMETERS)
+            _ = optimizer.compute_optimal_retention(parameters=DEFAULT_PARAMETERS)

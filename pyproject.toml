@@ -25,7 +25,7 @@ Homepage = "https://github.com/open-spaced-repetition/py-fsrs"
 
 [project.optional-dependencies]
 dev = ["pytest", "ruff", "setuptools", "torch", "numpy", "pandas", "poetry"]
-optimizer = ["torch", "numpy"]
+optimizer = ["torch", "numpy", "pandas"]
 
 [tool.pytest.ini_options]
 pythonpath = "."

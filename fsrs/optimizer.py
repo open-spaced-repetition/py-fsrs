@@ -399,9 +399,11 @@ try:
                         )
 
             def _compute_probs_and_costs() -> dict[str, float]:
-                df = pd.DataFrame(vars(review_log) for review_log in self.review_logs)
+                review_log_df = pd.DataFrame(
+                    vars(review_log) for review_log in self.review_logs
+                )
 
-                df = df.sort_values(
+                review_log_df = review_log_df.sort_values(
                     by=["card_id", "review_datetime"], ascending=[True, True]
                 ).reset_index(drop=True)
 
@@ -409,8 +411,8 @@ try:
                 probs_and_costs_dict = {}
 
                 # compute the probabilities and costs of the first rating
-                first_reviews_df = df.loc[
-                    ~df["card_id"].duplicated(keep="first")
+                first_reviews_df = review_log_df.loc[
+                    ~review_log_df["card_id"].duplicated(keep="first")
                 ].reset_index(drop=True)
 
                 first_again_reviews_df = first_reviews_df.loc[
@@ -495,8 +497,8 @@ try:
                 )
 
                 # compute the probabilities and costs of non-first ratings
-                non_first_reviews_df = df.loc[
-                    df["card_id"].duplicated(keep="first")
+                non_first_reviews_df = review_log_df.loc[
+                    review_log_df["card_id"].duplicated(keep="first")
                 ].reset_index(drop=True)
 
                 again_reviews_df = non_first_reviews_df.loc[

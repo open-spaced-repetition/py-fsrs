@@ -383,6 +383,266 @@ try:
 
             return best_params
 
+        def _compute_probs_and_costs(self) -> dict[str, float]:
+            review_log_df = pd.DataFrame(
+                vars(review_log) for review_log in self.review_logs
+            )
+
+            review_log_df = review_log_df.sort_values(
+                by=["card_id", "review_datetime"], ascending=[True, True]
+            ).reset_index(drop=True)
+
+            # dictionary to return
+            probs_and_costs_dict = {}
+
+            # compute the probabilities and costs of the first rating
+            first_reviews_df = review_log_df.loc[
+                ~review_log_df["card_id"].duplicated(keep="first")
+            ].reset_index(drop=True)
+
+            first_again_reviews_df = first_reviews_df.loc[
+                first_reviews_df["rating"] == Rating.Again
+            ]
+            first_hard_reviews_df = first_reviews_df.loc[
+                first_reviews_df["rating"] == Rating.Hard
+            ]
+            first_good_reviews_df = first_reviews_df.loc[
+                first_reviews_df["rating"] == Rating.Good
+            ]
+            first_easy_reviews_df = first_reviews_df.loc[
+                first_reviews_df["rating"] == Rating.Easy
+            ]
+
+            # compute the probability of the user clicking again/hard/good/easy given it's their first review
+            num_first_again = len(first_again_reviews_df)
+            num_first_hard = len(first_hard_reviews_df)
+            num_first_good = len(first_good_reviews_df)
+            num_first_easy = len(first_easy_reviews_df)
+
+            num_first_review = (
+                num_first_again + num_first_hard + num_first_good + num_first_easy
+            )
+
+            prob_first_again = num_first_again / num_first_review
+            prob_first_hard = num_first_hard / num_first_review
+            prob_first_good = num_first_good / num_first_review
+            prob_first_easy = num_first_easy / num_first_review
+
+            probs_and_costs_dict["prob_first_again"] = prob_first_again
+            probs_and_costs_dict["prob_first_hard"] = prob_first_hard
+            probs_and_costs_dict["prob_first_good"] = prob_first_good
+            probs_and_costs_dict["prob_first_easy"] = prob_first_easy
+
+            # compute the cost of the user clicking again/hard/good/easy on their first review
+            first_again_review_durations = list(
+                first_again_reviews_df["review_duration"]
+            )
+            first_hard_review_durations = list(first_hard_reviews_df["review_duration"])
+            first_good_review_durations = list(first_good_reviews_df["review_duration"])
+            first_easy_review_durations = list(first_easy_reviews_df["review_duration"])
+
+            avg_first_again_review_duration = (
+                mean(first_again_review_durations)
+                if first_again_review_durations
+                else 0
+            )
+            avg_first_hard_review_duration = (
+                mean(first_hard_review_durations) if first_hard_review_durations else 0
+            )
+            avg_first_good_review_duration = (
+                mean(first_good_review_durations) if first_good_review_durations else 0
+            )
+            avg_first_easy_review_duration = (
+                mean(first_easy_review_durations) if first_easy_review_durations else 0
+            )
+
+            probs_and_costs_dict["avg_first_again_review_duration"] = (
+                avg_first_again_review_duration
+            )
+            probs_and_costs_dict["avg_first_hard_review_duration"] = (
+                avg_first_hard_review_duration
+            )
+            probs_and_costs_dict["avg_first_good_review_duration"] = (
+                avg_first_good_review_duration
+            )
+            probs_and_costs_dict["avg_first_easy_review_duration"] = (
+                avg_first_easy_review_duration
+            )
+
+            # compute the probabilities and costs of non-first ratings
+            non_first_reviews_df = review_log_df.loc[
+                review_log_df["card_id"].duplicated(keep="first")
+            ].reset_index(drop=True)
+
+            again_reviews_df = non_first_reviews_df.loc[
+                non_first_reviews_df["rating"] == Rating.Again
+            ]
+            hard_reviews_df = non_first_reviews_df.loc[
+                non_first_reviews_df["rating"] == Rating.Hard
+            ]
+            good_reviews_df = non_first_reviews_df.loc[
+                non_first_reviews_df["rating"] == Rating.Good
+            ]
+            easy_reviews_df = non_first_reviews_df.loc[
+                non_first_reviews_df["rating"] == Rating.Easy
+            ]
+
+            # compute the probability of the user clicking hard/good/easy given they correctly recalled the card
+            num_hard = len(hard_reviews_df)
+            num_good = len(good_reviews_df)
+            num_easy = len(easy_reviews_df)
+
+            num_recall = num_hard + num_good + num_easy
+
+            prob_hard = num_hard / num_recall
+            prob_good = num_good / num_recall
+            prob_easy = num_easy / num_recall
+
+            probs_and_costs_dict["prob_hard"] = prob_hard
+            probs_and_costs_dict["prob_good"] = prob_good
+            probs_and_costs_dict["prob_easy"] = prob_easy
+
+            again_review_durations = list(again_reviews_df["review_duration"])
+            hard_review_durations = list(hard_reviews_df["review_duration"])
+            good_review_durations = list(good_reviews_df["review_duration"])
+            easy_review_durations = list(easy_reviews_df["review_duration"])
+
+            avg_again_review_duration = (
+                mean(again_review_durations) if again_review_durations else 0
+            )
+            avg_hard_review_duration = (
+                mean(hard_review_durations) if hard_review_durations else 0
+            )
+            avg_good_review_duration = (
+                mean(good_review_durations) if good_review_durations else 0
+            )
+            avg_easy_review_duration = (
+                mean(easy_review_durations) if easy_review_durations else 0
+            )
+
+            probs_and_costs_dict["avg_again_review_duration"] = (
+                avg_again_review_duration
+            )
+            probs_and_costs_dict["avg_hard_review_duration"] = avg_hard_review_duration
+            probs_and_costs_dict["avg_good_review_duration"] = avg_good_review_duration
+            probs_and_costs_dict["avg_easy_review_duration"] = avg_easy_review_duration
+
+            return probs_and_costs_dict
+
+        def _simulate_cost(
+            self,
+            desired_retention: float,
+            parameters: tuple[float, ...] | list[float],
+            num_cards_simulate: int,
+            probs_and_costs_dict: dict[str, float],
+        ) -> float:
+            rng = Random(42)
+
+            # simulate from the beginning of 2025 till before the beginning of 2026
+            start_date = datetime(2025, 1, 1, 0, 0, 0, 0, timezone.utc)
+            end_date = datetime(2026, 1, 1, 0, 0, 0, 0, timezone.utc)
+
+            scheduler = Scheduler(
+                parameters=parameters,
+                desired_retention=desired_retention,
+                enable_fuzzing=False,
+            )
+
+            # unpack probs_and_costs_dict
+            prob_first_again = probs_and_costs_dict["prob_first_again"]
+            prob_first_hard = probs_and_costs_dict["prob_first_hard"]
+            prob_first_good = probs_and_costs_dict["prob_first_good"]
+            prob_first_easy = probs_and_costs_dict["prob_first_easy"]
+
+            avg_first_again_review_duration = probs_and_costs_dict[
+                "avg_first_again_review_duration"
+            ]
+            avg_first_hard_review_duration = probs_and_costs_dict[
+                "avg_first_hard_review_duration"
+            ]
+            avg_first_good_review_duration = probs_and_costs_dict[
+                "avg_first_good_review_duration"
+            ]
+            avg_first_easy_review_duration = probs_and_costs_dict[
+                "avg_first_easy_review_duration"
+            ]
+
+            prob_hard = probs_and_costs_dict["prob_hard"]
+            prob_good = probs_and_costs_dict["prob_good"]
+            prob_easy = probs_and_costs_dict["prob_easy"]
+
+            avg_again_review_duration = probs_and_costs_dict[
+                "avg_again_review_duration"
+            ]
+            avg_hard_review_duration = probs_and_costs_dict["avg_hard_review_duration"]
+            avg_good_review_duration = probs_and_costs_dict["avg_good_review_duration"]
+            avg_easy_review_duration = probs_and_costs_dict["avg_easy_review_duration"]
+
+            simulation_cost = 0
+            for i in range(num_cards_simulate):
+                card = Card()
+                curr_date = start_date
+                while curr_date < end_date:
+                    # the card is new
+                    if curr_date == start_date:
+                        rating = rng.choices(
+                            [Rating.Again, Rating.Hard, Rating.Good, Rating.Easy],
+                            weights=[
+                                prob_first_again,
+                                prob_first_hard,
+                                prob_first_good,
+                                prob_first_easy,
+                            ],
+                        )[0]
+
+                        if rating == Rating.Again:
+                            simulation_cost += avg_first_again_review_duration
+
+                        elif rating == Rating.Hard:
+                            simulation_cost += avg_first_hard_review_duration
+
+                        elif rating == Rating.Good:
+                            simulation_cost += avg_first_good_review_duration
+
+                        elif rating == Rating.Easy:
+                            simulation_cost += avg_first_easy_review_duration
+
+                    # the card is not new
+                    else:
+                        rating = rng.choices(
+                            ["recall", Rating.Again],
+                            weights=[desired_retention, 1.0 - desired_retention],
+                        )[0]
+
+                        if rating == "recall":
+                            # compute probability that the user chose hard/good/easy, GIVEN that they correctly recalled the card
+                            rating = rng.choices(
+                                [Rating.Hard, Rating.Good, Rating.Easy],
+                                weights=[prob_hard, prob_good, prob_easy],
+                            )[0]
+
+                        if rating == Rating.Again:
+                            simulation_cost += avg_again_review_duration
+
+                        elif rating == Rating.Hard:
+                            simulation_cost += avg_hard_review_duration
+
+                        elif rating == Rating.Good:
+                            simulation_cost += avg_good_review_duration
+
+                        elif rating == Rating.Easy:
+                            simulation_cost += avg_easy_review_duration
+
+                    card, _ = scheduler.review_card(
+                        card=card, rating=rating, review_datetime=curr_date
+                    )
+                    curr_date = card.due
+
+            total_knowledge = desired_retention * num_cards_simulate
+            simulation_cost = simulation_cost / total_knowledge
+
+            return simulation_cost
+
         def compute_optimal_retention(
             self, parameters: tuple[float, ...] | list[float]
         ) -> list[float]:
@@ -398,298 +658,20 @@ try:
                             "ReviewLog.review_duration cannot be None when computing optimal retention"
                         )
 
-            def _compute_probs_and_costs() -> dict[str, float]:
-                review_log_df = pd.DataFrame(
-                    vars(review_log) for review_log in self.review_logs
-                )
-
-                review_log_df = review_log_df.sort_values(
-                    by=["card_id", "review_datetime"], ascending=[True, True]
-                ).reset_index(drop=True)
-
-                # dictionary to return
-                probs_and_costs_dict = {}
-
-                # compute the probabilities and costs of the first rating
-                first_reviews_df = review_log_df.loc[
-                    ~review_log_df["card_id"].duplicated(keep="first")
-                ].reset_index(drop=True)
-
-                first_again_reviews_df = first_reviews_df.loc[
-                    first_reviews_df["rating"] == Rating.Again
-                ]
-                first_hard_reviews_df = first_reviews_df.loc[
-                    first_reviews_df["rating"] == Rating.Hard
-                ]
-                first_good_reviews_df = first_reviews_df.loc[
-                    first_reviews_df["rating"] == Rating.Good
-                ]
-                first_easy_reviews_df = first_reviews_df.loc[
-                    first_reviews_df["rating"] == Rating.Easy
-                ]
-
-                # compute the probability of the user clicking again/hard/good/easy given it's their first review
-                num_first_again = len(first_again_reviews_df)
-                num_first_hard = len(first_hard_reviews_df)
-                num_first_good = len(first_good_reviews_df)
-                num_first_easy = len(first_easy_reviews_df)
-
-                num_first_review = (
-                    num_first_again + num_first_hard + num_first_good + num_first_easy
-                )
-
-                prob_first_again = num_first_again / num_first_review
-                prob_first_hard = num_first_hard / num_first_review
-                prob_first_good = num_first_good / num_first_review
-                prob_first_easy = num_first_easy / num_first_review
-
-                probs_and_costs_dict["prob_first_again"] = prob_first_again
-                probs_and_costs_dict["prob_first_hard"] = prob_first_hard
-                probs_and_costs_dict["prob_first_good"] = prob_first_good
-                probs_and_costs_dict["prob_first_easy"] = prob_first_easy
-
-                # compute the cost of the user clicking again/hard/good/easy on their first review
-                first_again_review_durations = list(
-                    first_again_reviews_df["review_duration"]
-                )
-                first_hard_review_durations = list(
-                    first_hard_reviews_df["review_duration"]
-                )
-                first_good_review_durations = list(
-                    first_good_reviews_df["review_duration"]
-                )
-                first_easy_review_durations = list(
-                    first_easy_reviews_df["review_duration"]
-                )
-
-                avg_first_again_review_duration = (
-                    mean(first_again_review_durations)
-                    if first_again_review_durations
-                    else 0
-                )
-                avg_first_hard_review_duration = (
-                    mean(first_hard_review_durations)
-                    if first_hard_review_durations
-                    else 0
-                )
-                avg_first_good_review_duration = (
-                    mean(first_good_review_durations)
-                    if first_good_review_durations
-                    else 0
-                )
-                avg_first_easy_review_duration = (
-                    mean(first_easy_review_durations)
-                    if first_easy_review_durations
-                    else 0
-                )
-
-                probs_and_costs_dict["avg_first_again_review_duration"] = (
-                    avg_first_again_review_duration
-                )
-                probs_and_costs_dict["avg_first_hard_review_duration"] = (
-                    avg_first_hard_review_duration
-                )
-                probs_and_costs_dict["avg_first_good_review_duration"] = (
-                    avg_first_good_review_duration
-                )
-                probs_and_costs_dict["avg_first_easy_review_duration"] = (
-                    avg_first_easy_review_duration
-                )
-
-                # compute the probabilities and costs of non-first ratings
-                non_first_reviews_df = review_log_df.loc[
-                    review_log_df["card_id"].duplicated(keep="first")
-                ].reset_index(drop=True)
-
-                again_reviews_df = non_first_reviews_df.loc[
-                    non_first_reviews_df["rating"] == Rating.Again
-                ]
-                hard_reviews_df = non_first_reviews_df.loc[
-                    non_first_reviews_df["rating"] == Rating.Hard
-                ]
-                good_reviews_df = non_first_reviews_df.loc[
-                    non_first_reviews_df["rating"] == Rating.Good
-                ]
-                easy_reviews_df = non_first_reviews_df.loc[
-                    non_first_reviews_df["rating"] == Rating.Easy
-                ]
-
-                # compute the probability of the user clicking hard/good/easy given they correctly recalled the card
-                num_hard = len(hard_reviews_df)
-                num_good = len(good_reviews_df)
-                num_easy = len(easy_reviews_df)
-
-                num_recall = num_hard + num_good + num_easy
-
-                prob_hard = num_hard / num_recall
-                prob_good = num_good / num_recall
-                prob_easy = num_easy / num_recall
-
-                probs_and_costs_dict["prob_hard"] = prob_hard
-                probs_and_costs_dict["prob_good"] = prob_good
-                probs_and_costs_dict["prob_easy"] = prob_easy
-
-                again_review_durations = list(again_reviews_df["review_duration"])
-                hard_review_durations = list(hard_reviews_df["review_duration"])
-                good_review_durations = list(good_reviews_df["review_duration"])
-                easy_review_durations = list(easy_reviews_df["review_duration"])
-
-                avg_again_review_duration = (
-                    mean(again_review_durations) if again_review_durations else 0
-                )
-                avg_hard_review_duration = (
-                    mean(hard_review_durations) if hard_review_durations else 0
-                )
-                avg_good_review_duration = (
-                    mean(good_review_durations) if good_review_durations else 0
-                )
-                avg_easy_review_duration = (
-                    mean(easy_review_durations) if easy_review_durations else 0
-                )
-
-                probs_and_costs_dict["avg_again_review_duration"] = (
-                    avg_again_review_duration
-                )
-                probs_and_costs_dict["avg_hard_review_duration"] = (
-                    avg_hard_review_duration
-                )
-                probs_and_costs_dict["avg_good_review_duration"] = (
-                    avg_good_review_duration
-                )
-                probs_and_costs_dict["avg_easy_review_duration"] = (
-                    avg_easy_review_duration
-                )
-
-                return probs_and_costs_dict
-
-            def _simulate_cost(
-                desired_retention: float, num_cards_simulate: int
-            ) -> float:
-                rng = Random(42)
-
-                # simulate from the beginning of 2025 till before the beginning of 2026
-                start_date = datetime(2025, 1, 1, 0, 0, 0, 0, timezone.utc)
-                end_date = datetime(2026, 1, 1, 0, 0, 0, 0, timezone.utc)
-
-                scheduler = Scheduler(
-                    parameters=parameters,
-                    desired_retention=desired_retention,
-                    enable_fuzzing=False,
-                )
-
-                # unpack probs_and_costs_dict
-                prob_first_again = probs_and_costs_dict["prob_first_again"]
-                prob_first_hard = probs_and_costs_dict["prob_first_hard"]
-                prob_first_good = probs_and_costs_dict["prob_first_good"]
-                prob_first_easy = probs_and_costs_dict["prob_first_easy"]
-
-                avg_first_again_review_duration = probs_and_costs_dict[
-                    "avg_first_again_review_duration"
-                ]
-                avg_first_hard_review_duration = probs_and_costs_dict[
-                    "avg_first_hard_review_duration"
-                ]
-                avg_first_good_review_duration = probs_and_costs_dict[
-                    "avg_first_good_review_duration"
-                ]
-                avg_first_easy_review_duration = probs_and_costs_dict[
-                    "avg_first_easy_review_duration"
-                ]
-
-                prob_hard = probs_and_costs_dict["prob_hard"]
-                prob_good = probs_and_costs_dict["prob_good"]
-                prob_easy = probs_and_costs_dict["prob_easy"]
-
-                avg_again_review_duration = probs_and_costs_dict[
-                    "avg_again_review_duration"
-                ]
-                avg_hard_review_duration = probs_and_costs_dict[
-                    "avg_hard_review_duration"
-                ]
-                avg_good_review_duration = probs_and_costs_dict[
-                    "avg_good_review_duration"
-                ]
-                avg_easy_review_duration = probs_and_costs_dict[
-                    "avg_easy_review_duration"
-                ]
-
-                simulation_cost = 0
-                for i in range(num_cards_simulate):
-                    card = Card()
-                    curr_date = start_date
-                    while curr_date < end_date:
-                        # the card is new
-                        if curr_date == start_date:
-                            rating = rng.choices(
-                                [Rating.Again, Rating.Hard, Rating.Good, Rating.Easy],
-                                weights=[
-                                    prob_first_again,
-                                    prob_first_hard,
-                                    prob_first_good,
-                                    prob_first_easy,
-                                ],
-                            )[0]
-
-                            if rating == Rating.Again:
-                                simulation_cost += avg_first_again_review_duration
-
-                            elif rating == Rating.Hard:
-                                simulation_cost += avg_first_hard_review_duration
-
-                            elif rating == Rating.Good:
-                                simulation_cost += avg_first_good_review_duration
-
-                            elif rating == Rating.Easy:
-                                simulation_cost += avg_first_easy_review_duration
-
-                        # the card is not new
-                        else:
-                            rating = rng.choices(
-                                ["recall", Rating.Again],
-                                weights=[desired_retention, 1.0 - desired_retention],
-                            )[0]
-
-                            if rating == "recall":
-                                # compute probability that the user chose hard/good/easy, GIVEN that they correctly recalled the card
-                                rating = rng.choices(
-                                    [Rating.Hard, Rating.Good, Rating.Easy],
-                                    weights=[prob_hard, prob_good, prob_easy],
-                                )[0]
-
-                            if rating == Rating.Again:
-                                simulation_cost += avg_again_review_duration
-
-                            elif rating == Rating.Hard:
-                                simulation_cost += avg_hard_review_duration
-
-                            elif rating == Rating.Good:
-                                simulation_cost += avg_good_review_duration
-
-                            elif rating == Rating.Easy:
-                                simulation_cost += avg_easy_review_duration
-
-                        card, _ = scheduler.review_card(
-                            card=card, rating=rating, review_datetime=curr_date
-                        )
-                        curr_date = card.due
-
-                total_knowledge = desired_retention * num_cards_simulate
-                simulation_cost = simulation_cost / total_knowledge
-
-                return simulation_cost
-
             _validate_review_logs()
 
             NUM_CARDS_SIMULATE = 1000
             DESIRED_RETENTIONS = [0.7, 0.75, 0.8, 0.85, 0.9, 0.95]
 
-            probs_and_costs_dict = _compute_probs_and_costs()
+            probs_and_costs_dict = self._compute_probs_and_costs()
 
             simulation_costs = []
             for desired_retention in DESIRED_RETENTIONS:
-                simulation_cost = _simulate_cost(
+                simulation_cost = self._simulate_cost(
                     desired_retention=desired_retention,
+                    parameters=parameters,
                     num_cards_simulate=NUM_CARDS_SIMULATE,
+                    probs_and_costs_dict=probs_and_costs_dict,
                 )
                 simulation_costs.append(simulation_cost)
 

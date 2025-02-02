@@ -673,7 +673,7 @@ try:
                         )
                         curr_date = card.due
 
-                total_knowledge = desired_retention * NUM_CARDS_SIMULATE
+                total_knowledge = desired_retention * num_cards_simulate
                 simulation_cost = simulation_cost / total_knowledge
 
                 return simulation_cost

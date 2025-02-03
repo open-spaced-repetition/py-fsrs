@@ -1,8 +1,33 @@
-from fsrs import ReviewLog, Optimizer, DEFAULT_PARAMETERS
+from fsrs import ReviewLog, Optimizer, DEFAULT_PARAMETERS, Rating
 import pandas as pd
 from copy import deepcopy
 from random import shuffle
 import numpy as np
+import pytest
+from datetime import datetime, timezone
+
+
+test_optimal_parameters = [
+    0.2363282014982659,
+    1.18385,
+    2.803907798259358,
+    15.69105,
+    7.450626954515589,
+    0.2002981626622733,
+    1.6499680903504104,
+    0.030489930904182852,
+    1.3726592620867732,
+    0.20407416745070098,
+    0.9003453768459656,
+    2.0169172501722157,
+    0.05052109238927132,
+    0.249798385275728,
+    2.3878771773930296,
+    0.47499255667044843,
+    2.9898,
+    0.19075214884576136,
+    1.0712483452116681,
+]
 
 
 def get_revlogs() -> list[ReviewLog]:
@@ -16,8 +41,8 @@ def get_revlogs() -> list[ReviewLog]:
     review_logs = []
     for index, row in df.iterrows():
         card_id = row["card_id"]
-        rating = row["review_rating"]
-        review_datetime = row["review_time"]
+        rating = Rating(row["review_rating"])
+        review_datetime = datetime.fromisoformat(row["review_time"])
         review_duration = row["review_duration"]
 
         review_log = ReviewLog(
@@ -54,28 +79,6 @@ class TestOptimizer:
 
         review_logs = get_revlogs()
 
-        expected_optimal_parameters = [
-            0.2363282014982659,
-            1.18385,
-            2.803907798259358,
-            15.69105,
-            7.450626954515589,
-            0.2002981626622733,
-            1.6499680903504104,
-            0.030489930904182852,
-            1.3726592620867732,
-            0.20407416745070098,
-            0.9003453768459656,
-            2.0169172501722157,
-            0.05052109238927132,
-            0.249798385275728,
-            2.3878771773930296,
-            0.47499255667044843,
-            2.9898,
-            0.19075214884576136,
-            1.0712483452116681,
-        ]
-
         optimizer = Optimizer(review_logs)
 
         optimal_parameters = optimizer.compute_optimal_parameters()
@@ -84,7 +87,7 @@ class TestOptimizer:
         assert optimal_parameters != list(DEFAULT_PARAMETERS)
 
         # the output is expected
-        assert np.allclose(optimal_parameters, expected_optimal_parameters)
+        assert np.allclose(optimal_parameters, test_optimal_parameters)
 
         # the computed loss with the optimized parameters are less than that of the starting parameters
         starting_loss = optimizer._compute_batch_loss(DEFAULT_PARAMETERS)
@@ -138,3 +141,105 @@ class TestOptimizer:
         optimal_parameters2 = optimizer2.compute_optimal_parameters()
 
         assert optimal_parameters1 == optimal_parameters2
+
+    def test_optimal_retention(self):
+        review_logs = get_revlogs()
+
+        optimizer = Optimizer(review_logs)
+
+        expected_optimal_retention = 0.85
+
+        optimal_retention_optimal_parameters = optimizer.compute_optimal_retention(
+            parameters=test_optimal_parameters
+        )
+
+        # deterministic outcome
+        assert optimal_retention_optimal_parameters == expected_optimal_retention
+
+        # computing the optimal retention on a new optimizer with the same review logs and parameters will return
+        # the same result
+        optimizer_2 = Optimizer(review_logs)
+        optimal_retention_optimal_parameters_2 = optimizer_2.compute_optimal_retention(
+            parameters=test_optimal_parameters
+        )
+        assert (
+            optimal_retention_optimal_parameters_2
+            == optimal_retention_optimal_parameters
+        )
+
+        # computing the optimal retention with a different set of parameters can yield a different result
+        optimal_retention_default_parameters = optimizer_2.compute_optimal_retention(
+            parameters=DEFAULT_PARAMETERS
+        )
+        assert (
+            optimal_retention_default_parameters != optimal_retention_optimal_parameters
+        )
+
+    def test_optimal_retention_zero_review_logs(self):
+        # can't compute optimal retention with zero review logs
+        zero_revlogs = []
+        optimizer = Optimizer(zero_revlogs)
+        with pytest.raises(ValueError):
+            _ = optimizer.compute_optimal_retention(parameters=DEFAULT_PARAMETERS)
+
+    def test_optimal_retention_few_review_logs(self):
+        review_logs = get_revlogs()
+        few_revlogs = review_logs[:100]
+
+        optimizer = Optimizer(few_revlogs)
+        with pytest.raises(ValueError):
+            _ = optimizer.compute_optimal_retention(parameters=DEFAULT_PARAMETERS)
+
+    def test_optimal_retention_no_review_duration(self):
+        review_logs = get_revlogs()
+
+        review_log_without_review_duration = ReviewLog(
+            card_id=42,
+            rating=2,
+            review_datetime=datetime(2025, 1, 1, 0, 0, 0, 0, timezone.utc),
+            review_duration=None,
+        )
+
+        review_logs.append(review_log_without_review_duration)
+
+        optimizer = Optimizer(review_logs)
+        with pytest.raises(ValueError):
+            _ = optimizer.compute_optimal_retention(parameters=DEFAULT_PARAMETERS)
+
+    def test_simulated_costs(self):
+        review_logs = get_revlogs()
+
+        optimizer = Optimizer(review_logs)
+
+        probs_and_costs_dict = optimizer._compute_probs_and_costs()
+
+        simulation_cost_0_75 = optimizer._simulate_cost(
+            desired_retention=0.75,
+            parameters=test_optimal_parameters,
+            num_cards_simulate=1000,
+            probs_and_costs_dict=probs_and_costs_dict,
+        )
+
+        assert round(simulation_cost_0_75) == 243705
+
+        simulation_cost_0_85 = optimizer._simulate_cost(
+            desired_retention=0.85,
+            parameters=test_optimal_parameters,
+            num_cards_simulate=1000,
+            probs_and_costs_dict=probs_and_costs_dict,
+        )
+
+        assert round(simulation_cost_0_85) == 230043
+
+        simulation_cost_0_95 = optimizer._simulate_cost(
+            desired_retention=0.95,
+            parameters=test_optimal_parameters,
+            num_cards_simulate=1000,
+            probs_and_costs_dict=probs_and_costs_dict,
+        )
+
+        assert round(simulation_cost_0_95) == 342447
+
+        # holds true for these specific revlogs
+        assert simulation_cost_0_85 <= simulation_cost_0_75
+        assert simulation_cost_0_85 <= simulation_cost_0_95

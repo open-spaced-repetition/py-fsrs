@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fsrs"
-version = "5.0.1"
+version = "5.1.0"
 description = "Free Spaced Repetition Scheduler"
 readme = "README.md"
 authors = [
@@ -25,7 +25,7 @@ Homepage = "https://github.com/open-spaced-repetition/py-fsrs"
 
 [project.optional-dependencies]
 dev = ["pytest", "ruff", "setuptools", "torch", "numpy", "pandas", "poetry"]
-optimizer = ["torch", "numpy"]
+optimizer = ["torch", "numpy", "pandas"]
 
 [tool.pytest.ini_options]
 pythonpath = "."

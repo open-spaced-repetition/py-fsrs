@@ -174,7 +174,7 @@ new_review_log = ReviewLog.from_dict(review_log_dict)
 
 ## Optimizer (optional)
 
-If you have a collection of `ReviewLog` objects, you can optionally reuse them to compute an optimal set of parameters for the `Scheduler` to make it more accurate at scheduling reviews.
+If you have a collection of `ReviewLog` objects, you can optionally reuse them to compute an optimal set of parameters for the `Scheduler` to make it more accurate at scheduling reviews. You can also compute an optimal retention rate to reduce the future workload of your reviews.
 
 ### Installation
 
@@ -182,7 +182,7 @@ If you have a collection of `ReviewLog` objects, you can optionally reuse them t
 pip install "fsrs[optimizer]"
 ```
 
-### Usage
+### Optimize scheduler parameters
 
 ```python
 from fsrs import ReviewLog, Optimizer, Scheduler
@@ -196,11 +196,20 @@ optimizer = Optimizer(review_logs)
 # compute a set of optimized parameters
 optimal_parameters = optimizer.compute_optimal_parameters()
 
-# initialize a new scheduler with the optimized parameters!
-scheduler = Scheduler(parameters=optimal_parameters)
+# initialize a new scheduler with the optimized parameters
+scheduler = Scheduler(optimal_parameters)
 ```
 
-Note: The computed optimal parameters may be slightly different than the parameters computed by Anki for the same set of review logs. This is because the two implementations are slightly different and updated at different times. If you're interested in the official Rust-based Anki implementation, please see [here](https://github.com/open-spaced-repetition/fsrs-rs).
+### Optimize desired retention
+
+```python
+optimal_retention = optimizer.compute_optimal_retention(optimal_parameters)
+
+# initialize a new scheduler with both optimized parameters and retention
+scheduler = Scheduler(optimal_parameters, optimal_retention)
+```
+
+Note: The computed optimal parameters and retention may be slightly different than the numbers computed by Anki for the same set of review logs. This is because the two implementations are slightly different and updated at different times. If you're interested in the official Rust-based Anki implementation, please see [here](https://github.com/open-spaced-repetition/fsrs-rs).
 
 ## Reference
 

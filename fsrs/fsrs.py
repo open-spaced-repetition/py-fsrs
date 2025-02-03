@@ -447,9 +447,9 @@ class Scheduler:
 
             # calculate the card's next interval
             # len(self.learning_steps) == 0: no learning steps defined so move card to Review state
-            # card.step > len(self.learning_steps): handles the edge-case when a card was originally scheduled with a scheduler with more
+            # card.step >= len(self.learning_steps): handles the edge-case when a card was originally scheduled with a scheduler with more
             # learning steps than the current scheduler
-            if len(self.learning_steps) == 0 or card.step > len(self.learning_steps):
+            if len(self.learning_steps) == 0 or card.step >= len(self.learning_steps):
                 card.state = State.Review
                 card.step = None
 
@@ -559,9 +559,9 @@ class Scheduler:
 
             # calculate the card's next interval
             # len(self.relearning_steps) == 0: no relearning steps defined so move card to Review state
-            # card.step > len(self.relearning_steps): handles the edge-case when a card was originally scheduled with a scheduler with more
+            # card.step >= len(self.relearning_steps): handles the edge-case when a card was originally scheduled with a scheduler with more
             # relearning steps than the current scheduler
-            if len(self.relearning_steps) == 0 or card.step > len(
+            if len(self.relearning_steps) == 0 or card.step >= len(
                 self.relearning_steps
             ):
                 card.state = State.Review

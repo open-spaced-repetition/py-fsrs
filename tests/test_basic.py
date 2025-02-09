@@ -606,6 +606,7 @@ class TestPyFSRS:
         scheduler_with_one_learning_step = Scheduler(
             learning_steps=(timedelta(minutes=1),)
         )
+        scheduler_with_no_learning_steps = Scheduler(learning_steps=())
 
         scheduler_with_two_relearning_steps = Scheduler(
             relearning_steps=(
@@ -620,6 +621,7 @@ class TestPyFSRS:
 
         card = Card()
 
+        # learning-state tests
         assert len(scheduler_with_two_learning_steps.learning_steps) == 2
         card, _ = scheduler_with_two_learning_steps.review_card(
             card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc)
@@ -631,9 +633,17 @@ class TestPyFSRS:
         card, _ = scheduler_with_one_learning_step.review_card(
             card=card, rating=Rating.Again, review_datetime=datetime.now(timezone.utc)
         )
+        assert card.state == State.Learning
+        assert card.step == 0
+
+        assert len(scheduler_with_no_learning_steps.learning_steps) == 0
+        card, _ = scheduler_with_no_learning_steps.review_card(
+            card=card, rating=Rating.Hard, review_datetime=datetime.now(timezone.utc)
+        )
         assert card.state == State.Review
         assert card.step is None
 
+        # relearning-state tests
         assert len(scheduler_with_two_relearning_steps.relearning_steps) == 2
         card, _ = scheduler_with_two_relearning_steps.review_card(
             card=card, rating=Rating.Again, review_datetime=datetime.now(timezone.utc)
@@ -647,14 +657,16 @@ class TestPyFSRS:
         assert card.state == State.Relearning
         assert card.step == 1
 
+        assert len(scheduler_with_one_relearning_step.relearning_steps) == 1
         card, _ = scheduler_with_one_relearning_step.review_card(
             card=card, rating=Rating.Again, review_datetime=datetime.now(timezone.utc)
         )
-        assert card.state == State.Review
-        assert card.step is None
+        assert card.state == State.Relearning
+        assert card.step == 0
 
+        assert len(scheduler_with_no_relearning_steps.relearning_steps) == 0
         card, _ = scheduler_with_no_relearning_steps.review_card(
-            card=card, rating=Rating.Again, review_datetime=datetime.now(timezone.utc)
+            card=card, rating=Rating.Hard, review_datetime=datetime.now(timezone.utc)
         )
         assert card.state == State.Review
         assert card.step is None

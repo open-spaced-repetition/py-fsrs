@@ -43,5 +43,5 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv pip install "fsrs[optimizer,dev]"
-          uvx pytest
+          uv pip install -e ".[optimizer,dev]"
+          pytest

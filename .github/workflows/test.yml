@@ -43,8 +43,5 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv add pandas
-          uv add ".[optimizer]"
-      - name: Test with pytest
-        run: |
+          uv pip install "fsrs[optimizer,dev]"
           uvx pytest

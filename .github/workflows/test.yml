@@ -19,10 +19,9 @@ jobs:
             python-version: ${{ matrix.python-version }}
 
         - name: Display Python version
-          run: python -c "import sys; print(sys.version)"
+          run: python -V
         - name: Test with pytest
-          run: |
-            uvx pytest tests/test_basic.py
+          run: uvx pytest tests/test_basic.py
 
     test_optimizer:
 
@@ -40,12 +39,12 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Display Python version
-        run: python -c "import sys; print(sys.version)"
+        run: python -V
 
       - name: Install dependencies
         run: |
-          uv pip install pandas
-          uv pip install ".[optimizer]"
+          uv add pandas
+          uv add ".[optimizer]"
       - name: Test with pytest
         run: |
-          uvx pytest tests/test_optimizer.py
+          uvx pytest

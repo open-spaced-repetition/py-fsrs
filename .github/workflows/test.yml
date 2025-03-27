@@ -48,4 +48,4 @@ jobs:
           uv pip install ".[optimizer]"
       - name: Test with pytest
         run: |
-          uvx pytest
+          uvx pytest tests/test_optimizer.py

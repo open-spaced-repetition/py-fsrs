@@ -34,11 +34,8 @@ jobs:
       steps:
       - uses: actions/checkout@v4
 
-      - name: Install uv
+      - name: Install uv Set up Python
         uses: astral-sh/setup-uv@v5
-
-      - name: Set up Python
-        run: uv python install
         with:
           python-version: ${{ matrix.python-version }}
 

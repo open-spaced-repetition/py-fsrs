@@ -684,4 +684,4 @@ except ImportError:
 
     class Optimizer:
         def __init__(self, *args, **kwargs) -> None:
-            raise ImportError("If you don't want install torch, use https://github.com/open-spaced-repetition/fsrs-rs-python instead")
+            raise ImportError("The Optimizer class requires torch be installed.")

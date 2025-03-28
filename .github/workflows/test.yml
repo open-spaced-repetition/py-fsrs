@@ -45,5 +45,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv pip install -e ".[optimizer,dev]"
-          pytest
+          uv pip install ".[optimizer,dev]"
+      - name: Test with pytest
+        run: pytest

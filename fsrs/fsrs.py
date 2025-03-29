@@ -681,6 +681,14 @@ class Scheduler:
             enable_fuzzing=enable_fuzzing,
         )
 
+    def _clamp_difficulty(self, difficulty):
+        if isinstance(difficulty, (float, int)):
+            difficulty = min(max(difficulty, 1.0), 10.0)
+        else:  # type(next_difficulty) is torch.Tensor
+            difficulty = difficulty.clamp(min=1.0, max=10.0)
+
+        return difficulty
+
     def _initial_stability(self, rating: Rating) -> float:
         initial_stability = self.parameters[rating - 1]
 
@@ -694,11 +702,7 @@ class Scheduler:
             self.parameters[4] - (math.e ** (self.parameters[5] * (rating - 1))) + 1
         )
 
-        # bound initial_difficulty between 1 and 10
-        if type(initial_difficulty) in (float, int):
-            initial_difficulty = min(max(initial_difficulty, 1.0), 10.0)
-        else:  # type(initial_difficulty) is torch.Tensor
-            initial_difficulty.clamp_(min=1.0, max=10.0)
+        initial_difficulty = self._clamp_difficulty(initial_difficulty)
 
         return initial_difficulty
 
@@ -738,11 +742,7 @@ class Scheduler:
 
         next_difficulty = _mean_reversion(arg_1=arg_1, arg_2=arg_2)
 
-        # bound next_difficulty between 1 and 10
-        if type(next_difficulty) in (float, int):
-            next_difficulty = min(max(next_difficulty, 1.0), 10.0)
-        else:  # type(next_difficulty) is torch.Tensor
-            next_difficulty.clamp_(min=1.0, max=10.0)
+        next_difficulty = self._clamp_difficulty(next_difficulty)
 
         return next_difficulty
 

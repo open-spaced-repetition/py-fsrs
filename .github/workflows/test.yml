@@ -12,19 +12,17 @@ jobs:
 
         steps:
         - uses: actions/checkout@v4
-        - name: Set up Python ${{ matrix.python-version }}
-          uses: actions/setup-python@v5
+    
+        - name: Install uv Set up Python
+          uses: astral-sh/setup-uv@v5
           with:
+            enable-cache: true
             python-version: ${{ matrix.python-version }}
+
         - name: Display Python version
-          run: python -c "import sys; print(sys.version)"
-        - name: Install dependencies
-          run: |
-            python -m pip install --upgrade pip
-            pip install pytest
+          run: python -V
         - name: Test with pytest
-          run: |
-            pytest tests/test_basic.py
+          run: uvx pytest tests/test_basic.py
 
     test_optimizer:
 
@@ -35,17 +33,18 @@ jobs:
 
       steps:
       - uses: actions/checkout@v4
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+
+      - name: Install uv Set up Python
+        uses: astral-sh/setup-uv@v5
         with:
+          enable-cache: true
           python-version: ${{ matrix.python-version }}
+
       - name: Display Python version
-        run: python -c "import sys; print(sys.version)"
+        run: python -V
+
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install pytest pandas
-          pip install ".[optimizer]"
+          uv pip install ".[optimizer,dev]"
       - name: Test with pytest
-        run: |
-          pytest
+        run: pytest

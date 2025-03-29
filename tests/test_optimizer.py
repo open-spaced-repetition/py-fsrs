@@ -1,10 +1,10 @@
-from fsrs import ReviewLog, Optimizer, DEFAULT_PARAMETERS, Rating
+from fsrs import ReviewLog, Optimizer, DEFAULT_PARAMETERS, Rating, Scheduler, Card
 import pandas as pd
 from copy import deepcopy
 from random import shuffle
 import numpy as np
 import pytest
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 
 test_optimal_parameters = [
@@ -243,3 +243,27 @@ class TestOptimizer:
         # holds true for these specific revlogs
         assert simulation_cost_0_85 <= simulation_cost_0_75
         assert simulation_cost_0_85 <= simulation_cost_0_95
+
+    def test_optimize_review_logs_with_difficulty_1_cards(self):
+        """
+        Create hypothetical review logs where cards have
+        their difficulty values driven down to 1.0 after repeated easy ratings.
+        """
+
+        scheduler = Scheduler()
+        review_logs = []
+        for _ in range(100):
+            card = Card()
+            for day in range(100):
+                card, review_log = scheduler.review_card(
+                    card=card,
+                    rating=Rating.Easy,
+                    review_datetime=datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
+                    + timedelta(days=day),
+                )
+                review_logs.append(review_log)
+
+            assert card.difficulty == 1.0
+
+        optimizer = Optimizer(review_logs)
+        _ = optimizer.compute_optimal_parameters()  # this should not raise an exception

@@ -764,6 +764,9 @@ class Scheduler:
                 rating=rating,
             )
 
+        if next_stability == 0:
+            next_stability = stability
+
         return next_stability
 
     def _next_forget_stability(

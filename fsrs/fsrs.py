@@ -681,19 +681,26 @@ class Scheduler:
             enable_fuzzing=enable_fuzzing,
         )
 
-    def _clamp_difficulty(self, difficulty):
+    def _clamp_difficulty(self, difficulty: float) -> float:
         if isinstance(difficulty, (float, int)):
             difficulty = min(max(difficulty, 1.0), 10.0)
-        else:  # type(next_difficulty) is torch.Tensor
+        else:  # type(difficulty) is torch.Tensor
             difficulty = difficulty.clamp(min=1.0, max=10.0)
 
         return difficulty
 
+    def _clamp_stability(self, stability: float) -> float:
+        if isinstance(stability, (float, int)):
+            stability = max(stability, 0.01)
+        else:  # type(stability) is torch.Tensor
+            stability = stability.clamp(min=0.01)
+
+        return stability
+
     def _initial_stability(self, rating: Rating) -> float:
         initial_stability = self.parameters[rating - 1]
 
-        # initial_stability >= 0.1
-        initial_stability = max(initial_stability, 0.1)
+        initial_stability = self._clamp_stability(initial_stability)
 
         return initial_stability
 
@@ -722,9 +729,13 @@ class Scheduler:
         return next_interval
 
     def _short_term_stability(self, stability: float, rating: Rating) -> float:
-        return stability * (
+        short_term_stability = stability * (
             math.e ** (self.parameters[17] * (rating - 3 + self.parameters[18]))
         )
+
+        short_term_stability = self._clamp_stability(short_term_stability)
+
+        return short_term_stability
 
     def _next_difficulty(self, difficulty: float, rating: Rating) -> float:
         def _linear_damping(delta_difficulty: float, difficulty: float) -> float:
@@ -764,8 +775,7 @@ class Scheduler:
                 rating=rating,
             )
 
-        if next_stability == 0:
-            next_stability = stability
+        next_stability = self._clamp_stability(next_stability)
 
         return next_stability
 

@@ -719,9 +719,9 @@ class TestPyFSRS:
 
         assert len(card_ids) == len(set(card_ids))
 
-    def test_positive_stability(self):
+    def test_stability_lower_bound(self):
         """
-        Ensure that a Card object's stability is always > 0
+        Ensure that a Card object's stability is always >= 0.01
         """
 
         scheduler = Scheduler()
@@ -734,4 +734,4 @@ class TestPyFSRS:
                 rating=Rating.Again,
                 review_datetime=card.due + timedelta(days=1),
             )
-            assert card.stability > 0
+            assert card.stability >= 0.01

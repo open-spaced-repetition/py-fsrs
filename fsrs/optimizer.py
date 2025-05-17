@@ -42,6 +42,8 @@ try:
             1.0,
             0.0,
             0.0,
+            0.0,
+            0.1,
         ],
         dtype=torch.float64,
     )
@@ -66,6 +68,8 @@ try:
             6.0,
             2.0,
             2.0,
+            0.8,
+            0.8,
         ],
         dtype=torch.float64,
     )
@@ -162,7 +166,9 @@ try:
                     if i == 0:
                         card = Card(card_id=card_id, due=x_date)
 
-                    y_pred_retrievability = card.get_retrievability(x_date)
+                    y_pred_retrievability = card.get_retrievability(
+                        scheduler_parameters=params, current_datetime=x_date
+                    )
                     y_retrievability = torch.tensor(
                         y_retrievability, dtype=torch.float64
                     )
@@ -322,7 +328,9 @@ try:
                             card = Card(card_id=card_id, due=x_date)
 
                         # predicted target
-                        y_pred_retrievability = card.get_retrievability(x_date)
+                        y_pred_retrievability = card.get_retrievability(
+                            scheduler_parameters=params, current_datetime=x_date
+                        )
                         y_retrievability = torch.tensor(
                             y_retrievability, dtype=torch.float64
                         )

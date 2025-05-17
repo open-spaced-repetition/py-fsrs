@@ -43,16 +43,16 @@ class TestPyFSRS:
             0,
             4,
             14,
-            44,
-            125,
-            328,
+            45,
+            135,
+            372,
             0,
             0,
-            7,
-            16,
-            34,
-            71,
-            142,
+            2,
+            5,
+            10,
+            20,
+            40,
         ]
 
     def test_repeated_correct_reviews(self):
@@ -97,8 +97,8 @@ class TestPyFSRS:
             card=card, rating=Rating.Good, review_datetime=review_datetime
         )
 
-        assert round(card.stability) == 49
-        assert round(card.difficulty, 4) == 7.0866
+        assert round(card.stability, 4) == 50.5655
+        assert round(card.difficulty, 4) == 6.8271
 
     def test_repeat_default_arg(self):
         scheduler = Scheduler()
@@ -259,7 +259,21 @@ class TestPyFSRS:
             ivl_history.append(ivl)
             now = card.due
 
-        assert ivl_history == [0, 4, 14, 44, 125, 328, 0, 0, 7, 16, 34, 71, 142]
+        assert ivl_history == [
+            0,
+            4,
+            14,
+            45,
+            135,
+            372,
+            0,
+            0,
+            2,
+            5,
+            10,
+            20,
+            40,
+        ]
 
         # initialize another scheduler and verify parameters are properly set
         parameters2 = (
@@ -282,6 +296,8 @@ class TestPyFSRS:
             2.8755,
             1.234,
             5.6789,
+            0.1437,
+            0.2,
         )
         desired_retention2 = 0.85
         maximum_interval2 = 3650
@@ -297,30 +313,39 @@ class TestPyFSRS:
 
     def test_retrievability(self):
         scheduler = Scheduler()
+        scheduler_parameters = scheduler.parameters
 
         card = Card()
 
         # retrievabiliy of New card
         assert card.state == State.Learning
-        retrievability = card.get_retrievability()
+        retrievability = card.get_retrievability(
+            scheduler_parameters=scheduler_parameters
+        )
         assert retrievability == 0
 
         # retrievabiliy of Learning card
         card, _ = scheduler.review_card(card, Rating.Good)
         assert card.state == State.Learning
-        retrievability = card.get_retrievability()
+        retrievability = card.get_retrievability(
+            scheduler_parameters=scheduler_parameters
+        )
         assert 0 <= retrievability <= 1
 
         # retrievabiliy of Review card
         card, _ = scheduler.review_card(card, Rating.Good)
         assert card.state == State.Review
-        retrievability = card.get_retrievability()
+        retrievability = card.get_retrievability(
+            scheduler_parameters=scheduler_parameters
+        )
         assert 0 <= retrievability <= 1
 
         # retrievabiliy of Relearning card
         card, _ = scheduler.review_card(card, Rating.Again)
         assert card.state == State.Relearning
-        retrievability = card.get_retrievability()
+        retrievability = card.get_retrievability(
+            scheduler_parameters=scheduler_parameters
+        )
         assert 0 <= retrievability <= 1
 
     def test_Scheduler_serialize(self):

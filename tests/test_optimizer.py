@@ -8,25 +8,27 @@ from datetime import datetime, timezone, timedelta
 
 
 test_optimal_parameters = [
-    0.20225927947936412,
-    1.18385,
-    2.684260177947366,
-    15.69105,
-    7.48737482947971,
-    0.23578139518168015,
-    1.6644599025925886,
-    0.036665405088206725,
-    1.3676206874530776,
-    0.09390688502404983,
-    0.8787434551268416,
-    1.998754670417471,
-    0.043139549890615275,
-    0.22938131117027233,
-    2.4321173858967726,
-    0.4731086903552861,
-    2.9898,
-    0.2932543856796362,
-    1.1289805881063713,
+    0.08507233095207588,
+    1.1771,
+    2.947485038776238,
+    16.1507,
+    7.327286095943703,
+    0.3154129821734779,
+    2.1226058374285266,
+    0.027381727356617622,
+    1.367701043447835,
+    0.022451392117455903,
+    0.8821909926756148,
+    1.8526266991419775,
+    0.09465860203075946,
+    0.26982836208004,
+    2.349803259748898,
+    0.4572741007986036,
+    3.0004,
+    0.8704313359333086,
+    0.3465313252586688,
+    0.23185020660132227,
+    0.5648747460223619,
 ]
 
 
@@ -86,7 +88,7 @@ class TestOptimizer:
         # the optimal paramaters are no longer equal to the starting parameters
         assert optimal_parameters != list(DEFAULT_PARAMETERS)
 
-        # the output is expected
+        # the output is expected and deterministic
         assert np.allclose(optimal_parameters, test_optimal_parameters)
 
         # the computed loss with the optimized parameters are less than that of the starting parameters
@@ -168,12 +170,33 @@ class TestOptimizer:
         )
 
         # computing the optimal retention with a different set of parameters can yield a different result
-        optimal_retention_default_parameters = optimizer_2.compute_optimal_retention(
-            parameters=DEFAULT_PARAMETERS
+        parameters_2 = [
+            0.01,
+            0.01,
+            0.01,
+            0.01,
+            1.0,
+            0.1,
+            0.1,
+            0.0,
+            0.0,
+            0.0,
+            0.01,
+            0.1,
+            0.01,
+            0.01,
+            0.01,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.1,
+        ]
+        optimal_retention_parameters_2 = optimizer_2.compute_optimal_retention(
+            parameters=parameters_2
         )
-        assert (
-            optimal_retention_default_parameters != optimal_retention_optimal_parameters
-        )
+        assert optimal_retention_parameters_2 != optimal_retention_optimal_parameters
 
     def test_optimal_retention_zero_review_logs(self):
         # can't compute optimal retention with zero review logs
@@ -220,7 +243,7 @@ class TestOptimizer:
             probs_and_costs_dict=probs_and_costs_dict,
         )
 
-        assert round(simulation_cost_0_75) == 224315
+        assert round(simulation_cost_0_75) == 248041
 
         simulation_cost_0_85 = optimizer._simulate_cost(
             desired_retention=0.85,
@@ -229,7 +252,7 @@ class TestOptimizer:
             probs_and_costs_dict=probs_and_costs_dict,
         )
 
-        assert round(simulation_cost_0_85) == 205312
+        assert round(simulation_cost_0_85) == 205430
 
         simulation_cost_0_95 = optimizer._simulate_cost(
             desired_retention=0.95,
@@ -238,7 +261,7 @@ class TestOptimizer:
             probs_and_costs_dict=probs_and_costs_dict,
         )
 
-        assert round(simulation_cost_0_95) == 279661
+        assert round(simulation_cost_0_95) == 253739
 
         # holds true for these specific revlogs
         assert simulation_cost_0_85 <= simulation_cost_0_75

@@ -21,29 +21,28 @@ from random import random
 import time
 
 DEFAULT_PARAMETERS = (
-    0.40255,
-    1.18385,
-    3.173,
-    15.69105,
-    7.1949,
-    0.5345,
-    1.4604,
-    0.0046,
-    1.54575,
-    0.1192,
-    1.01925,
-    1.9395,
-    0.11,
-    0.29605,
-    2.2698,
-    0.2315,
-    2.9898,
-    0.51655,
-    0.6621,
+    0.2172,
+    1.1771,
+    3.2602,
+    16.1507,
+    7.0114,
+    0.57,
+    2.0966,
+    0.0069,
+    1.5261,
+    0.112,
+    1.0178,
+    1.849,
+    0.1133,
+    0.3127,
+    2.2934,
+    0.2191,
+    3.0004,
+    0.7536,
+    0.3332,
+    0.1437,
+    0.2,
 )
-
-DECAY = -0.5
-FACTOR = 0.9 ** (1 / DECAY) - 1
 
 FUZZ_RANGES = [
     {
@@ -211,7 +210,11 @@ class Card:
             last_review=last_review,
         )
 
-    def get_retrievability(self, current_datetime: datetime | None = None) -> float:
+    def get_retrievability(
+        self,
+        scheduler_parameters: tuple[float, ...],
+        current_datetime: datetime | None = None,
+    ) -> float:
         """
         Calculates the Card object's current retrievability for a given date and time.
 
@@ -231,6 +234,9 @@ class Card:
             current_datetime = datetime.now(timezone.utc)
 
         elapsed_days = max(0, (current_datetime - self.last_review).days)
+
+        DECAY = -scheduler_parameters[20]
+        FACTOR = 0.9 ** (1 / DECAY) - 1
 
         return (1 + FACTOR * elapsed_days / self.stability) ** DECAY
 
@@ -363,6 +369,9 @@ class Scheduler:
         self.maximum_interval = maximum_interval
         self.enable_fuzzing = enable_fuzzing
 
+        self._DECAY = -self.parameters[20]
+        self._FACTOR = 0.9 ** (1 / self._DECAY) - 1
+
     def __repr__(self) -> str:
         return (
             f"{self.__class__.__name__}("
@@ -437,7 +446,8 @@ class Scheduler:
                     difficulty=card.difficulty,
                     stability=card.stability,
                     retrievability=card.get_retrievability(
-                        current_datetime=review_datetime
+                        scheduler_parameters=self.parameters,
+                        current_datetime=review_datetime,
                     ),
                     rating=rating,
                 )
@@ -511,7 +521,8 @@ class Scheduler:
                     difficulty=card.difficulty,
                     stability=card.stability,
                     retrievability=card.get_retrievability(
-                        current_datetime=review_datetime
+                        scheduler_parameters=self.parameters,
+                        current_datetime=review_datetime,
                     ),
                     rating=rating,
                 )
@@ -551,7 +562,8 @@ class Scheduler:
                     difficulty=card.difficulty,
                     stability=card.stability,
                     retrievability=card.get_retrievability(
-                        current_datetime=review_datetime
+                        scheduler_parameters=self.parameters,
+                        current_datetime=review_datetime,
                     ),
                     rating=rating,
                 )
@@ -714,8 +726,8 @@ class Scheduler:
         return initial_difficulty
 
     def _next_interval(self, stability: float) -> int:
-        next_interval = (stability / FACTOR) * (
-            (self.desired_retention ** (1 / DECAY)) - 1
+        next_interval = (stability / self._FACTOR) * (
+            (self.desired_retention ** (1 / self._DECAY)) - 1
         )
 
         next_interval = round(float(next_interval))  # intervals are full days
@@ -729,8 +741,10 @@ class Scheduler:
         return next_interval
 
     def _short_term_stability(self, stability: float, rating: Rating) -> float:
-        short_term_stability = stability * (
-            math.e ** (self.parameters[17] * (rating - 3 + self.parameters[18]))
+        short_term_stability = (
+            stability
+            * (math.e ** (self.parameters[17] * (rating - 3 + self.parameters[18])))
+            * (stability ** -self.parameters[19])
         )
 
         short_term_stability = self._clamp_stability(short_term_stability)

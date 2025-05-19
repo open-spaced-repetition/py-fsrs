@@ -212,36 +212,6 @@ class Card:
             last_review=last_review,
         )
 
-    def get_retrievability(
-        self,
-        scheduler_parameters: tuple[float, ...],
-        current_datetime: datetime | None = None,
-    ) -> float:
-        """
-        Calculates the Card object's current retrievability for a given date and time.
-
-        The retrievability of a card is the predicted probability that the card is correctly recalled at the provided datetime.
-
-        Args:
-            current_datetime (datetime): The current date and time
-
-        Returns:
-            float: The retrievability of the Card object.
-        """
-
-        if self.last_review is None:
-            return 0
-
-        if current_datetime is None:
-            current_datetime = datetime.now(timezone.utc)
-
-        elapsed_days = max(0, (current_datetime - self.last_review).days)
-
-        DECAY = -scheduler_parameters[20]
-        FACTOR = 0.9 ** (1 / DECAY) - 1
-
-        return (1 + FACTOR * elapsed_days / self.stability) ** DECAY
-
 
 class ReviewLog:
     """
@@ -385,6 +355,32 @@ class Scheduler:
             f"enable_fuzzing={self.enable_fuzzing})"
         )
 
+    def get_card_retrievability(
+        self, card: Card, current_datetime: datetime | None = None
+    ) -> float:
+        """
+        Calculates a Card object's current retrievability for a given date and time.
+
+        The retrievability of a card is the predicted probability that the card is correctly recalled at the provided datetime.
+
+        Args:
+            card (Card): The card whose retriebility is to be calculated
+            current_datetime (datetime): The current date and time
+
+        Returns:
+            float: The retrievability of the Card object.
+        """
+
+        if card.last_review is None:
+            return 0
+
+        if current_datetime is None:
+            current_datetime = datetime.now(timezone.utc)
+
+        elapsed_days = max(0, (current_datetime - card.last_review).days)
+
+        return (1 + self._FACTOR * elapsed_days / card.stability) ** self._DECAY
+
     def review_card(
         self,
         card: Card,
@@ -447,8 +443,8 @@ class Scheduler:
                 card.stability = self._next_stability(
                     difficulty=card.difficulty,
                     stability=card.stability,
-                    retrievability=card.get_retrievability(
-                        scheduler_parameters=self.parameters,
+                    retrievability=self.get_card_retrievability(
+                        card,
                         current_datetime=review_datetime,
                     ),
                     rating=rating,
@@ -522,8 +518,8 @@ class Scheduler:
                 card.stability = self._next_stability(
                     difficulty=card.difficulty,
                     stability=card.stability,
-                    retrievability=card.get_retrievability(
-                        scheduler_parameters=self.parameters,
+                    retrievability=self.get_card_retrievability(
+                        card,
                         current_datetime=review_datetime,
                     ),
                     rating=rating,

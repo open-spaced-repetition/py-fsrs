@@ -18,7 +18,7 @@ try:
     from torch import optim
     import pandas as pd
 
-    # weight clipping   
+    # weight clipping
     INIT_S_MAX = 100.0
     lower_bounds = torch.tensor(
         [
@@ -165,8 +165,8 @@ try:
                     if i == 0:
                         card = Card(card_id=card_id, due=x_date)
 
-                    y_pred_retrievability = card.get_retrievability(
-                        scheduler_parameters=params, current_datetime=x_date
+                    y_pred_retrievability = scheduler.get_card_retrievability(
+                        card=card, current_datetime=x_date
                     )
                     y_retrievability = torch.tensor(
                         y_retrievability, dtype=torch.float64
@@ -327,8 +327,8 @@ try:
                             card = Card(card_id=card_id, due=x_date)
 
                         # predicted target
-                        y_pred_retrievability = card.get_retrievability(
-                            scheduler_parameters=params, current_datetime=x_date
+                        y_pred_retrievability = scheduler.get_card_retrievability(
+                            card=card, current_datetime=x_date
                         )
                         y_retrievability = torch.tensor(
                             y_retrievability, dtype=torch.float64

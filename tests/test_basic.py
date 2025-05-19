@@ -313,39 +313,30 @@ class TestPyFSRS:
 
     def test_retrievability(self):
         scheduler = Scheduler()
-        scheduler_parameters = scheduler.parameters
 
         card = Card()
 
         # retrievabiliy of New card
         assert card.state == State.Learning
-        retrievability = card.get_retrievability(
-            scheduler_parameters=scheduler_parameters
-        )
+        retrievability = scheduler.get_card_retrievability(card=card)
         assert retrievability == 0
 
         # retrievabiliy of Learning card
         card, _ = scheduler.review_card(card, Rating.Good)
         assert card.state == State.Learning
-        retrievability = card.get_retrievability(
-            scheduler_parameters=scheduler_parameters
-        )
+        retrievability = scheduler.get_card_retrievability(card=card)
         assert 0 <= retrievability <= 1
 
         # retrievabiliy of Review card
         card, _ = scheduler.review_card(card, Rating.Good)
         assert card.state == State.Review
-        retrievability = card.get_retrievability(
-            scheduler_parameters=scheduler_parameters
-        )
+        retrievability = scheduler.get_card_retrievability(card=card)
         assert 0 <= retrievability <= 1
 
         # retrievabiliy of Relearning card
         card, _ = scheduler.review_card(card, Rating.Again)
         assert card.state == State.Relearning
-        retrievability = card.get_retrievability(
-            scheduler_parameters=scheduler_parameters
-        )
+        retrievability = scheduler.get_card_retrievability(card=card)
         assert 0 <= retrievability <= 1
 
     def test_Scheduler_serialize(self):

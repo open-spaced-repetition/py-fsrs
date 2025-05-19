@@ -1,4 +1,4 @@
-from fsrs import Scheduler, Card, ReviewLog, State, Rating
+from fsrs import Scheduler, Card, ReviewLog, State, Rating, STABILITY_MIN
 from datetime import datetime, timedelta, timezone
 import json
 import pytest
@@ -746,7 +746,7 @@ class TestPyFSRS:
 
     def test_stability_lower_bound(self):
         """
-        Ensure that a Card object's stability is always >= 0.01
+        Ensure that a Card object's stability is always >= STABILITY_MIN
         """
 
         scheduler = Scheduler()
@@ -759,4 +759,4 @@ class TestPyFSRS:
                 rating=Rating.Again,
                 review_datetime=card.due + timedelta(days=1),
             )
-            assert card.stability >= 0.01
+            assert card.stability >= STABILITY_MIN

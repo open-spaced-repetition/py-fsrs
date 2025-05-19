@@ -12,6 +12,7 @@ from .fsrs import (
     ReviewLog,
     State,
     DEFAULT_PARAMETERS,
+    STABILITY_MIN,
 )
 
 from .optimizer import Optimizer
@@ -24,4 +25,5 @@ __all__ = [
     "State",
     "Optimizer",
     "DEFAULT_PARAMETERS",
+    "STABILITY_MIN",
 ]

@@ -20,6 +20,8 @@ from enum import IntEnum
 from random import random
 import time
 
+STABILITY_MIN = 0.001
+
 DEFAULT_PARAMETERS = (
     0.2172,
     1.1771,
@@ -703,9 +705,9 @@ class Scheduler:
 
     def _clamp_stability(self, stability: float) -> float:
         if isinstance(stability, (float, int)):
-            stability = max(stability, 0.01)
+            stability = max(stability, STABILITY_MIN)
         else:  # type(stability) is torch.Tensor
-            stability = stability.clamp(min=0.01)
+            stability = stability.clamp(min=STABILITY_MIN)
 
         return stability
 

@@ -5,7 +5,7 @@ fsrs.optimizer
 This module defines the optional Optimizer class.
 """
 
-from .fsrs import Card, ReviewLog, Scheduler, Rating, DEFAULT_PARAMETERS
+from .fsrs import Card, ReviewLog, Scheduler, Rating, DEFAULT_PARAMETERS, STABILITY_MIN
 import math
 from datetime import datetime, timezone
 from copy import deepcopy
@@ -18,15 +18,14 @@ try:
     from torch import optim
     import pandas as pd
 
-    # weight clipping
-    S_MIN = 0.01
+    # weight clipping   
     INIT_S_MAX = 100.0
     lower_bounds = torch.tensor(
         [
-            S_MIN,
-            S_MIN,
-            S_MIN,
-            S_MIN,
+            STABILITY_MIN,
+            STABILITY_MIN,
+            STABILITY_MIN,
+            STABILITY_MIN,
             1.0,
             0.1,
             0.1,

@@ -87,17 +87,16 @@ class TestPyFSRS:
         review_datetime = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
 
         for rating, ivl in zip(ratings, ivl_history):
+            review_datetime += timedelta(days=ivl)
             card, _ = scheduler.review_card(
                 card=card, rating=rating, review_datetime=review_datetime
             )
-
-            review_datetime += timedelta(days=ivl)
 
         card, _ = scheduler.review_card(
             card=card, rating=Rating.Good, review_datetime=review_datetime
         )
 
-        assert round(card.stability, 4) == 50.5655
+        assert round(card.stability, 4) == 49.4472
         assert round(card.difficulty, 4) == 6.8271
 
     def test_repeat_default_arg(self):

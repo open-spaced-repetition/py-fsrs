@@ -739,11 +739,19 @@ class Scheduler:
         return next_interval
 
     def _short_term_stability(self, stability: float, rating: Rating) -> float:
-        short_term_stability = (
-            stability
-            * (math.e ** (self.parameters[17] * (rating - 3 + self.parameters[18])))
-            * (stability ** -self.parameters[19])
-        )
+        short_term_stability_increase = (
+            math.e ** (self.parameters[17] * (rating - 3 + self.parameters[18]))
+        ) * (stability ** -self.parameters[19])
+
+        if rating in (Rating.Good, Rating.Easy):
+            if isinstance(short_term_stability_increase, (float, int)):
+                short_term_stability_increase = max(short_term_stability_increase, 1.0)
+            else:  # type(short_term_stability_increase) is torch.Tensor
+                short_term_stability_increase = short_term_stability_increase.clamp(
+                    min=1.0
+                )
+
+        short_term_stability = stability * short_term_stability_increase
 
         short_term_stability = self._clamp_stability(short_term_stability)
 

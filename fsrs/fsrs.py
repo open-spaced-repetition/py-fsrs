@@ -20,30 +20,31 @@ from enum import IntEnum
 from random import random
 import time
 
-DEFAULT_PARAMETERS = (
-    0.40255,
-    1.18385,
-    3.173,
-    15.69105,
-    7.1949,
-    0.5345,
-    1.4604,
-    0.0046,
-    1.54575,
-    0.1192,
-    1.01925,
-    1.9395,
-    0.11,
-    0.29605,
-    2.2698,
-    0.2315,
-    2.9898,
-    0.51655,
-    0.6621,
-)
+STABILITY_MIN = 0.001
 
-DECAY = -0.5
-FACTOR = 0.9 ** (1 / DECAY) - 1
+DEFAULT_PARAMETERS = (
+    0.2172,
+    1.1771,
+    3.2602,
+    16.1507,
+    7.0114,
+    0.57,
+    2.0966,
+    0.0069,
+    1.5261,
+    0.112,
+    1.0178,
+    1.849,
+    0.1133,
+    0.3127,
+    2.2934,
+    0.2191,
+    3.0004,
+    0.7536,
+    0.3332,
+    0.1437,
+    0.2,
+)
 
 FUZZ_RANGES = [
     {
@@ -211,29 +212,6 @@ class Card:
             last_review=last_review,
         )
 
-    def get_retrievability(self, current_datetime: datetime | None = None) -> float:
-        """
-        Calculates the Card object's current retrievability for a given date and time.
-
-        The retrievability of a card is the predicted probability that the card is correctly recalled at the provided datetime.
-
-        Args:
-            current_datetime (datetime): The current date and time
-
-        Returns:
-            float: The retrievability of the Card object.
-        """
-
-        if self.last_review is None:
-            return 0
-
-        if current_datetime is None:
-            current_datetime = datetime.now(timezone.utc)
-
-        elapsed_days = max(0, (current_datetime - self.last_review).days)
-
-        return (1 + FACTOR * elapsed_days / self.stability) ** DECAY
-
 
 class ReviewLog:
     """
@@ -363,6 +341,9 @@ class Scheduler:
         self.maximum_interval = maximum_interval
         self.enable_fuzzing = enable_fuzzing
 
+        self._DECAY = -self.parameters[20]
+        self._FACTOR = 0.9 ** (1 / self._DECAY) - 1
+
     def __repr__(self) -> str:
         return (
             f"{self.__class__.__name__}("
@@ -373,6 +354,32 @@ class Scheduler:
             f"maximum_interval={self.maximum_interval}, "
             f"enable_fuzzing={self.enable_fuzzing})"
         )
+
+    def get_card_retrievability(
+        self, card: Card, current_datetime: datetime | None = None
+    ) -> float:
+        """
+        Calculates a Card object's current retrievability for a given date and time.
+
+        The retrievability of a card is the predicted probability that the card is correctly recalled at the provided datetime.
+
+        Args:
+            card (Card): The card whose retriebility is to be calculated
+            current_datetime (datetime): The current date and time
+
+        Returns:
+            float: The retrievability of the Card object.
+        """
+
+        if card.last_review is None:
+            return 0
+
+        if current_datetime is None:
+            current_datetime = datetime.now(timezone.utc)
+
+        elapsed_days = max(0, (current_datetime - card.last_review).days)
+
+        return (1 + self._FACTOR * elapsed_days / card.stability) ** self._DECAY
 
     def review_card(
         self,
@@ -436,8 +443,9 @@ class Scheduler:
                 card.stability = self._next_stability(
                     difficulty=card.difficulty,
                     stability=card.stability,
-                    retrievability=card.get_retrievability(
-                        current_datetime=review_datetime
+                    retrievability=self.get_card_retrievability(
+                        card,
+                        current_datetime=review_datetime,
                     ),
                     rating=rating,
                 )
@@ -510,8 +518,9 @@ class Scheduler:
                 card.stability = self._next_stability(
                     difficulty=card.difficulty,
                     stability=card.stability,
-                    retrievability=card.get_retrievability(
-                        current_datetime=review_datetime
+                    retrievability=self.get_card_retrievability(
+                        card,
+                        current_datetime=review_datetime,
                     ),
                     rating=rating,
                 )
@@ -551,7 +560,8 @@ class Scheduler:
                     difficulty=card.difficulty,
                     stability=card.stability,
                     retrievability=card.get_retrievability(
-                        current_datetime=review_datetime
+                        scheduler_parameters=self.parameters,
+                        current_datetime=review_datetime,
                     ),
                     rating=rating,
                 )
@@ -691,9 +701,9 @@ class Scheduler:
 
     def _clamp_stability(self, stability: float) -> float:
         if isinstance(stability, (float, int)):
-            stability = max(stability, 0.01)
+            stability = max(stability, STABILITY_MIN)
         else:  # type(stability) is torch.Tensor
-            stability = stability.clamp(min=0.01)
+            stability = stability.clamp(min=STABILITY_MIN)
 
         return stability
 
@@ -714,8 +724,8 @@ class Scheduler:
         return initial_difficulty
 
     def _next_interval(self, stability: float) -> int:
-        next_interval = (stability / FACTOR) * (
-            (self.desired_retention ** (1 / DECAY)) - 1
+        next_interval = (stability / self._FACTOR) * (
+            (self.desired_retention ** (1 / self._DECAY)) - 1
         )
 
         next_interval = round(float(next_interval))  # intervals are full days
@@ -729,9 +739,19 @@ class Scheduler:
         return next_interval
 
     def _short_term_stability(self, stability: float, rating: Rating) -> float:
-        short_term_stability = stability * (
+        short_term_stability_increase = (
             math.e ** (self.parameters[17] * (rating - 3 + self.parameters[18]))
-        )
+        ) * (stability ** -self.parameters[19])
+
+        if rating in (Rating.Good, Rating.Easy):
+            if isinstance(short_term_stability_increase, (float, int)):
+                short_term_stability_increase = max(short_term_stability_increase, 1.0)
+            else:  # type(short_term_stability_increase) is torch.Tensor
+                short_term_stability_increase = short_term_stability_increase.clamp(
+                    min=1.0
+                )
+
+        short_term_stability = stability * short_term_stability_increase
 
         short_term_stability = self._clamp_stability(short_term_stability)
 

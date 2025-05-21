@@ -1,4 +1,4 @@
-from fsrs import Scheduler, Card, ReviewLog, State, Rating
+from fsrs import Scheduler, Card, ReviewLog, State, Rating, STABILITY_MIN
 from datetime import datetime, timedelta, timezone
 import json
 import pytest
@@ -43,16 +43,16 @@ class TestPyFSRS:
             0,
             4,
             14,
-            44,
-            125,
-            328,
+            45,
+            135,
+            372,
             0,
             0,
-            7,
-            16,
-            34,
-            71,
-            142,
+            2,
+            5,
+            10,
+            20,
+            40,
         ]
 
     def test_repeated_correct_reviews(self):
@@ -87,18 +87,17 @@ class TestPyFSRS:
         review_datetime = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
 
         for rating, ivl in zip(ratings, ivl_history):
+            review_datetime += timedelta(days=ivl)
             card, _ = scheduler.review_card(
                 card=card, rating=rating, review_datetime=review_datetime
             )
-
-            review_datetime += timedelta(days=ivl)
 
         card, _ = scheduler.review_card(
             card=card, rating=Rating.Good, review_datetime=review_datetime
         )
 
-        assert round(card.stability) == 49
-        assert round(card.difficulty, 4) == 7.0866
+        assert round(card.stability, 4) == 49.4472
+        assert round(card.difficulty, 4) == 6.8271
 
     def test_repeat_default_arg(self):
         scheduler = Scheduler()
@@ -259,7 +258,21 @@ class TestPyFSRS:
             ivl_history.append(ivl)
             now = card.due
 
-        assert ivl_history == [0, 4, 14, 44, 125, 328, 0, 0, 7, 16, 34, 71, 142]
+        assert ivl_history == [
+            0,
+            4,
+            14,
+            45,
+            135,
+            372,
+            0,
+            0,
+            2,
+            5,
+            10,
+            20,
+            40,
+        ]
 
         # initialize another scheduler and verify parameters are properly set
         parameters2 = (
@@ -282,6 +295,8 @@ class TestPyFSRS:
             2.8755,
             1.234,
             5.6789,
+            0.1437,
+            0.2,
         )
         desired_retention2 = 0.85
         maximum_interval2 = 3650
@@ -302,25 +317,25 @@ class TestPyFSRS:
 
         # retrievabiliy of New card
         assert card.state == State.Learning
-        retrievability = card.get_retrievability()
+        retrievability = scheduler.get_card_retrievability(card=card)
         assert retrievability == 0
 
         # retrievabiliy of Learning card
         card, _ = scheduler.review_card(card, Rating.Good)
         assert card.state == State.Learning
-        retrievability = card.get_retrievability()
+        retrievability = scheduler.get_card_retrievability(card=card)
         assert 0 <= retrievability <= 1
 
         # retrievabiliy of Review card
         card, _ = scheduler.review_card(card, Rating.Good)
         assert card.state == State.Review
-        retrievability = card.get_retrievability()
+        retrievability = scheduler.get_card_retrievability(card=card)
         assert 0 <= retrievability <= 1
 
         # retrievabiliy of Relearning card
         card, _ = scheduler.review_card(card, Rating.Again)
         assert card.state == State.Relearning
-        retrievability = card.get_retrievability()
+        retrievability = scheduler.get_card_retrievability(card=card)
         assert 0 <= retrievability <= 1
 
     def test_Scheduler_serialize(self):
@@ -721,7 +736,7 @@ class TestPyFSRS:
 
     def test_stability_lower_bound(self):
         """
-        Ensure that a Card object's stability is always >= 0.01
+        Ensure that a Card object's stability is always >= STABILITY_MIN
         """
 
         scheduler = Scheduler()
@@ -734,4 +749,4 @@ class TestPyFSRS:
                 rating=Rating.Again,
                 review_datetime=card.due + timedelta(days=1),
             )
-            assert card.stability >= 0.01
+            assert card.stability >= STABILITY_MIN

@@ -97,26 +97,28 @@ from datetime import timedelta
 # note: the following arguments are also the defaults
 scheduler = Scheduler(
     parameters = (
-            0.40255,
-            1.18385,
-            3.173,
-            15.69105,
-            7.1949,
-            0.5345,
-            1.4604,
-            0.0046,
-            1.54575,
-            0.1192,
-            1.01925,
-            1.9395,
-            0.11,
-            0.29605,
-            2.2698,
-            0.2315,
-            2.9898,
-            0.51655,
-            0.6621,
-        ),
+            0.2172,
+            1.1771,
+            3.2602,
+            16.1507,
+            7.0114,
+            0.57,
+            2.0966,
+            0.0069,
+            1.5261,
+            0.112,
+            1.0178,
+            1.849,
+            0.1133,
+            0.3127,
+            2.2934,
+            0.2191,
+            3.0004,
+            0.7536,
+            0.3332,
+            0.1437,
+            0.2,
+    ),
     desired_retention = 0.9,
     learning_steps = (timedelta(minutes=1), timedelta(minutes=10)),
     relearning_steps = (timedelta(minutes=10),),
@@ -127,7 +129,7 @@ scheduler = Scheduler(
 
 #### Explanation of parameters
 
-`parameters` are a set of 19 model weights that affect how the FSRS scheduler will schedule future reviews. If you're not familiar with optimizing FSRS, it is best not to modify these default values.
+`parameters` are a set of 21 model weights that affect how the FSRS scheduler will schedule future reviews. If you're not familiar with optimizing FSRS, it is best not to modify these default values.
 
 `desired_retention` is a value between 0 and 1 that sets the desired minimum retention rate for cards when scheduled with the scheduler. For example, with the default value of `desired_retention=0.9`, a card will be scheduled at a time in the future when the predicted probability of the user correctly recalling that card falls to 90%. A higher `desired_retention` rate will lead to more reviews and a lower rate will lead to fewer reviews.
 
@@ -150,7 +152,7 @@ You can still specify custom datetimes, but they must use the UTC timezone.
 You can calculate the current probability of correctly recalling a card (its 'retrievability') with
 
 ```python
-retrievability = card.get_retrievability()
+retrievability = scheduler.get_card_retrievability(card)
 
 print(f"There is a {retrievability} probability that this card is remembered.")
 # > There is a 0.94 probability that this card is remembered.

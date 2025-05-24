@@ -47,4 +47,4 @@ jobs:
         run: |
           uv pip install ".[optimizer,dev]"
       - name: Test with pytest
-        run: pytest
+        run: pytest -n auto

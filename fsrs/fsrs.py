@@ -468,24 +468,40 @@ class Scheduler:
                     next_interval = timedelta(days=next_interval_days)
 
                 else:
-                    if rating == Rating.Again:
-                        card.step = 0
-                        next_interval = self.learning_steps[card.step]
-
-                    elif rating == Rating.Hard:
-                        # card step stays the same
-
-                        if card.step == 0 and len(self.learning_steps) == 1:
-                            next_interval = self.learning_steps[0] * 1.5
-                        elif card.step == 0 and len(self.learning_steps) >= 2:
-                            next_interval = (
-                                self.learning_steps[0] + self.learning_steps[1]
-                            ) / 2.0
-                        else:
+                    match rating:
+                        case Rating.Again:
+                            card.step = 0
                             next_interval = self.learning_steps[card.step]
 
-                    elif rating == Rating.Good:
-                        if card.step + 1 == len(self.learning_steps):  # the last step
+                        case Rating.Hard:
+                            # card step stays the same
+
+                            if card.step == 0 and len(self.learning_steps) == 1:
+                                next_interval = self.learning_steps[0] * 1.5
+                            elif card.step == 0 and len(self.learning_steps) >= 2:
+                                next_interval = (
+                                    self.learning_steps[0] + self.learning_steps[1]
+                                ) / 2.0
+                            else:
+                                next_interval = self.learning_steps[card.step]
+
+                        case Rating.Good:
+                            if card.step + 1 == len(
+                                self.learning_steps
+                            ):  # the last step
+                                card.state = State.Review
+                                card.step = None
+
+                                next_interval_days = self._next_interval(
+                                    stability=card.stability
+                                )
+                                next_interval = timedelta(days=next_interval_days)
+
+                            else:
+                                card.step += 1
+                                next_interval = self.learning_steps[card.step]
+
+                        case Rating.Easy:
                             card.state = State.Review
                             card.step = None
 
@@ -493,19 +509,6 @@ class Scheduler:
                                 stability=card.stability
                             )
                             next_interval = timedelta(days=next_interval_days)
-
-                        else:
-                            card.step += 1
-                            next_interval = self.learning_steps[card.step]
-
-                    elif rating == Rating.Easy:
-                        card.state = State.Review
-                        card.step = None
-
-                        next_interval_days = self._next_interval(
-                            stability=card.stability
-                        )
-                        next_interval = timedelta(days=next_interval_days)
 
             case State.Review:
                 # update the card's stability and difficulty
@@ -532,23 +535,26 @@ class Scheduler:
                     )
 
                 # calculate the card's next interval
-                if rating == Rating.Again:
-                    # if there are no relearning steps (they were left blank)
-                    if len(self.relearning_steps) == 0:
+                match rating:
+                    case Rating.Again:
+                        # if there are no relearning steps (they were left blank)
+                        if len(self.relearning_steps) == 0:
+                            next_interval_days = self._next_interval(
+                                stability=card.stability
+                            )
+                            next_interval = timedelta(days=next_interval_days)
+
+                        else:
+                            card.state = State.Relearning
+                            card.step = 0
+
+                            next_interval = self.relearning_steps[card.step]
+
+                    case Rating.Hard | Rating.Good | Rating.Easy:
                         next_interval_days = self._next_interval(
                             stability=card.stability
                         )
                         next_interval = timedelta(days=next_interval_days)
-
-                    else:
-                        card.state = State.Relearning
-                        card.step = 0
-
-                        next_interval = self.relearning_steps[card.step]
-
-                elif rating in (Rating.Hard, Rating.Good, Rating.Easy):
-                    next_interval_days = self._next_interval(stability=card.stability)
-                    next_interval = timedelta(days=next_interval_days)
 
             case State.Relearning:
                 # update the card's stability and difficulty
@@ -588,24 +594,40 @@ class Scheduler:
                     next_interval = timedelta(days=next_interval_days)
 
                 else:
-                    if rating == Rating.Again:
-                        card.step = 0
-                        next_interval = self.relearning_steps[card.step]
-
-                    elif rating == Rating.Hard:
-                        # card step stays the same
-
-                        if card.step == 0 and len(self.relearning_steps) == 1:
-                            next_interval = self.relearning_steps[0] * 1.5
-                        elif card.step == 0 and len(self.relearning_steps) >= 2:
-                            next_interval = (
-                                self.relearning_steps[0] + self.relearning_steps[1]
-                            ) / 2.0
-                        else:
+                    match rating:
+                        case Rating.Again:
+                            card.step = 0
                             next_interval = self.relearning_steps[card.step]
 
-                    elif rating == Rating.Good:
-                        if card.step + 1 == len(self.relearning_steps):  # the last step
+                        case Rating.Hard:
+                            # card step stays the same
+
+                            if card.step == 0 and len(self.relearning_steps) == 1:
+                                next_interval = self.relearning_steps[0] * 1.5
+                            elif card.step == 0 and len(self.relearning_steps) >= 2:
+                                next_interval = (
+                                    self.relearning_steps[0] + self.relearning_steps[1]
+                                ) / 2.0
+                            else:
+                                next_interval = self.relearning_steps[card.step]
+
+                        case Rating.Good:
+                            if card.step + 1 == len(
+                                self.relearning_steps
+                            ):  # the last step
+                                card.state = State.Review
+                                card.step = None
+
+                                next_interval_days = self._next_interval(
+                                    stability=card.stability
+                                )
+                                next_interval = timedelta(days=next_interval_days)
+
+                            else:
+                                card.step += 1
+                                next_interval = self.relearning_steps[card.step]
+
+                        case Rating.Easy:
                             card.state = State.Review
                             card.step = None
 
@@ -613,19 +635,6 @@ class Scheduler:
                                 stability=card.stability
                             )
                             next_interval = timedelta(days=next_interval_days)
-
-                        else:
-                            card.step += 1
-                            next_interval = self.relearning_steps[card.step]
-
-                    elif rating == Rating.Easy:
-                        card.state = State.Review
-                        card.step = None
-
-                        next_interval_days = self._next_interval(
-                            stability=card.stability
-                        )
-                        next_interval = timedelta(days=next_interval_days)
 
         if self.enable_fuzzing and card.state == State.Review:
             next_interval = self._get_fuzzed_interval(next_interval)

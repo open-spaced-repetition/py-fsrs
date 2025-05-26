@@ -418,13 +418,6 @@ class Scheduler:
             (review_datetime - card.last_review).days if card.last_review else None
         )
 
-        review_log = ReviewLog(
-            card_id=card.card_id,
-            rating=rating,
-            review_datetime=review_datetime,
-            review_duration=review_duration,
-        )
-
         match card.state:
             case State.Learning:
                 # update the card's stability and difficulty
@@ -641,6 +634,13 @@ class Scheduler:
 
         card.due = review_datetime + next_interval
         card.last_review = review_datetime
+
+        review_log = ReviewLog(
+            card_id=card.card_id,
+            rating=rating,
+            review_datetime=review_datetime,
+            review_duration=review_duration,
+        )
 
         return card, review_log
 

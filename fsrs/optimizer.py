@@ -88,8 +88,8 @@ try:
         Enables the optimization of FSRS scheduler parameters from existing review logs for more accurate interval calculations.
 
         Attributes:
-            review_logs (tuple[ReviewLog, ...]): A collection of previous ReviewLog objects from a user.
-            _revlogs_train (dict): The collection of review logs, sorted and formatted for optimization.
+            review_logs: A collection of previous ReviewLog objects from a user.
+            _revlogs_train: The collection of review logs, sorted and formatted for optimization.
         """
 
         review_logs: tuple[ReviewLog, ...]
@@ -99,7 +99,7 @@ try:
             self, review_logs: tuple[ReviewLog, ...] | list[ReviewLog]
         ) -> None:
             """
-            Initializes the Optimizer with a set of ReviewLogs. Also formats an copy of the review logs for optimization.
+            Initializes the Optimizer with a set of ReviewLogs. Also formats a copy of the review logs for optimization.
 
             Note that the ReviewLogs provided by the user don't need to be in order.
             """
@@ -190,7 +190,7 @@ try:
 
         def compute_optimal_parameters(self) -> list[float]:
             """
-            Computes a set of 19 optimized parameters for the FSRS scheduler and returns it as a list of floats.
+            Computes a set of optimized parameters for the FSRS scheduler and returns it as a list of floats.
 
             High level explanation of optimization:
             ---------------------------------------
@@ -203,8 +203,8 @@ try:
             The loss is computed by comparing the predicted retrievability of the Card at each step with whether the Card was actually
             sucessfully recalled or not (0/1).
 
-            Finally, the card objects at each step in their sequences are updated using the 19 current parameters of the Scheduler
-            as well as the rating given to that card by the user. The 19 parameters of the Scheduler is what is being optimized.
+            Finally, the card objects at each step in their sequences are updated using the current parameters of the Scheduler
+            as well as the rating given to that card by the user. The parameters of the Scheduler is what is being optimized.
             """
 
             def _num_reviews() -> int:

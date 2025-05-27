@@ -91,13 +91,13 @@ class Card:
     Represents a flashcard in the FSRS system.
 
     Attributes:
-        card_id (int): The id of the card. Defaults to the epoch milliseconds of when the card was created.
-        state (State): The card's current learning state.
-        step (int | None): The card's current learning or relearning step or None if the card is in the Review state.
-        stability (float | None): Core mathematical parameter used for future scheduling.
-        difficulty (float | None): Core mathematical parameter used for future scheduling.
-        due (datetime): The date and time when the card is due next.
-        last_review (datetime | None): The date and time of the card's last review.
+        card_id: The id of the card. Defaults to the epoch milliseconds of when the card was created.
+        state: The card's current learning state.
+        step: The card's current learning or relearning step or None if the card is in the Review state.
+        stability: Core mathematical parameter used for future scheduling.
+        difficulty: Core mathematical parameter used for future scheduling.
+        due: The date and time when the card is due next.
+        last_review: The date and time of the card's last review.
     """
 
     card_id: int
@@ -159,7 +159,7 @@ class Card:
         This method is specifically useful for storing Card objects in a database.
 
         Returns:
-            dict: A dictionary representation of the Card object.
+            A dictionary representation of the Card object.
         """
 
         return_dict = {
@@ -180,10 +180,10 @@ class Card:
         Creates a Card object from an existing dictionary.
 
         Args:
-            source_dict (dict[str, int | float | str | None]): A dictionary representing an existing Card object.
+            source_dict: A dictionary representing an existing Card object.
 
         Returns:
-            Card: A Card object created from the provided dictionary.
+            A Card object created from the provided dictionary.
         """
 
         card_id = int(source_dict["card_id"])
@@ -218,10 +218,10 @@ class ReviewLog:
     Represents the log entry of a Card object that has been reviewed.
 
     Attributes:
-        card_id (int): The id of the card being reviewed.
-        rating (Rating): The rating given to the card during the review.
-        review_datetime (datetime): The date and time of the review.
-        review_duration (int | None): The number of miliseconds it took to review the card or None if unspecified.
+        card_id: The id of the card being reviewed.
+        rating: The rating given to the card during the review.
+        review_datetime: The date and time of the review.
+        review_duration: The number of miliseconds it took to review the card or None if unspecified.
     """
 
     card_id: int
@@ -259,7 +259,7 @@ class ReviewLog:
         This method is specifically useful for storing ReviewLog objects in a database.
 
         Returns:
-            dict: A dictionary representation of the ReviewLog object.
+            A dictionary representation of the ReviewLog object.
         """
 
         return_dict = {
@@ -279,10 +279,10 @@ class ReviewLog:
         Creates a ReviewLog object from an existing dictionary.
 
         Args:
-            source_dict (dict[str, dict | int | str | None]): A dictionary representing an existing ReviewLog object.
+            source_dict: A dictionary representing an existing ReviewLog object.
 
         Returns:
-            ReviewLog: A ReviewLog object created from the provided dictionary.
+            A ReviewLog object created from the provided dictionary.
         """
 
         card_id = source_dict["card_id"]
@@ -305,12 +305,12 @@ class Scheduler:
     Enables the reviewing and future scheduling of cards according to the FSRS algorithm.
 
     Attributes:
-        parameters (tuple[float, ...]): The 19 model weights of the FSRS scheduler.
-        desired_retention (float): The desired retention rate of cards scheduled with the scheduler.
-        learning_steps (tuple[timedelta, ...]): Small time intervals that schedule cards in the Learning state.
-        relearning_steps (tuple[timedelta, ...]): Small time intervals that schedule cards in the Relearning state.
-        maximum_interval (int): The maximum number of days a Review-state card can be scheduled into the future.
-        enable_fuzzing (bool): Whether to apply a small amount of random 'fuzz' to calculated intervals.
+        parameters: The model weights of the FSRS scheduler.
+        desired_retention: The desired retention rate of cards scheduled with the scheduler.
+        learning_steps: Small time intervals that schedule cards in the Learning state.
+        relearning_steps: Small time intervals that schedule cards in the Relearning state.
+        maximum_interval: The maximum number of days a Review-state card can be scheduled into the future.
+        enable_fuzzing: Whether to apply a small amount of random 'fuzz' to calculated intervals.
     """
 
     parameters: tuple[float, ...]
@@ -364,11 +364,11 @@ class Scheduler:
         The retrievability of a card is the predicted probability that the card is correctly recalled at the provided datetime.
 
         Args:
-            card (Card): The card whose retriebility is to be calculated
-            current_datetime (datetime): The current date and time
+            card: The card whose retrievability is to be calculated
+            current_datetime: The current date and time
 
         Returns:
-            float: The retrievability of the Card object.
+            The retrievability of the Card object.
         """
 
         if card.last_review is None:
@@ -392,13 +392,13 @@ class Scheduler:
         Reviews a card with a given rating at a given time for a specified duration.
 
         Args:
-            card (Card): The card being reviewed.
-            rating (Rating): The chosen rating for the card being reviewed.
-            review_datetime (datetime | None): The date and time of the review.
-            review_duration (int | None): The number of miliseconds it took to review the card or None if unspecified.
+            card: The card being reviewed.
+            rating: The chosen rating for the card being reviewed.
+            review_datetime: The date and time of the review.
+            review_duration: The number of miliseconds it took to review the card or None if unspecified.
 
         Returns:
-            tuple[Card, ReviewLog]: A tuple containing the updated, reviewed card and its corresponding review log.
+            A tuple containing the updated, reviewed card and its corresponding review log.
 
         Raises:
             ValueError: If the `review_datetime` argument is not timezone-aware and set to UTC.
@@ -653,7 +653,7 @@ class Scheduler:
         This method is specifically useful for storing Scheduler objects in a database.
 
         Returns:
-            dict: A dictionary representation of the Scheduler object.
+            A dictionary representation of the Scheduler object.
         """
 
         return_dict = {
@@ -679,10 +679,10 @@ class Scheduler:
         Creates a Scheduler object from an existing dictionary.
 
         Args:
-            source_dict (dict[str, list | float | int | bool]): A dictionary representing an existing Scheduler object.
+            source_dict: A dictionary representing an existing Scheduler object.
 
         Returns:
-            Scheduler: A Scheduler object created from the provided dictionary.
+            A Scheduler object created from the provided dictionary.
         """
 
         parameters = source_dict["parameters"]
@@ -856,10 +856,10 @@ class Scheduler:
         For example, a card that would've been due in 50 days, after fuzzing, might be due in 49, or 51 days.
 
         Args:
-            interval (timedelta): The calculated next interval, before fuzzing.
+            interval: The calculated next interval, before fuzzing.
 
         Returns:
-            timedelta: The new interval, after fuzzing.
+            The new interval, after fuzzing.
         """
 
         interval_days = interval.days

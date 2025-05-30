@@ -5,7 +5,15 @@ fsrs.optimizer
 This module defines the optional Optimizer class.
 """
 
-from .fsrs import Card, ReviewLog, Scheduler, Rating, DEFAULT_PARAMETERS, STABILITY_MIN
+from .fsrs import (
+    Card,
+    ReviewLog,
+    Scheduler,
+    Rating,
+    DEFAULT_PARAMETERS,
+    LOWER_BOUNDS_PARAMETERS,
+    UPPER_BOUNDS_PARAMETERS,
+)
 import math
 from datetime import datetime, timezone
 from copy import deepcopy
@@ -19,57 +27,13 @@ try:
     import pandas as pd
 
     # weight clipping
-    INIT_S_MAX = 100.0
-    lower_bounds = torch.tensor(
-        [
-            STABILITY_MIN,
-            STABILITY_MIN,
-            STABILITY_MIN,
-            STABILITY_MIN,
-            1.0,
-            0.1,
-            0.1,
-            0.0,
-            0.0,
-            0.0,
-            0.01,
-            0.1,
-            0.01,
-            0.01,
-            0.01,
-            0.0,
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            0.1,
-        ],
+    LOWER_BOUNDS_PARAMETERS_TENSORS = torch.tensor(
+        LOWER_BOUNDS_PARAMETERS,
         dtype=torch.float64,
     )
-    upper_bounds = torch.tensor(
-        [
-            INIT_S_MAX,
-            INIT_S_MAX,
-            INIT_S_MAX,
-            INIT_S_MAX,
-            10.0,
-            4.0,
-            4.0,
-            0.75,
-            4.5,
-            0.8,
-            3.5,
-            5.0,
-            0.25,
-            0.9,
-            4.0,
-            1.0,
-            6.0,
-            2.0,
-            2.0,
-            0.8,
-            0.8,
-        ],
+
+    UPPER_BOUNDS_PARAMETERS_TENSORS = torch.tensor(
+        UPPER_BOUNDS_PARAMETERS,
         dtype=torch.float64,
     )
 
@@ -266,7 +230,10 @@ try:
 
                 # clamp the weights in place without modifying the computational graph
                 with torch.no_grad():
-                    params.clamp_(min=lower_bounds, max=upper_bounds)
+                    params.clamp_(
+                        min=LOWER_BOUNDS_PARAMETERS_TENSORS,
+                        max=UPPER_BOUNDS_PARAMETERS_TENSORS,
+                    )
 
                 # update the learning rate
                 lr_scheduler.step()

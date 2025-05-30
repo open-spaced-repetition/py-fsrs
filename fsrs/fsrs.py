@@ -20,8 +20,6 @@ from enum import IntEnum
 from random import random
 import time
 
-STABILITY_MIN = 0.001
-
 DEFAULT_PARAMETERS = (
     0.2172,
     1.1771,
@@ -44,6 +42,56 @@ DEFAULT_PARAMETERS = (
     0.3332,
     0.1437,
     0.2,
+)
+
+STABILITY_MIN = 0.001
+LOWER_BOUNDS_PARAMETERS = (
+    STABILITY_MIN,
+    STABILITY_MIN,
+    STABILITY_MIN,
+    STABILITY_MIN,
+    1.0,
+    0.1,
+    0.1,
+    0.0,
+    0.0,
+    0.0,
+    0.01,
+    0.1,
+    0.01,
+    0.01,
+    0.01,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.1,
+)
+
+INITIAL_STABILITY_MAX = 100.0
+UPPER_BOUNDS_PARAMETERS = (
+    INITIAL_STABILITY_MAX,
+    INITIAL_STABILITY_MAX,
+    INITIAL_STABILITY_MAX,
+    INITIAL_STABILITY_MAX,
+    10.0,
+    4.0,
+    4.0,
+    0.75,
+    4.5,
+    0.8,
+    3.5,
+    5.0,
+    0.25,
+    0.9,
+    4.0,
+    1.0,
+    6.0,
+    2.0,
+    2.0,
+    0.8,
+    0.8,
 )
 
 FUZZ_RANGES = [

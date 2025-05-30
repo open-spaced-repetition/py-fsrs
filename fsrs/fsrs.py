@@ -13,6 +13,7 @@ Classes:
 """
 
 from __future__ import annotations
+from collections.abc import Sequence
 import math
 from datetime import datetime, timezone, timedelta
 from copy import copy
@@ -373,7 +374,7 @@ class Scheduler:
 
     def __init__(
         self,
-        parameters: tuple[float, ...] | list[float] = DEFAULT_PARAMETERS,
+        parameters: Sequence[float] = DEFAULT_PARAMETERS,
         desired_retention: float = 0.9,
         learning_steps: tuple[timedelta, ...] | list[timedelta] = (
             timedelta(minutes=1),
@@ -397,7 +398,7 @@ class Scheduler:
         self._DECAY = -self.parameters[20]
         self._FACTOR = 0.9 ** (1 / self._DECAY) - 1
 
-    def _validate_parameters(self, parameters: tuple[float, ...] | list[float]) -> None:
+    def _validate_parameters(self, parameters: Sequence[float]) -> None:
         if len(parameters) != len(LOWER_BOUNDS_PARAMETERS):
             raise ValueError(
                 f"Expected {len(LOWER_BOUNDS_PARAMETERS)} parameters, got {len(parameters)}."

@@ -403,13 +403,19 @@ class Scheduler:
                 f"Expected {len(LOWER_BOUNDS_PARAMETERS)} parameters, got {len(parameters)}."
             )
 
+        error_messages = []
         for index, (parameter, lower_bound, upper_bound) in enumerate(
             zip(parameters, LOWER_BOUNDS_PARAMETERS, UPPER_BOUNDS_PARAMETERS)
         ):
             if not lower_bound <= parameter <= upper_bound:
-                raise ValueError(
-                    f"parameters[{index}] = {parameter} is out of bounds: [{lower_bound}, {upper_bound}]"
-                )
+                error_message = f"parameters[{index}] = {parameter} is out of bounds: ({lower_bound}, {upper_bound})"
+                error_messages.append(error_message)
+
+        if len(error_messages) > 0:
+            raise ValueError(
+                "One or more parameters are out of bounds:\n"
+                + "\n".join(error_messages)
+            )
 
     def __repr__(self) -> str:
         return (

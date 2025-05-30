@@ -385,6 +385,8 @@ class Scheduler:
         maximum_interval: int = 36500,
         enable_fuzzing: bool = True,
     ) -> None:
+        self._validate_parameters(parameters=parameters)
+
         self.parameters = tuple(parameters)
         self.desired_retention = desired_retention
         self.learning_steps = tuple(learning_steps)
@@ -394,6 +396,20 @@ class Scheduler:
 
         self._DECAY = -self.parameters[20]
         self._FACTOR = 0.9 ** (1 / self._DECAY) - 1
+
+    def _validate_parameters(self, parameters: tuple[float, ...] | list[float]) -> None:
+        if len(parameters) != len(LOWER_BOUNDS_PARAMETERS):
+            raise ValueError(
+                f"Expected {len(LOWER_BOUNDS_PARAMETERS)} parameters, got {len(parameters)}."
+            )
+
+        for index, (parameter, lower_bound, upper_bound) in enumerate(
+            zip(parameters, LOWER_BOUNDS_PARAMETERS, UPPER_BOUNDS_PARAMETERS)
+        ):
+            if not lower_bound <= parameter <= upper_bound:
+                raise ValueError(
+                    f"parameters[{index}] = {parameter} is out of bounds: [{lower_bound}, {upper_bound}]"
+                )
 
     def __repr__(self) -> str:
         return (

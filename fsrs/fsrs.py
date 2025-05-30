@@ -94,6 +94,9 @@ UPPER_BOUNDS_PARAMETERS = (
     0.8,
 )
 
+MIN_DIFFICULTY = 1.0
+MAX_DIFFICULTY = 10.0
+
 FUZZ_RANGES = [
     {
         "start": 2.5,
@@ -757,9 +760,9 @@ class Scheduler:
 
     def _clamp_difficulty(self, difficulty: float) -> float:
         if isinstance(difficulty, (float, int)):
-            difficulty = min(max(difficulty, 1.0), 10.0)
+            difficulty = min(max(difficulty, MIN_DIFFICULTY), MAX_DIFFICULTY)
         else:  # type(difficulty) is torch.Tensor
-            difficulty = difficulty.clamp(min=1.0, max=10.0)
+            difficulty = difficulty.clamp(min=MIN_DIFFICULTY, max=MAX_DIFFICULTY)
 
         return difficulty
 

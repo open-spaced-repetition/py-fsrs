@@ -1,4 +1,4 @@
-name: Ruff
+name: autofix.ci
 on:
   workflow_call:
   pull_request:

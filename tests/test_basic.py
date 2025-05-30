@@ -1,4 +1,12 @@
-from fsrs import Scheduler, Card, ReviewLog, State, Rating, STABILITY_MIN
+from fsrs import (
+    Scheduler,
+    Card,
+    ReviewLog,
+    State,
+    Rating,
+    STABILITY_MIN,
+    DEFAULT_PARAMETERS,
+)
 from datetime import datetime, timedelta, timezone
 import json
 import pytest
@@ -750,3 +758,36 @@ class TestPyFSRS:
                 review_datetime=card.due + timedelta(days=1),
             )
             assert card.stability >= STABILITY_MIN
+
+    def test_scheduler_parameter_validation(self):
+        # initializing a Scheduler object with valid parameters works
+        good_parameters = DEFAULT_PARAMETERS
+        assert type(Scheduler(parameters=good_parameters)) is Scheduler
+
+        parameters_one_too_high = list(DEFAULT_PARAMETERS)
+        parameters_one_too_high[6] = 100
+        with pytest.raises(ValueError):
+            Scheduler(parameters=parameters_one_too_high)
+
+        parameters_one_too_low = list(DEFAULT_PARAMETERS)
+        parameters_one_too_low[10] = -42
+        with pytest.raises(ValueError):
+            Scheduler(parameters=parameters_one_too_low)
+
+        parameters_two_bad = list(DEFAULT_PARAMETERS)
+        parameters_two_bad[0] = 0
+        parameters_two_bad[3] = 101
+        with pytest.raises(ValueError):
+            Scheduler(parameters=parameters_two_bad)
+
+        zero_parameters = []
+        with pytest.raises(ValueError):
+            Scheduler(parameters=zero_parameters)
+
+        one_too_few_parameters = DEFAULT_PARAMETERS[:-1]
+        with pytest.raises(ValueError):
+            Scheduler(parameters=one_too_few_parameters)
+
+        too_many_parameters = DEFAULT_PARAMETERS + (1, 2, 3)
+        with pytest.raises(ValueError):
+            Scheduler(parameters=too_many_parameters)

@@ -14,6 +14,7 @@ Classes:
 
 from __future__ import annotations
 import math
+import os
 from datetime import datetime, timezone, timedelta
 from copy import copy
 from enum import IntEnum
@@ -118,6 +119,7 @@ class Card:
         due: datetime | None = None,
         last_review: datetime | None = None,
     ) -> None:
+        my_useless_var = 10
         if card_id is None:
             # epoch milliseconds of when the card was created
             card_id = int(datetime.now(timezone.utc).timestamp() * 1000)

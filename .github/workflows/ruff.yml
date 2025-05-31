@@ -1,15 +1,7 @@
-name: ruff
-on:
-  workflow_call:
-  pull_request:
-  push:
-    branches: [ "main" ]
-permissions:
-  contents: read
-
-
+name: Ruff
+on: [ push, pull_request ]
 jobs:
-  autofix:
+  ruff:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -13,14 +13,13 @@ Classes:
 """
 
 from __future__ import annotations
+from collections.abc import Sequence
 import math
 from datetime import datetime, timezone, timedelta
 from copy import copy
 from enum import IntEnum
 from random import random
 import time
-
-STABILITY_MIN = 0.001
 
 DEFAULT_PARAMETERS = (
     0.2172,
@@ -45,6 +44,59 @@ DEFAULT_PARAMETERS = (
     0.1437,
     0.2,
 )
+
+STABILITY_MIN = 0.001
+LOWER_BOUNDS_PARAMETERS = (
+    STABILITY_MIN,
+    STABILITY_MIN,
+    STABILITY_MIN,
+    STABILITY_MIN,
+    1.0,
+    0.001,
+    0.001,
+    0.001,
+    0.0,
+    0.0,
+    0.001,
+    0.001,
+    0.001,
+    0.001,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.1,
+)
+
+INITIAL_STABILITY_MAX = 100.0
+UPPER_BOUNDS_PARAMETERS = (
+    INITIAL_STABILITY_MAX,
+    INITIAL_STABILITY_MAX,
+    INITIAL_STABILITY_MAX,
+    INITIAL_STABILITY_MAX,
+    10.0,
+    4.0,
+    4.0,
+    0.75,
+    4.5,
+    0.8,
+    3.5,
+    5.0,
+    0.25,
+    0.9,
+    4.0,
+    1.0,
+    6.0,
+    2.0,
+    2.0,
+    0.8,
+    0.8,
+)
+
+MIN_DIFFICULTY = 1.0
+MAX_DIFFICULTY = 10.0
 
 FUZZ_RANGES = [
     {
@@ -322,7 +374,7 @@ class Scheduler:
 
     def __init__(
         self,
-        parameters: tuple[float, ...] | list[float] = DEFAULT_PARAMETERS,
+        parameters: Sequence[float] = DEFAULT_PARAMETERS,
         desired_retention: float = 0.9,
         learning_steps: tuple[timedelta, ...] | list[timedelta] = (
             timedelta(minutes=1),
@@ -334,6 +386,8 @@ class Scheduler:
         maximum_interval: int = 36500,
         enable_fuzzing: bool = True,
     ) -> None:
+        self._validate_parameters(parameters=parameters)
+
         self.parameters = tuple(parameters)
         self.desired_retention = desired_retention
         self.learning_steps = tuple(learning_steps)
@@ -343,6 +397,26 @@ class Scheduler:
 
         self._DECAY = -self.parameters[20]
         self._FACTOR = 0.9 ** (1 / self._DECAY) - 1
+
+    def _validate_parameters(self, parameters: Sequence[float]) -> None:
+        if len(parameters) != len(LOWER_BOUNDS_PARAMETERS):
+            raise ValueError(
+                f"Expected {len(LOWER_BOUNDS_PARAMETERS)} parameters, got {len(parameters)}."
+            )
+
+        error_messages = []
+        for index, (parameter, lower_bound, upper_bound) in enumerate(
+            zip(parameters, LOWER_BOUNDS_PARAMETERS, UPPER_BOUNDS_PARAMETERS)
+        ):
+            if not lower_bound <= parameter <= upper_bound:
+                error_message = f"parameters[{index}] = {parameter} is out of bounds: ({lower_bound}, {upper_bound})"
+                error_messages.append(error_message)
+
+        if len(error_messages) > 0:
+            raise ValueError(
+                "One or more parameters are out of bounds:\n"
+                + "\n".join(error_messages)
+            )
 
     def __repr__(self) -> str:
         return (
@@ -709,9 +783,9 @@ class Scheduler:
 
     def _clamp_difficulty(self, difficulty: float) -> float:
         if isinstance(difficulty, (float, int)):
-            difficulty = min(max(difficulty, 1.0), 10.0)
+            difficulty = min(max(difficulty, MIN_DIFFICULTY), MAX_DIFFICULTY)
         else:  # type(difficulty) is torch.Tensor
-            difficulty = difficulty.clamp(min=1.0, max=10.0)
+            difficulty = difficulty.clamp(min=MIN_DIFFICULTY, max=MAX_DIFFICULTY)
 
         return difficulty
 

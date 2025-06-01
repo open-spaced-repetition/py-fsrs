@@ -8,27 +8,27 @@ from datetime import datetime, timezone, timedelta
 
 
 test_optimal_parameters = [
-    0.07187394297471637,
+    0.07181179205417863,
     1.1771,
-    3.0169121696553542,
+    3.016031528328984,
     16.1507,
-    7.314356745620026,
-    0.30949419455338884,
-    2.134560108286105,
-    0.027879349179119314,
-    1.3684683980783474,
-    0.034234971711026685,
-    0.8860983859328975,
-    1.8557965281402204,
-    0.09081887255537589,
-    0.2737123583200299,
-    2.343598989308412,
-    0.4570005358296726,
+    7.313588988324146,
+    0.3119116156472349,
+    2.1325475249616583,
+    0.02668484845216306,
+    1.3685438167248498,
+    0.03286122728404283,
+    0.8861484775736176,
+    1.856174600815682,
+    0.09059541606248055,
+    0.27523877674548947,
+    2.3456405140066834,
+    0.4568750726208301,
     3.0004,
-    0.7783101458784651,
-    0.3170397068855834,
-    0.24507686794021452,
-    0.5846431556206967,
+    0.7787402478565422,
+    0.31745415553393075,
+    0.24515670639930176,
+    0.5849145294103553,
 ]
 
 
@@ -178,7 +178,7 @@ class TestOptimizer:
             1.0,
             0.1,
             0.1,
-            0.0,
+            0.01,
             0.0,
             0.0,
             0.01,
@@ -243,7 +243,7 @@ class TestOptimizer:
             probs_and_costs_dict=probs_and_costs_dict,
         )
 
-        assert round(simulation_cost_0_75) == 249258
+        assert round(simulation_cost_0_75) == 250026
 
         simulation_cost_0_85 = optimizer._simulate_cost(
             desired_retention=0.85,
@@ -252,7 +252,7 @@ class TestOptimizer:
             probs_and_costs_dict=probs_and_costs_dict,
         )
 
-        assert round(simulation_cost_0_85) == 209497
+        assert round(simulation_cost_0_85) == 208594
 
         simulation_cost_0_95 = optimizer._simulate_cost(
             desired_retention=0.95,
@@ -261,7 +261,7 @@ class TestOptimizer:
             probs_and_costs_dict=probs_and_costs_dict,
         )
 
-        assert round(simulation_cost_0_95) == 256895
+        assert round(simulation_cost_0_95) == 255857
 
         # holds true for these specific revlogs
         assert simulation_cost_0_85 <= simulation_cost_0_75

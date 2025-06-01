@@ -563,8 +563,8 @@ class Scheduler:
                     card.stability = self._next_stability(
                         difficulty=card.difficulty,
                         stability=card.stability,
-                        retrievability=card.get_retrievability(
-                            scheduler_parameters=self.parameters,
+                        retrievability=self.get_card_retrievability(
+                            card,
                             current_datetime=review_datetime,
                         ),
                         rating=rating,

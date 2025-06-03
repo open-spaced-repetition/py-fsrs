@@ -11,6 +11,7 @@ from datetime import datetime, timedelta, timezone
 import json
 import pytest
 import random
+from copy import deepcopy
 
 
 class TestPyFSRS:
@@ -791,3 +792,31 @@ class TestPyFSRS:
         too_many_parameters = DEFAULT_PARAMETERS + (1, 2, 3)
         with pytest.raises(ValueError):
             Scheduler(parameters=too_many_parameters)
+
+    def test_class___eq___methods(self):
+        scheduler1 = Scheduler()
+        scheduler2 = Scheduler(desired_retention=0.91)
+        scheduler1_copy = deepcopy(scheduler1)
+
+        assert scheduler1 != scheduler2
+        assert scheduler1 == scheduler1_copy
+
+        card_orig = Card()
+        card_orig_copy = deepcopy(card_orig)
+
+        assert card_orig == card_orig_copy
+
+        card_review_1, review_log_review_1 = scheduler1.review_card(
+            card=card_orig, rating=Rating.Good
+        )
+
+        review_log_review_1_copy = deepcopy(review_log_review_1)
+
+        assert card_orig != card_review_1
+        assert review_log_review_1 == review_log_review_1_copy
+
+        _, review_log_review_2 = scheduler1.review_card(
+            card=card_review_1, rating=Rating.Good
+        )
+
+        assert review_log_review_1 != review_log_review_2

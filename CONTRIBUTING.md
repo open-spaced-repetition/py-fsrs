@@ -36,9 +36,4 @@ Run the tests with:
 pytest
 ```
 
-Also, don't forget to format your code with:
-```
-ruff format
-```
-
 Additionally, you are strongly encouraged to contribute your own tests to [tests/test_fsrs.py](tests/test_fsrs.py) to help make Py-FSRS more reliable.

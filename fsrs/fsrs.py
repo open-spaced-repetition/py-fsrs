@@ -204,9 +204,6 @@ class Card:
             f"last_review={self.last_review})"
         )
 
-    def __eq__(self, other_card: Card) -> bool:
-        return isinstance(other_card, Card) and self.__dict__ == other_card.__dict__
-
     def to_dict(self) -> dict[str, int | float | str | None]:
         """
         Returns a JSON-serializable dictionary representation of the Card object.
@@ -303,12 +300,6 @@ class ReviewLog:
             f"rating={self.rating}, "
             f"review_datetime={self.review_datetime}, "
             f"review_duration={self.review_duration})"
-        )
-
-    def __eq__(self, other_review_log: ReviewLog) -> bool:
-        return (
-            isinstance(other_review_log, ReviewLog)
-            and self.__dict__ == other_review_log.__dict__
         )
 
     def to_dict(
@@ -436,12 +427,6 @@ class Scheduler:
             f"relearning_steps={self.relearning_steps}, "
             f"maximum_interval={self.maximum_interval}, "
             f"enable_fuzzing={self.enable_fuzzing})"
-        )
-
-    def __eq__(self, other_scheduler: Scheduler) -> bool:
-        return (
-            isinstance(other_scheduler, Scheduler)
-            and self.__dict__ == other_scheduler.__dict__
         )
 
     def get_card_retrievability(

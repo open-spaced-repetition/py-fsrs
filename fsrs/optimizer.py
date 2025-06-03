@@ -19,13 +19,13 @@ from datetime import datetime, timezone
 from copy import deepcopy
 from random import Random
 from statistics import mean
-from tqdm import tqdm
 
 try:
     import torch
     from torch.nn import BCELoss
     from torch import optim
     import pandas as pd
+    from tqdm import tqdm
 
     # weight clipping
     LOWER_BOUNDS_PARAMETERS_TENSORS = torch.tensor(

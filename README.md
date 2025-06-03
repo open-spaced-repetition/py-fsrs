@@ -35,7 +35,7 @@
 
 ## Installation
 You can install the `fsrs` python package from [PyPI](https://pypi.org/project/fsrs/) using pip:
-```
+```bash
 pip install fsrs
 ```
 
@@ -181,7 +181,7 @@ If you have a collection of `ReviewLog` objects, you can optionally reuse them t
 
 ### Installation
 
-```
+```bash
 pip install "fsrs[optimizer]"
 ```
 

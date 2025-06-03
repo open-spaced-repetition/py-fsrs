@@ -5,7 +5,7 @@
 If you encounter an issue with Py-FSRS and would like to report it, you'll first want to make sure you're using the latest version of Py-FSRS.
 
 The latest version of py-fsrs can be found under [releases](https://github.com/open-spaced-repetition/py-fsrs/releases) and you can verify the version of your current installation with the following command:
-```
+```bash
 pip show fsrs
 ```
 
@@ -16,7 +16,7 @@ Once you've confirmed your version, please report your issue in the [issues tab]
 ### Set up local environment
 
 After cloning this repo, install `fsrs` locally in editable mode along with the dev dependencies
-```
+```bash
 pip install -e ".[dev]"
 ```
 
@@ -27,12 +27,12 @@ Now you're ready to make changes to files in the `fsrs` directory and see your c
 In order for your contribution to be accepted, your code must pass the linting checks and unit tests.
 
 Lint your code with:
-```
+```bash
 ruff check --fix
 ```
 
 Run the tests with:
-```
+```bash
 pytest
 ```
 

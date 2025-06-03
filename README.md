@@ -28,6 +28,7 @@
 - [Usage](#usage)
 - [Optimizer (optional)](#optimizer-optional)
 - [Reference](#reference)
+- [API Documentation](#api-documentation)
 - [Other FSRS implementations](#other-fsrs-implementations)
 - [Other SRS python packages](#other-srs-python-packages)
 - [Contribute](#contribute)
@@ -229,6 +230,10 @@ Rating.Hard # (==2) remembered the card with serious difficulty
 Rating.Good # (==3) remembered the card after a hesitation
 Rating.Easy # (==4) remembered the card easily
 ```
+
+## API Documentation
+
+You can find additional documentation for py-fsrs [here](https://open-spaced-repetition.github.io/py-fsrs).
 
 ## Other FSRS implementations
 

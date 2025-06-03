@@ -36,4 +36,4 @@ Run the tests with:
 pytest
 ```
 
-Additionally, you are strongly encouraged to contribute your own tests to [tests/test_fsrs.py](tests/test_fsrs.py) to help make Py-FSRS more reliable.
+Additionally, you are strongly encouraged to contribute your own tests to [tests/](tests/) to help make Py-FSRS more reliable.

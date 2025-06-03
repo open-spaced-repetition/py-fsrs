@@ -1,0 +1,50 @@
+name: website
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch: # allows us to also manually trigger workflow if we want
+
+# security: restrict permissions for CI jobs.
+permissions:
+  contents: read
+
+jobs:
+  # Build the documentation and upload the static HTML files as an artifact.
+  build:
+    # the job will run when publishing a non-prerelease release or a manual workflow run
+    if: github.event_name != 'release' || github.event.release.prerelease == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      # ADJUST THIS: install all dependencies (including pdoc)
+      - run: pip install -e .
+      - run: pip install pdoc
+      # ADJUST THIS: build your documentation into docs/.
+      # We use a custom build script for pdoc itself, ideally you just run `pdoc -o docs/ ...` here.
+      - run: pdoc fsrs --logo "https://joshdavham.com/assets/images/osr_logo.svg" --favicon "https://joshdavham.com/assets/images/osr_logo.svg" -o docs/
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/
+
+  # Deploy the artifact to GitHub pages.
+  # This is a separate job so that only actions/deploy-pages has the necessary permissions.
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

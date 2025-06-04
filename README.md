@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://avatars.githubusercontent.com/u/96821265?s=200&v=4" height="100" alt="Open Spaced Repetition logo"/>
+  <img src="https://raw.githubusercontent.com/open-spaced-repetition/py-fsrs/main/osr_logo.png" height="100" alt="Open Spaced Repetition logo"/>
 </div>
 <div align="center">
 
@@ -28,13 +28,14 @@
 - [Usage](#usage)
 - [Optimizer (optional)](#optimizer-optional)
 - [Reference](#reference)
+- [API Documentation](#api-documentation)
 - [Other FSRS implementations](#other-fsrs-implementations)
 - [Other SRS python packages](#other-srs-python-packages)
 - [Contribute](#contribute)
 
 ## Installation
 You can install the `fsrs` python package from [PyPI](https://pypi.org/project/fsrs/) using pip:
-```
+```bash
 pip install fsrs
 ```
 
@@ -180,7 +181,7 @@ If you have a collection of `ReviewLog` objects, you can optionally reuse them t
 
 ### Installation
 
-```
+```bash
 pip install "fsrs[optimizer]"
 ```
 
@@ -229,6 +230,10 @@ Rating.Hard # (==2) remembered the card with serious difficulty
 Rating.Good # (==3) remembered the card after a hesitation
 Rating.Easy # (==4) remembered the card easily
 ```
+
+## API Documentation
+
+You can find additional documentation for py-fsrs [here](https://open-spaced-repetition.github.io/py-fsrs).
 
 ## Other FSRS implementations
 

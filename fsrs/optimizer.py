@@ -25,6 +25,7 @@ try:
     from torch.nn import BCELoss
     from torch import optim
     import pandas as pd
+    from tqdm import tqdm
 
     # weight clipping
     LOWER_BOUNDS_PARAMETERS_TENSORS = torch.tensor(
@@ -152,7 +153,7 @@ try:
 
             return batch_loss
 
-        def compute_optimal_parameters(self) -> list[float]:
+        def compute_optimal_parameters(self, verbose: bool = False) -> list[float]:
             """
             Computes a set of optimized parameters for the FSRS scheduler and returns it as a list of floats.
 
@@ -263,7 +264,12 @@ try:
             best_params = None
             best_loss = math.inf
             # iterate through the epochs
-            for j in range(num_epochs):
+            for _ in tqdm(
+                range(num_epochs),
+                desc="Optimizing",
+                unit="epoch",
+                disable=(not verbose),
+            ):
                 # randomly shuffle the order of which Card's review histories get computed first
                 # at the beginning of each new epoch
                 rng.shuffle(card_ids)

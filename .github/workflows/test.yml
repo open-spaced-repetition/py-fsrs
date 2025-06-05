@@ -46,7 +46,6 @@ jobs:
       - name: Install dependencies
         run: |
           uv pip install ".[optimizer,dev]"
-          uv pip install pytest pytest-cov
 
       - name: Test with pytest
         run: pytest --cov=fsrs --cov-branch --cov-report=xml -n auto

@@ -46,5 +46,11 @@ jobs:
       - name: Install dependencies
         run: |
           uv pip install ".[optimizer,dev]"
+
       - name: Test with pytest
-        run: pytest -n auto
+        run: pytest --cov=fsrs --cov-branch --cov-report=xml -n auto
+
+      - name: Upload results to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}

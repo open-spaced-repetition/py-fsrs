@@ -598,10 +598,6 @@ class Scheduler:
                     card.stability = self._short_term_stability(
                         stability=card.stability, rating=rating
                     )
-                    card.difficulty = self._next_difficulty(
-                        difficulty=card.difficulty, rating=rating
-                    )
-
                 else:
                     card.stability = self._next_stability(
                         difficulty=card.difficulty,
@@ -612,9 +608,10 @@ class Scheduler:
                         ),
                         rating=rating,
                     )
-                    card.difficulty = self._next_difficulty(
-                        difficulty=card.difficulty, rating=rating
-                    )
+
+                card.difficulty = self._next_difficulty(
+                    difficulty=card.difficulty, rating=rating
+                )
 
                 # calculate the card's next interval
                 match rating:

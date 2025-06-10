@@ -820,3 +820,229 @@ class TestPyFSRS:
         )
 
         assert review_log_review_1 != review_log_review_2
+
+    def test_learning_card_rate_hard_one_learning_step(self):
+        first_learning_step = timedelta(minutes=10)
+
+        scheduler_with_one_learning_step = Scheduler(
+            learning_steps=(first_learning_step,)
+        )
+
+        card = Card()
+
+        initial_due_datetime = card.due
+
+        card, _ = scheduler_with_one_learning_step.review_card(
+            card=card, rating=Rating.Hard, review_datetime=card.due
+        )
+
+        assert card.state == State.Learning
+
+        new_due_datetime = card.due
+
+        interval_length = new_due_datetime - initial_due_datetime
+
+        expected_interval_length = first_learning_step * 1.5
+
+        tolerance = timedelta(seconds=1)
+
+        assert abs(interval_length - expected_interval_length) <= tolerance
+
+    def test_learning_card_rate_hard_second_learning_step(self):
+        first_learning_step = timedelta(minutes=1)
+        second_learning_step = timedelta(minutes=10)
+
+        scheduler_with_two_learning_steps = Scheduler(
+            learning_steps=(first_learning_step, second_learning_step)
+        )
+
+        card = Card()
+
+        assert card.state == State.Learning
+        assert card.step == 0
+
+        card, _ = scheduler_with_two_learning_steps.review_card(
+            card=card, rating=Rating.Good, review_datetime=card.due
+        )
+
+        assert card.state == State.Learning
+        assert card.step == 1
+
+        due_datetime_after_first_review = card.due
+
+        card, _ = scheduler_with_two_learning_steps.review_card(
+            card=card,
+            rating=Rating.Hard,
+            review_datetime=due_datetime_after_first_review,
+        )
+
+        due_datetime_after_second_review = card.due
+
+        assert card.state == State.Learning
+        assert card.step == 1
+
+        interval_length = (
+            due_datetime_after_second_review - due_datetime_after_first_review
+        )
+
+        expected_interval_length = second_learning_step
+
+        tolerance = timedelta(seconds=1)
+
+        assert abs(interval_length - expected_interval_length) <= tolerance
+
+    def test_long_term_stability_learning_state(self):
+        # NOTE: currently, this test is mostly to make sure that
+        # the unit tests cover the case when a card in the relearning state
+        # is not reviewed on the same day to run the non-same-day stability calculations
+
+        scheduler = Scheduler()
+
+        card = Card()
+
+        assert card.state == State.Learning
+
+        card, _ = scheduler.review_card(
+            card=card, rating=Rating.Easy, review_datetime=card.due
+        )
+
+        assert card.state == State.Review
+
+        card, _ = scheduler.review_card(
+            card=card, rating=Rating.Again, review_datetime=card.due
+        )
+
+        assert card.state == State.Relearning
+
+        relearning_card_due_datetime = card.due
+
+        # a full day after its next due date
+        next_review_datetime_one_day_late = relearning_card_due_datetime + timedelta(
+            days=1
+        )
+
+        card, _ = scheduler.review_card(
+            card=card,
+            rating=Rating.Good,
+            review_datetime=next_review_datetime_one_day_late,
+        )
+
+        assert card.state == State.Review
+
+    def test_relearning_card_rate_hard_one_relearning_step(self):
+        first_relearning_step = timedelta(minutes=10)
+
+        scheduler_with_one_relearning_step = Scheduler(
+            relearning_steps=(first_relearning_step,)
+        )
+
+        card = Card()
+
+        card, _ = scheduler_with_one_relearning_step.review_card(
+            card=card, rating=Rating.Easy, review_datetime=card.due
+        )
+
+        assert card.state == State.Review
+
+        card, _ = scheduler_with_one_relearning_step.review_card(
+            card=card, rating=Rating.Again, review_datetime=card.due
+        )
+
+        assert card.state == State.Relearning
+        assert card.step == 0
+
+        prev_due_datetime = card.due
+
+        card, _ = scheduler_with_one_relearning_step.review_card(
+            card=card, rating=Rating.Hard, review_datetime=prev_due_datetime
+        )
+
+        assert card.state == State.Relearning
+        assert card.step == 0
+
+        new_due_datetime = card.due
+
+        interval_length = new_due_datetime - prev_due_datetime
+
+        expected_interval_length = first_relearning_step * 1.5
+
+        tolerance = timedelta(seconds=1)
+
+        assert abs(interval_length - expected_interval_length) <= tolerance
+
+    def test_relearning_card_rate_hard_two_relearning_steps(self):
+        first_relearning_step = timedelta(minutes=1)
+        second_relearning_step = timedelta(minutes=10)
+
+        scheduler_with_two_relearning_steps = Scheduler(
+            relearning_steps=(first_relearning_step, second_relearning_step)
+        )
+
+        card = Card()
+
+        card, _ = scheduler_with_two_relearning_steps.review_card(
+            card=card, rating=Rating.Easy, review_datetime=card.due
+        )
+
+        assert card.state == State.Review
+
+        card, _ = scheduler_with_two_relearning_steps.review_card(
+            card=card, rating=Rating.Again, review_datetime=card.due
+        )
+
+        assert card.state == State.Relearning
+        assert card.step == 0
+
+        prev_due_datetime = card.due
+
+        card, _ = scheduler_with_two_relearning_steps.review_card(
+            card=card, rating=Rating.Hard, review_datetime=prev_due_datetime
+        )
+
+        assert card.state == State.Relearning
+        assert card.step == 0
+
+        new_due_datetime = card.due
+
+        interval_length = new_due_datetime - prev_due_datetime
+
+        expected_interval_length = (
+            first_relearning_step + second_relearning_step
+        ) / 2.0
+
+        tolerance = timedelta(seconds=1)
+
+        assert abs(interval_length - expected_interval_length) <= tolerance
+
+        card, _ = scheduler_with_two_relearning_steps.review_card(
+            card=card, rating=Rating.Good, review_datetime=card.due
+        )
+
+        assert card.state == State.Relearning
+        assert card.step == 1
+
+        prev_due_datetime = card.due
+
+        card, _ = scheduler_with_two_relearning_steps.review_card(
+            card=card, rating=Rating.Hard, review_datetime=prev_due_datetime
+        )
+
+        new_due_datetime = card.due
+
+        assert card.state == State.Relearning
+        assert card.step == 1
+
+        interval_length = new_due_datetime - prev_due_datetime
+
+        expected_interval_length = second_relearning_step
+
+        tolerance = timedelta(seconds=1)
+
+        assert abs(interval_length - expected_interval_length) <= tolerance
+
+        card, _ = scheduler_with_two_relearning_steps.review_card(
+            card=card, rating=Rating.Easy, review_datetime=prev_due_datetime
+        )
+
+        assert card.state == State.Review
+        assert card.step is None

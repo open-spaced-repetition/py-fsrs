@@ -20,6 +20,7 @@ from copy import copy
 from enum import IntEnum
 from random import random
 import time
+from dataclasses import dataclass
 
 DEFAULT_PARAMETERS = (
     0.2172,
@@ -138,6 +139,7 @@ class Rating(IntEnum):
     Easy = 4
 
 
+@dataclass(init=False)
 class Card:
     """
     Represents a flashcard in the FSRS system.
@@ -191,21 +193,6 @@ class Card:
         self.due = due
 
         self.last_review = last_review
-
-    def __repr__(self) -> str:
-        return (
-            f"{self.__class__.__name__}("
-            f"card_id={self.card_id}, "
-            f"state={self.state}, "
-            f"step={self.step}, "
-            f"stability={self.stability}, "
-            f"difficulty={self.difficulty}, "
-            f"due={self.due}, "
-            f"last_review={self.last_review})"
-        )
-
-    def __eq__(self, other_card: Card) -> bool:
-        return isinstance(other_card, Card) and self.__dict__ == other_card.__dict__
 
     def to_dict(self) -> dict[str, int | float | str | None]:
         """
@@ -268,6 +255,7 @@ class Card:
         )
 
 
+@dataclass
 class ReviewLog:
     """
     Represents the log entry of a Card object that has been reviewed.
@@ -283,33 +271,6 @@ class ReviewLog:
     rating: Rating
     review_datetime: datetime
     review_duration: int | None
-
-    def __init__(
-        self,
-        card_id: int,
-        rating: Rating,
-        review_datetime: datetime,
-        review_duration: int | None = None,
-    ) -> None:
-        self.card_id = card_id
-        self.rating = rating
-        self.review_datetime = review_datetime
-        self.review_duration = review_duration
-
-    def __repr__(self) -> str:
-        return (
-            f"{self.__class__.__name__}("
-            f"card_id={self.card_id}, "
-            f"rating={self.rating}, "
-            f"review_datetime={self.review_datetime}, "
-            f"review_duration={self.review_duration})"
-        )
-
-    def __eq__(self, other_review_log: ReviewLog) -> bool:
-        return (
-            isinstance(other_review_log, ReviewLog)
-            and self.__dict__ == other_review_log.__dict__
-        )
 
     def to_dict(
         self,
@@ -359,6 +320,7 @@ class ReviewLog:
         )
 
 
+@dataclass(init=False)
 class Scheduler:
     """
     The FSRS scheduler.
@@ -426,23 +388,6 @@ class Scheduler:
                 "One or more parameters are out of bounds:\n"
                 + "\n".join(error_messages)
             )
-
-    def __repr__(self) -> str:
-        return (
-            f"{self.__class__.__name__}("
-            f"parameters={self.parameters}, "
-            f"desired_retention={self.desired_retention}, "
-            f"learning_steps={self.learning_steps}, "
-            f"relearning_steps={self.relearning_steps}, "
-            f"maximum_interval={self.maximum_interval}, "
-            f"enable_fuzzing={self.enable_fuzzing})"
-        )
-
-    def __eq__(self, other_scheduler: Scheduler) -> bool:
-        return (
-            isinstance(other_scheduler, Scheduler)
-            and self.__dict__ == other_scheduler.__dict__
-        )
 
     def get_card_retrievability(
         self, card: Card, current_datetime: datetime | None = None

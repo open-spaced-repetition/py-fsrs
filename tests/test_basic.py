@@ -1,12 +1,7 @@
-from fsrs import (
-    Scheduler,
-    Card,
-    ReviewLog,
-    State,
-    Rating,
-    STABILITY_MIN,
-    DEFAULT_PARAMETERS,
-)
+from fsrs.scheduler import Scheduler, STABILITY_MIN, DEFAULT_PARAMETERS
+from fsrs.card import Card, State
+from fsrs.review_log import ReviewLog, Rating
+
 from datetime import datetime, timedelta, timezone
 import json
 import pytest

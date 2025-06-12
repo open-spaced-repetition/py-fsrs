@@ -1,4 +1,8 @@
-from fsrs import ReviewLog, Optimizer, DEFAULT_PARAMETERS, Rating, Scheduler, Card
+from fsrs.optimizer import Optimizer
+from fsrs.review_log import ReviewLog, Rating
+from fsrs.scheduler import Scheduler, DEFAULT_PARAMETERS
+from fsrs.card import Card
+
 import pandas as pd
 from copy import deepcopy
 from random import shuffle

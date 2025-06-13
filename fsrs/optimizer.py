@@ -5,15 +5,15 @@ fsrs.optimizer
 This module defines the optional Optimizer class.
 """
 
-from .fsrs import (
-    Card,
-    ReviewLog,
+from fsrs.card import Card
+from fsrs.review_log import ReviewLog, Rating
+from fsrs.scheduler import (
     Scheduler,
-    Rating,
     DEFAULT_PARAMETERS,
     LOWER_BOUNDS_PARAMETERS,
     UPPER_BOUNDS_PARAMETERS,
 )
+
 import math
 from datetime import datetime, timezone
 from copy import deepcopy
@@ -664,4 +664,9 @@ except ImportError:
 
     class Optimizer:
         def __init__(self, *args, **kwargs) -> None:
-            raise ImportError("The Optimizer class requires torch be installed.")
+            raise ImportError(
+                'Optimizer is not installed.\nInstall it with: pip install "fsrs[optimizer]"'
+            )
+
+
+__all__ = ["Optimizer"]

@@ -106,7 +106,7 @@ try:
             # format the ReviewLog data for optimization
             self._revlogs_train = _format_revlogs()
 
-        def _compute_batch_loss(self, parameters: list[float]) -> float:
+        def _compute_batch_loss(self, *, parameters: list[float]) -> float:
             """
             Computes the current total loss for the entire batch of review logs.
             """
@@ -214,7 +214,7 @@ try:
                 return num_reviews
 
             def _update_parameters(
-                step_losses: list,
+                *, step_losses: list,
                 adam_optimizer: torch.optim.Adam,
                 params: torch.Tensor,
                 lr_scheduler: torch.optim.lr_scheduler.CosineAnnealingLR,
@@ -511,7 +511,7 @@ try:
 
         def _simulate_cost(
             self,
-            desired_retention: float,
+            *, desired_retention: float,
             parameters: tuple[float, ...] | list[float],
             num_cards_simulate: int,
             probs_and_costs_dict: dict[str, float],

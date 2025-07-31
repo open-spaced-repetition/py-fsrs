@@ -163,7 +163,7 @@ class Scheduler:
         self._DECAY = -self.parameters[20]
         self._FACTOR = 0.9 ** (1 / self._DECAY) - 1
 
-    def _validate_parameters(self, parameters: Sequence[float]) -> None:
+    def _validate_parameters(self, *, parameters: Sequence[float]) -> None:
         if len(parameters) != len(LOWER_BOUNDS_PARAMETERS):
             raise ValueError(
                 f"Expected {len(LOWER_BOUNDS_PARAMETERS)} parameters, got {len(parameters)}."
@@ -250,8 +250,8 @@ class Scheduler:
             case State.Learning:
                 # update the card's stability and difficulty
                 if card.stability is None and card.difficulty is None:
-                    card.stability = self._initial_stability(rating)
-                    card.difficulty = self._initial_difficulty(rating)
+                    card.stability = self._initial_stability(rating=rating)
+                    card.difficulty = self._initial_difficulty(rating=rating)
 
                 elif days_since_last_review is not None and days_since_last_review < 1:
                     card.stability = self._short_term_stability(
@@ -455,7 +455,7 @@ class Scheduler:
                             next_interval = timedelta(days=next_interval_days)
 
         if self.enable_fuzzing and card.state == State.Review:
-            next_interval = self._get_fuzzed_interval(next_interval)
+            next_interval = self._get_fuzzed_interval(interval=next_interval)
 
         card.due = review_datetime + next_interval
         card.last_review = review_datetime
@@ -532,7 +532,7 @@ class Scheduler:
             enable_fuzzing=enable_fuzzing,
         )
 
-    def _clamp_difficulty(self, difficulty: float) -> float:
+    def _clamp_difficulty(self, *, difficulty: float) -> float:
         if isinstance(difficulty, (float, int)):
             difficulty = min(max(difficulty, MIN_DIFFICULTY), MAX_DIFFICULTY)
         else:  # type(difficulty) is torch.Tensor
@@ -540,7 +540,7 @@ class Scheduler:
 
         return difficulty
 
-    def _clamp_stability(self, stability: float) -> float:
+    def _clamp_stability(self, *, stability: float) -> float:
         if isinstance(stability, (float, int)):
             stability = max(stability, STABILITY_MIN)
         else:  # type(stability) is torch.Tensor
@@ -548,23 +548,23 @@ class Scheduler:
 
         return stability
 
-    def _initial_stability(self, rating: Rating) -> float:
+    def _initial_stability(self, *, rating: Rating) -> float:
         initial_stability = self.parameters[rating - 1]
 
-        initial_stability = self._clamp_stability(initial_stability)
+        initial_stability = self._clamp_stability(stability=initial_stability)
 
         return initial_stability
 
-    def _initial_difficulty(self, rating: Rating) -> float:
+    def _initial_difficulty(self, *, rating: Rating) -> float:
         initial_difficulty = (
             self.parameters[4] - (math.e ** (self.parameters[5] * (rating - 1))) + 1
         )
 
-        initial_difficulty = self._clamp_difficulty(initial_difficulty)
+        initial_difficulty = self._clamp_difficulty(difficulty=initial_difficulty)
 
         return initial_difficulty
 
-    def _next_interval(self, stability: float) -> int:
+    def _next_interval(self, *, stability: float) -> int:
         next_interval = (stability / self._FACTOR) * (
             (self.desired_retention ** (1 / self._DECAY)) - 1
         )
@@ -579,7 +579,7 @@ class Scheduler:
 
         return next_interval
 
-    def _short_term_stability(self, stability: float, rating: Rating) -> float:
+    def _short_term_stability(self, *, stability: float, rating: Rating) -> float:
         short_term_stability_increase = (
             math.e ** (self.parameters[17] * (rating - 3 + self.parameters[18]))
         ) * (stability ** -self.parameters[19])
@@ -594,18 +594,18 @@ class Scheduler:
 
         short_term_stability = stability * short_term_stability_increase
 
-        short_term_stability = self._clamp_stability(short_term_stability)
+        short_term_stability = self._clamp_stability(stability=short_term_stability)
 
         return short_term_stability
 
-    def _next_difficulty(self, difficulty: float, rating: Rating) -> float:
-        def _linear_damping(delta_difficulty: float, difficulty: float) -> float:
+    def _next_difficulty(self, *, difficulty: float, rating: Rating) -> float:
+        def _linear_damping(*, delta_difficulty: float, difficulty: float) -> float:
             return (10.0 - difficulty) * delta_difficulty / 9.0
 
-        def _mean_reversion(arg_1: float, arg_2: float) -> float:
+        def _mean_reversion(*, arg_1: float, arg_2: float) -> float:
             return self.parameters[7] * arg_1 + (1 - self.parameters[7]) * arg_2
 
-        arg_1 = self._initial_difficulty(Rating.Easy)
+        arg_1 = self._initial_difficulty(rating=Rating.Easy)
 
         delta_difficulty = -(self.parameters[6] * (rating - 3))
         arg_2 = difficulty + _linear_damping(
@@ -614,12 +614,12 @@ class Scheduler:
 
         next_difficulty = _mean_reversion(arg_1=arg_1, arg_2=arg_2)
 
-        next_difficulty = self._clamp_difficulty(next_difficulty)
+        next_difficulty = self._clamp_difficulty(difficulty=next_difficulty)
 
         return next_difficulty
 
     def _next_stability(
-        self, difficulty: float, stability: float, retrievability: float, rating: Rating
+        self, *, difficulty: float, stability: float, retrievability: float, rating: Rating
     ) -> float:
         if rating == Rating.Again:
             next_stability = self._next_forget_stability(
@@ -636,12 +636,12 @@ class Scheduler:
                 rating=rating,
             )
 
-        next_stability = self._clamp_stability(next_stability)
+        next_stability = self._clamp_stability(stability=next_stability)
 
         return next_stability
 
     def _next_forget_stability(
-        self, difficulty: float, stability: float, retrievability: float
+        self, *, difficulty: float, stability: float, retrievability: float
     ) -> float:
         next_forget_stability_long_term_params = (
             self.parameters[11]
@@ -660,7 +660,7 @@ class Scheduler:
         )
 
     def _next_recall_stability(
-        self, difficulty: float, stability: float, retrievability: float, rating: Rating
+        self, *, difficulty: float, stability: float, retrievability: float, rating: Rating
     ) -> float:
         hard_penalty = self.parameters[15] if rating == Rating.Hard else 1
         easy_bonus = self.parameters[16] if rating == Rating.Easy else 1
@@ -675,7 +675,7 @@ class Scheduler:
             * easy_bonus
         )
 
-    def _get_fuzzed_interval(self, interval: timedelta) -> timedelta:
+    def _get_fuzzed_interval(self, *, interval: timedelta) -> timedelta:
         """
         Takes the current calculated interval and adds a small amount of random fuzz to it.
         For example, a card that would've been due in 50 days, after fuzzing, might be due in 49, or 51 days.
@@ -692,7 +692,7 @@ class Scheduler:
         if interval_days < 2.5:  # fuzz is not applied to intervals less than 2.5
             return interval
 
-        def _get_fuzz_range(interval_days: int) -> tuple[int, int]:
+        def _get_fuzz_range(*, interval_days: int) -> tuple[int, int]:
             """
             Helper function that computes the possible upper and lower bounds of the interval after fuzzing.
             """
@@ -713,7 +713,7 @@ class Scheduler:
 
             return min_ivl, max_ivl
 
-        min_ivl, max_ivl = _get_fuzz_range(interval_days)
+        min_ivl, max_ivl = _get_fuzz_range(interval_days=interval_days)
 
         fuzzed_interval_days = (
             random() * (max_ivl - min_ivl + 1)

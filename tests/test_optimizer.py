@@ -96,8 +96,8 @@ class TestOptimizer:
         assert np.allclose(optimal_parameters, test_optimal_parameters)
 
         # the computed loss with the optimized parameters are less than that of the starting parameters
-        starting_loss = optimizer._compute_batch_loss(DEFAULT_PARAMETERS)
-        optimized_loss = optimizer._compute_batch_loss(optimal_parameters)
+        starting_loss = optimizer._compute_batch_loss(parameters=DEFAULT_PARAMETERS)
+        optimized_loss = optimizer._compute_batch_loss(parameters=optimal_parameters)
         assert optimized_loss < starting_loss
 
         # calling the same optimizer again will yield the same parameters

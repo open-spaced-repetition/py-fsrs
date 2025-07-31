@@ -619,7 +619,12 @@ class Scheduler:
         return next_difficulty
 
     def _next_stability(
-        self, *, difficulty: float, stability: float, retrievability: float, rating: Rating
+        self,
+        *,
+        difficulty: float,
+        stability: float,
+        retrievability: float,
+        rating: Rating,
     ) -> float:
         if rating == Rating.Again:
             next_stability = self._next_forget_stability(
@@ -660,7 +665,12 @@ class Scheduler:
         )
 
     def _next_recall_stability(
-        self, *, difficulty: float, stability: float, retrievability: float, rating: Rating
+        self,
+        *,
+        difficulty: float,
+        stability: float,
+        retrievability: float,
+        rating: Rating,
     ) -> float:
         hard_penalty = self.parameters[15] if rating == Rating.Hard else 1
         easy_bonus = self.parameters[16] if rating == Rating.Easy else 1

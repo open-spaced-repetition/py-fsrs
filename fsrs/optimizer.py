@@ -214,7 +214,8 @@ try:
                 return num_reviews
 
             def _update_parameters(
-                *, step_losses: list,
+                *,
+                step_losses: list,
                 adam_optimizer: torch.optim.Adam,
                 params: torch.Tensor,
                 lr_scheduler: torch.optim.lr_scheduler.CosineAnnealingLR,
@@ -511,7 +512,8 @@ try:
 
         def _simulate_cost(
             self,
-            *, desired_retention: float,
+            *,
+            desired_retention: float,
             parameters: tuple[float, ...] | list[float],
             num_cards_simulate: int,
             probs_and_costs_dict: dict[str, float],

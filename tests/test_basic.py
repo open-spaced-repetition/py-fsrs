@@ -7,6 +7,7 @@ import json
 import pytest
 import random
 from copy import deepcopy
+import sys
 
 
 class TestPyFSRS:
@@ -1041,3 +1042,14 @@ class TestPyFSRS:
 
         assert card.state == State.Review
         assert card.step is None
+
+    def test_Optimizer_lazy_loading(self):
+        assert "fsrs.scheduler" in sys.modules
+        assert "fsrs.card" in sys.modules
+        assert "fsrs.review_log" in sys.modules
+
+        assert "fsrs.optimizer" not in sys.modules
+
+        from fsrs import Optimizer  # noqa: F401 (linter: unused import)
+
+        assert "fsrs.optimizer" in sys.modules

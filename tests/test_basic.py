@@ -1053,3 +1053,7 @@ class TestPyFSRS:
         from fsrs import Optimizer  # noqa: F401 (linter: unused import)
 
         assert "fsrs.optimizer" in sys.modules
+
+    def test_import_non_existent_module(self):
+        with pytest.raises(ImportError):
+            from fsrs import NotAModule  # noqa: F401 (linter: unused import)

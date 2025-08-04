@@ -13,6 +13,7 @@ from fsrs.review_log import ReviewLog, Rating
 # lazy load the Optimizer module due to heavy dependencies
 def __getattr__(name):
     if name == "Optimizer":
+        global Optimizer
         from fsrs.optimizer import Optimizer
 
         return Optimizer

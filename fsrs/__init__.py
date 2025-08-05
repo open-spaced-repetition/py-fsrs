@@ -9,6 +9,15 @@ from fsrs.scheduler import Scheduler
 from fsrs.card import Card, State
 from fsrs.review_log import ReviewLog, Rating
 
-from fsrs.optimizer import Optimizer
+
+# lazy load the Optimizer module due to heavy dependencies
+def __getattr__(name: str) -> type:
+    if name == "Optimizer":
+        global Optimizer
+        from fsrs.optimizer import Optimizer
+
+        return Optimizer
+    raise AttributeError
+
 
 __all__ = ["Scheduler", "Card", "Rating", "ReviewLog", "State", "Optimizer"]

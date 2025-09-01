@@ -136,3 +136,14 @@ module-root = "src"
 # The single top-level package name under ./src. The backend validates this structure
 # to catch layout mistakes early.
 module-name = "fsrs"
+
+[tool.pytest.ini_options]
+# Keep imports simple (src/ layout)
+pythonpath = ["src"]
+# Only look here for tests
+testpaths = ["tests"]
+
+addopts = [
+    "--color=yes",
+    "--cov-config=pyproject.toml", # be explicit about the config source
+]

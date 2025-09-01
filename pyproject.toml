@@ -1,31 +1,143 @@
-[build-system]
-requires      = ["setuptools>=61.0.0", "wheel"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "fsrs"
 version = "6.1.1"
 description = "Free Spaced Repetition Scheduler"
 readme = "README.md"
+license = { file = "LICENSE" }
 authors = [
     { name = "Jarrett Ye", email = "jarrett.ye@outlook.com" },
     { name = "Joshua Hamilton", email = "hamiltonjoshuadavid@gmail.com" }
-    ]
-license = { file = "LICENSE" }
-classifiers = [
-    "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3",
 ]
-keywords = ["spaced-repetition", "flashcard"]
+requires-python = ">=3.10,<3.14"
+urls.Homepage = "https://github.com/open-spaced-repetition/py-fsrs"
+urls.Docs = "https://open-spaced-repetition.github.io/py-fsrs/fsrs.html"
+urls.Issues = "https://github.com/open-spaced-repetition/py-fsrs/issues"
+keywords = [
+    "active-recall",
+    "anki",
+    "flashcards",
+    "free-spaced-repetition-scheduler",
+    "fsrs",
+    "language-learning",
+    "leitner-system",
+    "review",
+    "review-scheduler",
+    "scheduler",
+    "sm2",
+    "spaced-repetition",
+    "spaced-repetition-scheduler",
+    "srs",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Education",
+    "Topic :: Education :: Computer Aided Instruction (CAI)",
+    "Topic :: Office/Business :: Scheduling",
+    "Topic :: Text Processing :: Linguistic",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Utilities",
+    "Typing :: Typed",
+]
+
 dependencies = []
-requires-python = ">=3.10"
 
-[project.urls]
-Homepage = "https://github.com/open-spaced-repetition/py-fsrs"
-
+# Runtime extras you want users to install from PyPI
 [project.optional-dependencies]
-dev = ["pytest", "ruff", "setuptools", "torch", "numpy", "pandas", "uv", "pytest-xdist", "pdoc", "tqdm", "pytest-cov"]
-optimizer = ["torch", "numpy", "pandas", "tqdm"]
+# so *users* can do: uv add "fsrs[optimizer]" or uv pip install "fsrs[optimizer]".
+optimizer = [
+    "numpy>=2.2.6",
+    "pandas>=2.3.2",
+    "torch>=2.8.0",
+    "tqdm>=4.67.1",
+]
+
+# Groups are for contributors; install with: uv sync --group NAME
+# Developer-only deps under [dependency-groups],
+# so uv sync can install them for contributors,
+# groups are not published to PyPI, so they’re not visible to end users.
+[dependency-groups]
+# umbrella group that pulls in all dev-time groups
+dev = [
+    "pdoc>=15.0.4",
+    "pytest>=8.4.1",
+    "pytest-cov>=6.2.1",
+    "pytest-xdist>=3.8.0",
+    "ruff>=0.12.11",
+]
+
+# uv’s own config block for this project (not PyPI metadata).
+[tool.uv]
+# Whether to enable experimental, preview features.
+preview = true
+# Treat this repo as an installable *package*, not just a “virtual” project.
+# Result: `uv sync` / `uv run` will install *this library itself* into the venv in
+# editable mode, not only its dependencies.
+package = true
+
+# Cache “hints” you (or CI) can hash to decide when to rebuild an editable install
+# or reuse a cached environment. uv doesn’t read these at runtime; they’re for automation
+# (meaning: your own scripts/CI pipelines).
+cache-keys = [
+    { file = "pyproject.toml" }, # Rebuild if project config changes.
+    { file = "uv.lock" }, # Rebuild if exact dependency versions change.
+    { dir = "src" }, # Rebuild on library source edits.
+    { dir = "tests" }, # Rebuild on test edits (keeps test env fresh).
+    { file = "README.md" }, # Rebuild if docs used in build change.
+]
+
+# Control where uv resolves packages from.
+[tool.uv.sources]
+# Always use the local workspace copy of "fsrs" instead of a PyPI release.
+# In mono-repo (meaning: multiple projects in one repo) or local dev, this guarantees
+# uv uses your checked-out code.
+fsrs = { workspace = true }
+
+# -------- uv build backend (fast and strict) --------
+# PEP 517/518: tells installers (pip/uv) how to build/install this project.
+# For Python libraries, an editable install is the standard:
+# it enables scripts, plugins, metadata, compiled code, and proper src/ behavior.
+# uv follows these standards and installs your package by default, ensuring everything “just works.”
+[build-system]
+# Ensure the chosen backend is present. A version range keeps CI reproducible
+# (meaning: stable over time) while allowing safe updates.
+requires = ["uv_build>=0.8.7,<0.9.0"]
+# Use uv’s build backend. It is fast and strict, supports PEP 660 editable installs,
+# and produces correct distribution metadata for tooling.
+build-backend = "uv_build"
+
+# Settings specific to uv_build.
+[tool.uv.build-backend]
+# Declare the “src/” layout so imports come from the installed package, not the repo root.
+# Prevents path leaks (meaning: accidental local imports) and matches end-user installs.
+module-root = "src"
+# The single top-level package name under ./src. The backend validates this structure
+# to catch layout mistakes early.
+module-name = "fsrs"
 
 [tool.pytest.ini_options]
-pythonpath = "."
+# Keep imports simple (src/ layout)
+pythonpath = ["src"]
+# Only look here for tests
+testpaths = ["tests"]
+
+addopts = [
+    "--color=yes",
+    "--cov-config=pyproject.toml", # be explicit about the config source
+]

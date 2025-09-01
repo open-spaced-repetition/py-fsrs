@@ -13,23 +13,20 @@ urls.Homepage = "https://github.com/open-spaced-repetition/py-fsrs"
 urls.Docs = "https://open-spaced-repetition.github.io/py-fsrs/fsrs.html"
 urls.Issues = "https://github.com/open-spaced-repetition/py-fsrs/issues"
 keywords = [
-    "anki",
-    "fsrs",
-    "srs",
-    "spaced-repetition-scheduler",
-    "spaced-repetition",
-    "free-spaced-repetition-scheduler",
-    "srs",
-    "leitner-system",
-    "fsrs",
-    "sm2",
+    "active-recall",
     "anki",
     "flashcards",
-    "scheduler",
+    "free-spaced-repetition-scheduler",
+    "fsrs",
+    "language-learning",
+    "leitner-system",
     "review",
     "review-scheduler",
-    "active-recall",
-    "language-learning",
+    "scheduler",
+    "sm2",
+    "spaced-repetition",
+    "spaced-repetition-scheduler",
+    "srs",
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -113,13 +110,10 @@ cache-keys = [
 fsrs = { workspace = true }
 
 # -------- uv build backend (fast and strict) --------
-# For a Python library, an editable install is the spec-aligned (meaning:
-# follows the standard) workflow. It enables scripts, plugins, metadata, compiled
-# code, and correct src/ behavior. uv follows these standards and installs your
-# package by default so everything “just works”, Many features only “exist” after install
-# because they’re defined by packaging standards, not by simply having files on disk.
-# ======================================================================
 # PEP 517/518: tells installers (pip/uv) how to build/install this project.
+# For Python libraries, an editable install is the standard:
+# it enables scripts, plugins, metadata, compiled code, and proper src/ behavior.
+# uv follows these standards and installs your package by default, ensuring everything “just works.”
 [build-system]
 # Ensure the chosen backend is present. A version range keeps CI reproducible
 # (meaning: stable over time) while allowing safe updates.

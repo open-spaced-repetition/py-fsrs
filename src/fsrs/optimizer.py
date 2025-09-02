@@ -46,6 +46,7 @@ try:
         64  # up to the first 64 reviews of each card are used for optimization
     )
 
+
     class Optimizer:
         """
         The FSRS optimizer.
@@ -383,16 +384,16 @@ try:
 
             first_again_reviews_df = first_reviews_df.loc[
                 first_reviews_df["rating"] == Rating.Again
-            ]
+                ]
             first_hard_reviews_df = first_reviews_df.loc[
                 first_reviews_df["rating"] == Rating.Hard
-            ]
+                ]
             first_good_reviews_df = first_reviews_df.loc[
                 first_reviews_df["rating"] == Rating.Good
-            ]
+                ]
             first_easy_reviews_df = first_reviews_df.loc[
                 first_reviews_df["rating"] == Rating.Easy
-            ]
+                ]
 
             # compute the probability of the user clicking again/hard/good/easy given it's their first review
             num_first_again = len(first_again_reviews_df)
@@ -457,16 +458,16 @@ try:
 
             again_reviews_df = non_first_reviews_df.loc[
                 non_first_reviews_df["rating"] == Rating.Again
-            ]
+                ]
             hard_reviews_df = non_first_reviews_df.loc[
                 non_first_reviews_df["rating"] == Rating.Hard
-            ]
+                ]
             good_reviews_df = non_first_reviews_df.loc[
                 non_first_reviews_df["rating"] == Rating.Good
-            ]
+                ]
             easy_reviews_df = non_first_reviews_df.loc[
                 non_first_reviews_df["rating"] == Rating.Easy
-            ]
+                ]
 
             # compute the probability of the user clicking hard/good/easy given they correctly recalled the card
             num_hard = len(hard_reviews_df)
@@ -669,6 +670,5 @@ except ImportError:
             raise ImportError(
                 'Optimizer is not installed.\nInstall it with: pip install "fsrs[optimizer]"'
             )
-
 
 __all__ = ["Optimizer"]

@@ -9,6 +9,8 @@ Classes:
 """
 
 from __future__ import annotations
+
+import json
 from collections.abc import Sequence
 import math
 from datetime import datetime, timezone, timedelta
@@ -142,11 +144,11 @@ class Scheduler:
         parameters: Sequence[float] = DEFAULT_PARAMETERS,
         desired_retention: float = 0.9,
         learning_steps: tuple[timedelta, ...] | list[timedelta] = (
-            timedelta(minutes=1),
-            timedelta(minutes=10),
+                timedelta(minutes=1),
+                timedelta(minutes=10),
         ),
         relearning_steps: tuple[timedelta, ...] | list[timedelta] = (
-            timedelta(minutes=10),
+                timedelta(minutes=10),
         ),
         maximum_interval: int = 36500,
         enable_fuzzing: bool = True,
@@ -301,8 +303,8 @@ class Scheduler:
                                 next_interval = self.learning_steps[0] * 1.5
                             elif card.step == 0 and len(self.learning_steps) >= 2:
                                 next_interval = (
-                                    self.learning_steps[0] + self.learning_steps[1]
-                                ) / 2.0
+                                                    self.learning_steps[0] + self.learning_steps[1]
+                                                ) / 2.0
                             else:
                                 next_interval = self.learning_steps[card.step]
 
@@ -424,8 +426,8 @@ class Scheduler:
                                 next_interval = self.relearning_steps[0] * 1.5
                             elif card.step == 0 and len(self.relearning_steps) >= 2:
                                 next_interval = (
-                                    self.relearning_steps[0] + self.relearning_steps[1]
-                                ) / 2.0
+                                                    self.relearning_steps[0] + self.relearning_steps[1]
+                                                ) / 2.0
                             else:
                                 next_interval = self.relearning_steps[card.step]
 
@@ -532,6 +534,32 @@ class Scheduler:
             enable_fuzzing=enable_fuzzing,
         )
 
+    def to_json(self) -> str:
+        """
+        Returns a JSON-serializable representation of the Scheduler object.
+
+        This method is specifically useful for storing Scheduler objects in a database.
+
+        Returns:
+            A JSON representation of the Scheduler object.
+        """
+
+        return json.dumps(self.to_dict())
+
+    @staticmethod
+    def from_json(source_json: str) -> Scheduler:
+        """
+        Creates a Scheduler object from an existing dictionary.
+
+        Args:
+            source_dict: A dictionary representing an existing Scheduler object.
+
+        Returns:
+            A Scheduler object created from the provided dictionary.
+        """
+
+        return Scheduler.from_dict(json.loads(source_json))
+
     def _clamp_difficulty(self, *, difficulty: float) -> float:
         if isinstance(difficulty, (float, int)):
             difficulty = min(max(difficulty, MIN_DIFFICULTY), MAX_DIFFICULTY)
@@ -581,8 +609,8 @@ class Scheduler:
 
     def _short_term_stability(self, *, stability: float, rating: Rating) -> float:
         short_term_stability_increase = (
-            math.e ** (self.parameters[17] * (rating - 3 + self.parameters[18]))
-        ) * (stability ** -self.parameters[19])
+                                            math.e ** (self.parameters[17] * (rating - 3 + self.parameters[18]))
+                                        ) * (stability ** -self.parameters[19])
 
         if rating in (Rating.Good, Rating.Easy):
             if isinstance(short_term_stability_increase, (float, int)):
@@ -726,8 +754,8 @@ class Scheduler:
         min_ivl, max_ivl = _get_fuzz_range(interval_days=interval_days)
 
         fuzzed_interval_days = (
-            random() * (max_ivl - min_ivl + 1)
-        ) + min_ivl  # the next interval is a random value between min_ivl and max_ivl
+                                   random() * (max_ivl - min_ivl + 1)
+                               ) + min_ivl  # the next interval is a random value between min_ivl and max_ivl
 
         fuzzed_interval_days = min(round(fuzzed_interval_days), self.maximum_interval)
 

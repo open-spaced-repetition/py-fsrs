@@ -549,13 +549,13 @@ class Scheduler:
     @staticmethod
     def from_json(source_json: str) -> Scheduler:
         """
-        Creates a Scheduler object from an existing dictionary.
+        Creates a Scheduler object from an existing JSON.
 
         Args:
-            source_dict: A dictionary representing an existing Scheduler object.
+            source_json: A JSON representing an existing Scheduler object.
 
         Returns:
-            A Scheduler object created from the provided dictionary.
+            A Scheduler object created from the provided JSON.
         """
 
         return Scheduler.from_dict(json.loads(source_json))

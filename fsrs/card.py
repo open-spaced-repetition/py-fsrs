@@ -10,6 +10,8 @@ Classes:
 """
 
 from __future__ import annotations
+
+import json
 from enum import IntEnum
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -140,6 +142,32 @@ class Card:
             due=due,
             last_review=last_review,
         )
+
+    def to_json(self) -> str:
+        """
+        Returns a JSON-serializable representation of the Card object.
+
+        This method is specifically useful for storing Card objects in a database.
+
+        Returns:
+            A JSON representation of the Card object.
+        """
+
+        return json.dumps(self.to_dict())
+
+    @staticmethod
+    def from_json(source_json: str) -> Card:
+        """
+        Creates a Card object from an existing JSON.
+
+        Args:
+            source_json: A JSON representing an existing Card object.
+
+        Returns:
+            A Card object created from the provided JSON.
+        """
+
+        return Card.from_dict(json.loads(source_json))
 
 
 __all__ = ["Card", "State"]

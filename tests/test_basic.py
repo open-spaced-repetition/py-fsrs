@@ -164,6 +164,7 @@ class TestPyFSRS:
 
         # card object's to_dict() method makes it JSON serializable
         assert type(json.dumps(card.to_dict())) is str
+        assert type(card.to_json()) is str
 
         # we can reconstruct a copy of the card object equivalent to the original
         card_dict = card.to_dict()
@@ -171,6 +172,12 @@ class TestPyFSRS:
 
         assert vars(card) == vars(copied_card)
         assert card.to_dict() == copied_card.to_dict()
+
+        card_json = card.to_json()
+        copied_card = Card.from_json(card_json)
+
+        assert vars(card) == vars(copied_card)
+        assert card.to_json() == copied_card.to_json()
 
         # (x2) perform the above tests once more with a repeated card
         reviewed_card, _ = scheduler.review_card(
@@ -181,6 +188,7 @@ class TestPyFSRS:
             json.dumps(reviewed_card.__dict__)
 
         assert type(json.dumps(reviewed_card.to_dict())) is str
+        assert type(reviewed_card.to_json()) is str
 
         reviewed_card_dict = reviewed_card.to_dict()
         copied_reviewed_card = Card.from_dict(reviewed_card_dict)
@@ -191,6 +199,16 @@ class TestPyFSRS:
         # original card and repeated card are different
         assert vars(card) != vars(reviewed_card)
         assert card.to_dict() != reviewed_card.to_dict()
+
+        reviewed_card_json = reviewed_card.to_json()
+        copied_reviewed_card = Card.from_json(reviewed_card_json)
+
+        assert vars(reviewed_card) == vars(copied_reviewed_card)
+        assert reviewed_card.to_json() == copied_reviewed_card.to_json()
+
+        # original card and repeated card are different
+        assert vars(card) != vars(reviewed_card)
+        assert card.to_json() != reviewed_card.to_json()
 
     def test_ReviewLog_serialize(self):
         scheduler = Scheduler()
@@ -206,11 +224,16 @@ class TestPyFSRS:
 
         # review_log object's to_dict() method makes it JSON serializable
         assert type(json.dumps(review_log.to_dict())) is str
+        assert type(review_log.to_json()) is str
 
         # we can reconstruct a copy of the review_log object equivalent to the original
         review_log_dict = review_log.to_dict()
         copied_review_log = ReviewLog.from_dict(review_log_dict)
         assert review_log.to_dict() == copied_review_log.to_dict()
+
+        review_log_json = review_log.to_json()
+        copied_review_log = ReviewLog.from_json(review_log_json)
+        assert review_log.to_json() == copied_review_log.to_json()
 
         # (x2) perform the above tests once more with a review_log from a reviewed card
         rating = Rating.Good
@@ -230,6 +253,14 @@ class TestPyFSRS:
 
         # original review log and next review log are different
         assert review_log.to_dict() != next_review_log.to_dict()
+
+        next_review_log_json = next_review_log.to_json()
+        copied_next_review_log = ReviewLog.from_json(next_review_log_json)
+
+        assert next_review_log.to_json() == copied_next_review_log.to_json()
+
+        # original review log and next review log are different
+        assert review_log.to_json() != next_review_log.to_json()
 
     def test_custom_scheduler_args(self):
         scheduler = Scheduler(
@@ -348,12 +379,18 @@ class TestPyFSRS:
 
         # Scheduler objects are json-serializable through its .to_dict() method
         assert type(json.dumps(scheduler.to_dict())) is str
+        assert type(scheduler.to_json()) is str
 
         # scheduler can be serialized and de-serialized while remaining the same
         scheduler_dict = scheduler.to_dict()
         copied_scheduler = Scheduler.from_dict(scheduler_dict)
         assert vars(scheduler) == vars(copied_scheduler)
         assert scheduler.to_dict() == copied_scheduler.to_dict()
+
+        scheduler_json = scheduler.to_json()
+        copied_scheduler = Scheduler.from_json(scheduler_json)
+        assert vars(scheduler) == vars(copied_scheduler)
+        assert scheduler.to_json() == copied_scheduler.to_json()
 
     def test_good_learning_steps(self):
         scheduler = Scheduler()

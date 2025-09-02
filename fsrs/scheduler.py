@@ -9,6 +9,8 @@ Classes:
 """
 
 from __future__ import annotations
+
+import json
 from collections.abc import Sequence
 import math
 from datetime import datetime, timezone, timedelta
@@ -531,6 +533,32 @@ class Scheduler:
             maximum_interval=maximum_interval,
             enable_fuzzing=enable_fuzzing,
         )
+
+    def to_json(self) -> str:
+        """
+        Returns a JSON-serializable representation of the Scheduler object.
+
+        This method is specifically useful for storing Scheduler objects in a database.
+
+        Returns:
+            A JSON representation of the Scheduler object.
+        """
+
+        return json.dumps(self.to_dict())
+
+    @staticmethod
+    def from_json(source_json: str) -> Scheduler:
+        """
+        Creates a Scheduler object from an existing dictionary.
+
+        Args:
+            source_dict: A dictionary representing an existing Scheduler object.
+
+        Returns:
+            A Scheduler object created from the provided dictionary.
+        """
+
+        return Scheduler.from_dict(json.loads(source_json))
 
     def _clamp_difficulty(self, *, difficulty: float) -> float:
         if isinstance(difficulty, (float, int)):

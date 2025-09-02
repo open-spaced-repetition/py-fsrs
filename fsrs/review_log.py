@@ -10,6 +10,8 @@ Classes:
 """
 
 from __future__ import annotations
+
+import json
 from enum import IntEnum
 from dataclasses import dataclass
 from datetime import datetime
@@ -89,6 +91,32 @@ class ReviewLog:
             review_datetime=review_datetime,
             review_duration=review_duration,
         )
+
+    def to_json(self) -> str:
+        """
+        Returns a JSON-serializable representation of the ReviewLog object.
+
+        This method is specifically useful for storing ReviewLog objects in a database.
+
+        Returns:
+            A JSON representation of the ReviewLog object.
+        """
+
+        return json.dumps(self.to_dict())
+
+    @staticmethod
+    def from_json(source_json: str) -> ReviewLog:
+        """
+        Creates a ReviewLog object from an existing JSON.
+
+        Args:
+            source_json: A JSON representing an existing ReviewLog object.
+
+        Returns:
+            A ReviewLog object created from the provided JSON.
+        """
+
+        return ReviewLog.from_dict(json.loads(source_json))
 
 
 __all__ = ["ReviewLog", "Rating"]

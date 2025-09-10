@@ -178,6 +178,9 @@ new_review_log = ReviewLog.from_dict(review_log_dict)
 
 ## Optimizer (optional)
 
+> [!NOTE]
+> The Optimizer is not currently supported for Python 3.14
+
 If you have a collection of `ReviewLog` objects, you can optionally reuse them to compute an optimal set of parameters for the `Scheduler` to make it more accurate at scheduling reviews. You can also compute an optimal retention rate to reduce the future workload of your reviews.
 
 ### Installation

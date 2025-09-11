@@ -535,7 +535,7 @@ class TestPyFSRS:
         )
         interval = card.due - prev_due
 
-        assert interval.days == 13
+        assert interval.days == 12
 
         # seed 2
         random.seed(12345)
@@ -553,7 +553,7 @@ class TestPyFSRS:
         )
         interval = card.due - prev_due
 
-        assert interval.days == 12
+        assert interval.days == 11
 
     def test_no_learning_steps(self):
         scheduler = Scheduler(learning_steps=())

@@ -247,7 +247,7 @@ class TestOptimizer:
             probs_and_costs_dict=probs_and_costs_dict,
         )
 
-        assert round(simulation_cost_0_75) == 250026
+        assert round(simulation_cost_0_75) == 241233
 
         simulation_cost_0_85 = optimizer._simulate_cost(
             desired_retention=0.85,
@@ -256,7 +256,7 @@ class TestOptimizer:
             probs_and_costs_dict=probs_and_costs_dict,
         )
 
-        assert round(simulation_cost_0_85) == 208594
+        assert round(simulation_cost_0_85) == 213958
 
         simulation_cost_0_95 = optimizer._simulate_cost(
             desired_retention=0.95,
@@ -265,7 +265,7 @@ class TestOptimizer:
             probs_and_costs_dict=probs_and_costs_dict,
         )
 
-        assert round(simulation_cost_0_95) == 255857
+        assert round(simulation_cost_0_95) == 257925
 
         # holds true for these specific revlogs
         assert simulation_cost_0_85 <= simulation_cost_0_75

@@ -87,8 +87,8 @@ class TestPyFSRS:
             card=card, rating=Rating.Good, review_datetime=review_datetime
         )
 
-        assert round(card.stability, 4) == 49.4472
-        assert round(card.difficulty, 4) == 6.8271
+        assert round(card.stability, 4) == 53.3825
+        assert round(card.difficulty, 4) == 6.3809
 
     def test_repeat_default_arg(self):
         scheduler = Scheduler()

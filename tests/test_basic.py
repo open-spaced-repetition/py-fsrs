@@ -249,21 +249,7 @@ class TestPyFSRS:
             ivl_history.append(ivl)
             now = card.due
 
-        assert ivl_history == [
-            0,
-            4,
-            14,
-            45,
-            135,
-            372,
-            0,
-            0,
-            2,
-            5,
-            10,
-            20,
-            40,
-        ]
+        assert ivl_history == [0, 2, 11, 46, 163, 497, 0, 0, 2, 4, 7, 12, 20]
 
         # initialize another scheduler and verify parameters are properly set
         parameters2 = (

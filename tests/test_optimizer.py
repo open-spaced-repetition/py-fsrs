@@ -12,27 +12,27 @@ from datetime import datetime, timezone, timedelta
 
 
 test_optimal_parameters = [
-    0.07181179205417863,
-    1.1771,
-    3.016031528328984,
-    16.1507,
-    7.313588988324146,
-    0.3119116156472349,
-    2.1325475249616583,
-    0.02668484845216306,
-    1.3685438167248498,
-    0.03286122728404283,
-    0.8861484775736176,
-    1.856174600815682,
-    0.09059541606248055,
-    0.27523877674548947,
-    2.3456405140066834,
-    0.4568750726208301,
-    3.0004,
-    0.7787402478565422,
-    0.31745415553393075,
-    0.24515670639930176,
-    0.5849145294103553,
+    0.12340357383516173,
+    1.2931,
+    2.397673571899466,
+    8.2956,
+    6.686820427099132,
+    0.45021679958387956,
+    3.077875127553957,
+    0.053520395733247045,
+    1.6539992229052127,
+    0.1466206769107436,
+    0.6300772488850335,
+    1.611965002575047,
+    0.012840136810798864,
+    0.34853762746216305,
+    1.8878958285806287,
+    0.8546376191171063,
+    1.8729,
+    0.6748536823468675,
+    0.20451266082721842,
+    0.22622814695113844,
+    0.46030603398979064,
 ]
 
 
@@ -247,7 +247,7 @@ class TestOptimizer:
             probs_and_costs_dict=probs_and_costs_dict,
         )
 
-        assert round(simulation_cost_0_75) == 250026
+        assert round(simulation_cost_0_75) == 239312
 
         simulation_cost_0_85 = optimizer._simulate_cost(
             desired_retention=0.85,
@@ -256,7 +256,7 @@ class TestOptimizer:
             probs_and_costs_dict=probs_and_costs_dict,
         )
 
-        assert round(simulation_cost_0_85) == 208594
+        assert round(simulation_cost_0_85) == 209967
 
         simulation_cost_0_95 = optimizer._simulate_cost(
             desired_retention=0.95,
@@ -265,7 +265,7 @@ class TestOptimizer:
             probs_and_costs_dict=probs_and_costs_dict,
         )
 
-        assert round(simulation_cost_0_95) == 255857
+        assert round(simulation_cost_0_95) == 262009
 
         # holds true for these specific revlogs
         assert simulation_cost_0_85 <= simulation_cost_0_75

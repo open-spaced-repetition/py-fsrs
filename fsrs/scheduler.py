@@ -18,28 +18,29 @@ from dataclasses import dataclass
 from fsrs.card import Card, State
 from fsrs.review_log import ReviewLog, Rating
 
+FSRS_DEFAULT_DECAY = 0.1542
 DEFAULT_PARAMETERS = (
-    0.2172,
-    1.1771,
-    3.2602,
-    16.1507,
-    7.0114,
-    0.57,
-    2.0966,
-    0.0069,
-    1.5261,
-    0.112,
-    1.0178,
-    1.849,
-    0.1133,
-    0.3127,
-    2.2934,
-    0.2191,
-    3.0004,
-    0.7536,
-    0.3332,
-    0.1437,
-    0.2,
+    0.212,
+    1.2931,
+    2.3065,
+    8.2956,
+    6.4133,
+    0.8334,
+    3.0194,
+    0.001,
+    1.8722,
+    0.1666,
+    0.796,
+    1.4835,
+    0.0614,
+    0.2629,
+    1.6483,
+    0.6014,
+    1.8729,
+    0.5425,
+    0.0912,
+    0.0658,
+    FSRS_DEFAULT_DECAY,
 )
 
 STABILITY_MIN = 0.001
@@ -251,7 +252,9 @@ class Scheduler:
                 # update the card's stability and difficulty
                 if card.stability is None and card.difficulty is None:
                     card.stability = self._initial_stability(rating=rating)
-                    card.difficulty = self._initial_difficulty(rating=rating)
+                    card.difficulty = self._initial_difficulty(
+                        rating=rating, clamp=True
+                    )
 
                 elif days_since_last_review is not None and days_since_last_review < 1:
                     card.stability = self._short_term_stability(
@@ -555,12 +558,13 @@ class Scheduler:
 
         return initial_stability
 
-    def _initial_difficulty(self, *, rating: Rating) -> float:
+    def _initial_difficulty(self, *, rating: Rating, clamp: bool) -> float:
         initial_difficulty = (
             self.parameters[4] - (math.e ** (self.parameters[5] * (rating - 1))) + 1
         )
 
-        initial_difficulty = self._clamp_difficulty(difficulty=initial_difficulty)
+        if clamp:
+            initial_difficulty = self._clamp_difficulty(difficulty=initial_difficulty)
 
         return initial_difficulty
 
@@ -605,7 +609,7 @@ class Scheduler:
         def _mean_reversion(*, arg_1: float, arg_2: float) -> float:
             return self.parameters[7] * arg_1 + (1 - self.parameters[7]) * arg_2
 
-        arg_1 = self._initial_difficulty(rating=Rating.Easy)
+        arg_1 = self._initial_difficulty(rating=Rating.Easy, clamp=False)
 
         delta_difficulty = -(self.parameters[6] * (rating - 3))
         arg_2 = difficulty + _linear_damping(

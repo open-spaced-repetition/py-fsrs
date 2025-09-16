@@ -575,9 +575,9 @@ class Scheduler:
         )
 
         if not isinstance(next_interval, Number):  # type(next_interval) is torch.Tensor
-            next_interval = next_interval.detach()
+            next_interval = next_interval.detach().item()
 
-        next_interval = round(float(next_interval))  # intervals are full days
+        next_interval = round(next_interval)  # intervals are full days
 
         # must be at least 1 day long
         next_interval = max(next_interval, 1)

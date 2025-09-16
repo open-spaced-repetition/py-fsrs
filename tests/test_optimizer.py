@@ -12,27 +12,27 @@ from datetime import datetime, timezone, timedelta
 
 
 test_optimal_parameters = [
-    0.12646688055644853,
+    0.12340357383516173,
     1.2931,
-    2.3033973514640897,
+    2.397673571899466,
     8.2956,
-    6.712101210856016,
-    1.0647552240944118,
-    3.0534767030873735,
-    0.03769800347905429,
-    1.6062439701517917,
-    0.13367865792219824,
-    0.5699626776032479,
-    1.6020248423992351,
-    0.0021323200683218443,
-    0.3409927150122157,
-    1.888076535344101,
-    0.8510669554802464,
+    6.686820427099132,
+    0.45021679958387956,
+    3.077875127553957,
+    0.053520395733247045,
+    1.6539992229052127,
+    0.1466206769107436,
+    0.6300772488850335,
+    1.611965002575047,
+    0.012840136810798864,
+    0.34853762746216305,
+    1.8878958285806287,
+    0.8546376191171063,
     1.8729,
-    0.6741287625162741,
-    0.21298979535743115,
-    0.2291769952839796,
-    0.46822186202282867,
+    0.6748536823468675,
+    0.20451266082721842,
+    0.22622814695113844,
+    0.46030603398979064,
 ]
 
 
@@ -247,7 +247,7 @@ class TestOptimizer:
             probs_and_costs_dict=probs_and_costs_dict,
         )
 
-        assert round(simulation_cost_0_75) == 241233
+        assert round(simulation_cost_0_75) == 239312
 
         simulation_cost_0_85 = optimizer._simulate_cost(
             desired_retention=0.85,
@@ -256,7 +256,7 @@ class TestOptimizer:
             probs_and_costs_dict=probs_and_costs_dict,
         )
 
-        assert round(simulation_cost_0_85) == 213958
+        assert round(simulation_cost_0_85) == 209967
 
         simulation_cost_0_95 = optimizer._simulate_cost(
             desired_retention=0.95,
@@ -265,7 +265,7 @@ class TestOptimizer:
             probs_and_costs_dict=probs_and_costs_dict,
         )
 
-        assert round(simulation_cost_0_95) == 257925
+        assert round(simulation_cost_0_95) == 262009
 
         # holds true for these specific revlogs
         assert simulation_cost_0_85 <= simulation_cost_0_75

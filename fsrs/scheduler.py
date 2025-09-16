@@ -573,6 +573,11 @@ class Scheduler:
             (self.desired_retention ** (1 / self._DECAY)) - 1
         )
 
+        if not isinstance(
+            next_interval, (float, int)
+        ):  # type(next_interval) is torch.Tensor
+            next_interval = next_interval.detach()
+
         next_interval = round(float(next_interval))  # intervals are full days
 
         # must be at least 1 day long

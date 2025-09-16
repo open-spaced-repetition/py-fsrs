@@ -10,6 +10,7 @@ Classes:
 
 from __future__ import annotations
 from collections.abc import Sequence
+from numbers import Number
 import math
 from datetime import datetime, timezone, timedelta
 from copy import copy
@@ -536,7 +537,7 @@ class Scheduler:
         )
 
     def _clamp_difficulty(self, *, difficulty: float) -> float:
-        if isinstance(difficulty, (float, int)):
+        if isinstance(difficulty, Number):
             difficulty = min(max(difficulty, MIN_DIFFICULTY), MAX_DIFFICULTY)
         else:  # type(difficulty) is torch.Tensor
             difficulty = difficulty.clamp(min=MIN_DIFFICULTY, max=MAX_DIFFICULTY)
@@ -544,7 +545,7 @@ class Scheduler:
         return difficulty
 
     def _clamp_stability(self, *, stability: float) -> float:
-        if isinstance(stability, (float, int)):
+        if isinstance(stability, Number):
             stability = max(stability, STABILITY_MIN)
         else:  # type(stability) is torch.Tensor
             stability = stability.clamp(min=STABILITY_MIN)
@@ -573,9 +574,7 @@ class Scheduler:
             (self.desired_retention ** (1 / self._DECAY)) - 1
         )
 
-        if not isinstance(
-            next_interval, (float, int)
-        ):  # type(next_interval) is torch.Tensor
+        if not isinstance(next_interval, Number):  # type(next_interval) is torch.Tensor
             next_interval = next_interval.detach()
 
         next_interval = round(float(next_interval))  # intervals are full days
@@ -594,7 +593,7 @@ class Scheduler:
         ) * (stability ** -self.parameters[19])
 
         if rating in (Rating.Good, Rating.Easy):
-            if isinstance(short_term_stability_increase, (float, int)):
+            if isinstance(short_term_stability_increase, Number):
                 short_term_stability_increase = max(short_term_stability_increase, 1.0)
             else:  # type(short_term_stability_increase) is torch.Tensor
                 short_term_stability_increase = short_term_stability_increase.clamp(

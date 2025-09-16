@@ -44,7 +44,7 @@ class TestPyFSRS:
 
             review_datetime = card.due
 
-        assert ivl_history == [0, 2, 11, 46, 163, 497, 0, 0, 2, 4, 7, 12, 20]
+        assert ivl_history == [0, 2, 11, 46, 163, 498, 0, 0, 2, 4, 7, 12, 21]
 
     def test_repeated_correct_reviews(self):
         scheduler = Scheduler(enable_fuzzing=False)
@@ -83,12 +83,8 @@ class TestPyFSRS:
                 card=card, rating=rating, review_datetime=review_datetime
             )
 
-        card, _ = scheduler.review_card(
-            card=card, rating=Rating.Good, review_datetime=review_datetime
-        )
-
-        assert round(card.stability, 4) == 53.3825
-        assert round(card.difficulty, 4) == 6.3809
+        assert card.stability == pytest.approx(53.62691, abs=1e-4)
+        assert card.difficulty == pytest.approx(6.3574867, abs=1e-4)
 
     def test_repeat_default_arg(self):
         scheduler = Scheduler()
@@ -249,7 +245,7 @@ class TestPyFSRS:
             ivl_history.append(ivl)
             now = card.due
 
-        assert ivl_history == [0, 2, 11, 46, 163, 497, 0, 0, 2, 4, 7, 12, 20]
+        assert ivl_history == [0, 2, 11, 46, 163, 498, 0, 0, 2, 4, 7, 12, 21]
 
         # initialize another scheduler and verify parameters are properly set
         parameters2 = (

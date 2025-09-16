@@ -252,7 +252,9 @@ class Scheduler:
                 # update the card's stability and difficulty
                 if card.stability is None and card.difficulty is None:
                     card.stability = self._initial_stability(rating=rating)
-                    card.difficulty = self._initial_difficulty(rating=rating)
+                    card.difficulty = self._initial_difficulty(
+                        rating=rating, clamp=True
+                    )
 
                 elif days_since_last_review is not None and days_since_last_review < 1:
                     card.stability = self._short_term_stability(
@@ -556,12 +558,13 @@ class Scheduler:
 
         return initial_stability
 
-    def _initial_difficulty(self, *, rating: Rating) -> float:
+    def _initial_difficulty(self, *, rating: Rating, clamp: bool) -> float:
         initial_difficulty = (
             self.parameters[4] - (math.e ** (self.parameters[5] * (rating - 1))) + 1
         )
 
-        initial_difficulty = self._clamp_difficulty(difficulty=initial_difficulty)
+        if clamp:
+            initial_difficulty = self._clamp_difficulty(difficulty=initial_difficulty)
 
         return initial_difficulty
 
@@ -606,7 +609,7 @@ class Scheduler:
         def _mean_reversion(*, arg_1: float, arg_2: float) -> float:
             return self.parameters[7] * arg_1 + (1 - self.parameters[7]) * arg_2
 
-        arg_1 = self._initial_difficulty(rating=Rating.Easy)
+        arg_1 = self._initial_difficulty(rating=Rating.Easy, clamp=False)
 
         delta_difficulty = -(self.parameters[6] * (rating - 3))
         arg_2 = difficulty + _linear_damping(

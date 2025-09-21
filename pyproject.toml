@@ -30,3 +30,8 @@ optimizer = ["torch", "numpy", "pandas", "tqdm"]
 [tool.pytest.ini_options]
 pythonpath = "."
 filterwarnings = ["error"]
+
+[tool.mypy]
+files = ["fsrs/review_log.py"]
+follow_imports = "skip"
+exclude = "build"

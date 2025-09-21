@@ -13,6 +13,7 @@ from __future__ import annotations
 from enum import IntEnum
 from dataclasses import dataclass
 from datetime import datetime
+from typing import TypedDict
 
 
 class Rating(IntEnum):
@@ -26,6 +27,13 @@ class Rating(IntEnum):
     Easy = 4
 
 
+class ReviewLogDict(TypedDict):
+    card_id: int
+    rating: int
+    review_datetime: str
+    review_duration: int | None
+
+
 @dataclass
 class ReviewLog:
     """
@@ -35,7 +43,7 @@ class ReviewLog:
         card_id: The id of the card being reviewed.
         rating: The rating given to the card during the review.
         review_datetime: The date and time of the review.
-        review_duration: The number of miliseconds it took to review the card or None if unspecified.
+        review_duration: The number of milliseconds it took to review the card or None if unspecified.
     """
 
     card_id: int
@@ -45,7 +53,7 @@ class ReviewLog:
 
     def to_dict(
         self,
-    ) -> dict[str, dict | int | str | None]:
+    ) -> ReviewLogDict:
         """
         Returns a JSON-serializable dictionary representation of the ReviewLog object.
 
@@ -55,18 +63,16 @@ class ReviewLog:
             A dictionary representation of the ReviewLog object.
         """
 
-        return_dict = {
+        return {
             "card_id": self.card_id,
-            "rating": self.rating.value,
+            "rating": int(self.rating),
             "review_datetime": self.review_datetime.isoformat(),
             "review_duration": self.review_duration,
         }
 
-        return return_dict
-
     @staticmethod
     def from_dict(
-        source_dict: dict[str, dict | int | str | None],
+        source_dict: ReviewLogDict,
     ) -> ReviewLog:
         """
         Creates a ReviewLog object from an existing dictionary.
@@ -78,16 +84,11 @@ class ReviewLog:
             A ReviewLog object created from the provided dictionary.
         """
 
-        card_id = source_dict["card_id"]
-        rating = Rating(int(source_dict["rating"]))
-        review_datetime = datetime.fromisoformat(source_dict["review_datetime"])
-        review_duration = source_dict["review_duration"]
-
         return ReviewLog(
-            card_id=card_id,
-            rating=rating,
-            review_datetime=review_datetime,
-            review_duration=review_duration,
+            card_id=source_dict["card_id"],
+            rating=Rating(int(source_dict["rating"])),
+            review_datetime=datetime.fromisoformat(source_dict["review_datetime"]),
+            review_duration=source_dict["review_duration"],
         )
 
 

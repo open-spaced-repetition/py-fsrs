@@ -33,7 +33,6 @@ filterwarnings = ["error"]
 
 [tool.mypy]
 files = ["fsrs"]
-exclude = "build"
 
 [[tool.mypy.overrides]]
 module = ["fsrs.optimizer"]

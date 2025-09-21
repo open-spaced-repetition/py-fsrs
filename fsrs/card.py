@@ -14,6 +14,7 @@ from enum import IntEnum
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import time
+from typing import TypedDict
 
 
 class State(IntEnum):
@@ -24,6 +25,16 @@ class State(IntEnum):
     Learning = 1
     Review = 2
     Relearning = 3
+
+
+class CardDict(TypedDict):
+    card_id: int
+    state: int
+    step: int | None
+    stability: float | None
+    difficulty: float | None
+    due: str
+    last_review: str | None
 
 
 @dataclass(init=False)
@@ -81,7 +92,7 @@ class Card:
 
         self.last_review = last_review
 
-    def to_dict(self) -> dict[str, int | float | str | None]:
+    def to_dict(self) -> CardDict:
         """
         Returns a JSON-serializable dictionary representation of the Card object.
 
@@ -91,7 +102,7 @@ class Card:
             A dictionary representation of the Card object.
         """
 
-        return_dict = {
+        return {
             "card_id": self.card_id,
             "state": self.state.value,
             "step": self.step,
@@ -101,10 +112,8 @@ class Card:
             "last_review": self.last_review.isoformat() if self.last_review else None,
         }
 
-        return return_dict
-
     @staticmethod
-    def from_dict(source_dict: dict[str, int | float | str | None]) -> Card:
+    def from_dict(source_dict: CardDict) -> Card:
         """
         Creates a Card object from an existing dictionary.
 
@@ -115,30 +124,22 @@ class Card:
             A Card object created from the provided dictionary.
         """
 
-        card_id = int(source_dict["card_id"])
-        state = State(int(source_dict["state"]))
-        step = source_dict["step"]
-        stability = (
-            float(source_dict["stability"]) if source_dict["stability"] else None
-        )
-        difficulty = (
-            float(source_dict["difficulty"]) if source_dict["difficulty"] else None
-        )
-        due = datetime.fromisoformat(source_dict["due"])
-        last_review = (
-            datetime.fromisoformat(source_dict["last_review"])
-            if source_dict["last_review"]
-            else None
-        )
-
         return Card(
-            card_id=card_id,
-            state=state,
-            step=step,
-            stability=stability,
-            difficulty=difficulty,
-            due=due,
-            last_review=last_review,
+            card_id=int(source_dict["card_id"]),
+            state=State(int(source_dict["state"])),
+            step=source_dict["step"],
+            stability=(
+                float(source_dict["stability"]) if source_dict["stability"] else None
+            ),
+            difficulty=(
+                float(source_dict["difficulty"]) if source_dict["difficulty"] else None
+            ),
+            due=datetime.fromisoformat(source_dict["due"]),
+            last_review=(
+                datetime.fromisoformat(source_dict["last_review"])
+                if source_dict["last_review"]
+                else None
+            ),
         )
 
 

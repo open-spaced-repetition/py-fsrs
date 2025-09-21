@@ -32,6 +32,9 @@ pythonpath = "."
 filterwarnings = ["error"]
 
 [tool.mypy]
-files = ["fsrs/review_log.py"]
-follow_imports = "skip"
+files = ["fsrs"]
 exclude = "build"
+
+[[tool.mypy.overrides]]
+module = ["fsrs.optimizer"]
+ignore_errors = true

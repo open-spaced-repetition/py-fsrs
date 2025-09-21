@@ -260,8 +260,10 @@ class Scheduler:
 
         match card.state:
             case State.Learning:
+                assert card.step is not None
+
                 # update the card's stability and difficulty
-                if card.stability is None and card.difficulty is None:
+                if card.stability is None or card.difficulty is None:
                     card.stability = self._initial_stability(rating=rating)
                     card.difficulty = self._initial_difficulty(
                         rating=rating, clamp=True
@@ -346,6 +348,9 @@ class Scheduler:
                             next_interval = timedelta(days=next_interval_days)
 
             case State.Review:
+                assert card.stability is not None
+                assert card.difficulty is not None
+
                 # update the card's stability and difficulty
                 if days_since_last_review is not None and days_since_last_review < 1:
                     card.stability = self._short_term_stability(
@@ -389,6 +394,10 @@ class Scheduler:
                         next_interval = timedelta(days=next_interval_days)
 
             case State.Relearning:
+                assert card.stability is not None
+                assert card.difficulty is not None
+                assert card.step is not None
+
                 # update the card's stability and difficulty
                 if days_since_last_review is not None and days_since_last_review < 1:
                     card.stability = self._short_term_stability(

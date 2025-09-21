@@ -8,6 +8,10 @@ Py-FSRS is the official Python implementation of the FSRS scheduler algorithm, w
 from fsrs.scheduler import Scheduler
 from fsrs.card import Card, State
 from fsrs.review_log import ReviewLog, Rating
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from fsrs.optimizer import Optimizer
 
 
 # lazy load the Optimizer module due to heavy dependencies

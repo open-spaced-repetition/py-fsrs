@@ -118,10 +118,10 @@ FUZZ_RANGES = [
 
 
 class SchedulerDict(TypedDict):
-    parameters: list  # change to list[float]?
+    parameters: list[float]
     desired_retention: float
-    learning_steps: list  # change to list[int]
-    relearning_steps: list  # change to list[int]
+    learning_steps: list[int]
+    relearning_steps: list[int]
     maximum_interval: int
     enable_fuzzing: bool
 

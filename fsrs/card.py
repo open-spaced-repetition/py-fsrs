@@ -10,21 +10,11 @@ Classes:
 """
 
 from __future__ import annotations
-from enum import IntEnum
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import time
 from typing import TypedDict
-
-
-class State(IntEnum):
-    """
-    Enum representing the learning state of a Card object.
-    """
-
-    Learning = 1
-    Review = 2
-    Relearning = 3
+from fsrs.state import State
 
 
 class CardDict(TypedDict):
@@ -143,4 +133,4 @@ class Card:
         )
 
 
-__all__ = ["Card", "State"]
+__all__ = ["Card"]

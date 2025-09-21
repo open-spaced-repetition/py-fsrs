@@ -10,21 +10,10 @@ Classes:
 """
 
 from __future__ import annotations
-from enum import IntEnum
 from dataclasses import dataclass
 from datetime import datetime
 from typing import TypedDict
-
-
-class Rating(IntEnum):
-    """
-    Enum representing the four possible ratings when reviewing a card.
-    """
-
-    Again = 1
-    Hard = 2
-    Good = 3
-    Easy = 4
+from fsrs.rating import Rating
 
 
 class ReviewLogDict(TypedDict):
@@ -92,4 +81,4 @@ class ReviewLog:
         )
 
 
-__all__ = ["ReviewLog", "Rating"]
+__all__ = ["ReviewLog"]

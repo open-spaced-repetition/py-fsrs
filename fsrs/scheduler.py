@@ -16,8 +16,10 @@ from datetime import datetime, timezone, timedelta
 from copy import copy
 from random import random
 from dataclasses import dataclass
-from fsrs.card import Card, State
-from fsrs.review_log import ReviewLog, Rating
+from fsrs.state import State
+from fsrs.card import Card
+from fsrs.rating import Rating
+from fsrs.review_log import ReviewLog
 from typing import TypedDict
 
 FSRS_DEFAULT_DECAY = 0.1542

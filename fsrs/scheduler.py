@@ -120,6 +120,10 @@ FUZZ_RANGES = [
 
 
 class SchedulerDict(TypedDict):
+    """
+    JSON-serializable dictionary representation of a Scheduler object.
+    """
+
     parameters: list[float]
     desired_retention: float
     learning_steps: list[int]

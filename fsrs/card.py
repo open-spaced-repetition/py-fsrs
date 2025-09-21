@@ -18,6 +18,10 @@ from fsrs.state import State
 
 
 class CardDict(TypedDict):
+    """
+    JSON-serializable dictionary representation of a Card object.
+    """
+
     card_id: int
     state: int
     step: int | None

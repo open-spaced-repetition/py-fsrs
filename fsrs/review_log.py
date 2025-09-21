@@ -17,6 +17,10 @@ from fsrs.rating import Rating
 
 
 class ReviewLogDict(TypedDict):
+    """
+    JSON-serializable dictionary representation of a ReviewLog object.
+    """
+
     card_id: int
     rating: int
     review_datetime: str

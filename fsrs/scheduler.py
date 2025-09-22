@@ -10,14 +10,17 @@ Classes:
 
 from __future__ import annotations
 from collections.abc import Sequence
-from numbers import Number
+from numbers import Real
 import math
 from datetime import datetime, timezone, timedelta
 from copy import copy
 from random import random
 from dataclasses import dataclass
-from fsrs.card import Card, State
-from fsrs.review_log import ReviewLog, Rating
+from fsrs.state import State
+from fsrs.card import Card
+from fsrs.rating import Rating
+from fsrs.review_log import ReviewLog
+from typing import TypedDict
 
 FSRS_DEFAULT_DECAY = 0.1542
 DEFAULT_PARAMETERS = (
@@ -114,6 +117,19 @@ FUZZ_RANGES = [
         "factor": 0.05,
     },
 ]
+
+
+class SchedulerDict(TypedDict):
+    """
+    JSON-serializable dictionary representation of a Scheduler object.
+    """
+
+    parameters: list[float]
+    desired_retention: float
+    learning_steps: list[int]
+    relearning_steps: list[int]
+    maximum_interval: int
+    enable_fuzzing: bool
 
 
 @dataclass(init=False)
@@ -250,8 +266,10 @@ class Scheduler:
 
         match card.state:
             case State.Learning:
+                assert card.step is not None
+
                 # update the card's stability and difficulty
-                if card.stability is None and card.difficulty is None:
+                if card.stability is None or card.difficulty is None:
                     card.stability = self._initial_stability(rating=rating)
                     card.difficulty = self._initial_difficulty(
                         rating=rating, clamp=True
@@ -336,6 +354,9 @@ class Scheduler:
                             next_interval = timedelta(days=next_interval_days)
 
             case State.Review:
+                assert card.stability is not None
+                assert card.difficulty is not None
+
                 # update the card's stability and difficulty
                 if days_since_last_review is not None and days_since_last_review < 1:
                     card.stability = self._short_term_stability(
@@ -379,6 +400,10 @@ class Scheduler:
                         next_interval = timedelta(days=next_interval_days)
 
             case State.Relearning:
+                assert card.stability is not None
+                assert card.difficulty is not None
+                assert card.step is not None
+
                 # update the card's stability and difficulty
                 if days_since_last_review is not None and days_since_last_review < 1:
                     card.stability = self._short_term_stability(
@@ -475,7 +500,7 @@ class Scheduler:
 
     def to_dict(
         self,
-    ) -> dict[str, list | float | int | bool]:
+    ) -> SchedulerDict:
         """
         Returns a JSON-serializable dictionary representation of the Scheduler object.
 
@@ -485,7 +510,7 @@ class Scheduler:
             A dictionary representation of the Scheduler object.
         """
 
-        return_dict = {
+        return {
             "parameters": list(self.parameters),
             "desired_retention": self.desired_retention,
             "learning_steps": [
@@ -500,10 +525,8 @@ class Scheduler:
             "enable_fuzzing": self.enable_fuzzing,
         }
 
-        return return_dict
-
     @staticmethod
-    def from_dict(source_dict: dict[str, list | float | int | bool]) -> Scheduler:
+    def from_dict(source_dict: SchedulerDict) -> Scheduler:
         """
         Creates a Scheduler object from an existing dictionary.
 
@@ -514,41 +537,34 @@ class Scheduler:
             A Scheduler object created from the provided dictionary.
         """
 
-        parameters = source_dict["parameters"]
-        desired_retention = source_dict["desired_retention"]
-        learning_steps = [
-            timedelta(seconds=learning_step)
-            for learning_step in source_dict["learning_steps"]
-        ]
-        relearning_steps = [
-            timedelta(seconds=relearning_step)
-            for relearning_step in source_dict["relearning_steps"]
-        ]
-        maximum_interval = source_dict["maximum_interval"]
-        enable_fuzzing = source_dict["enable_fuzzing"]
-
         return Scheduler(
-            parameters=parameters,
-            desired_retention=desired_retention,
-            learning_steps=learning_steps,
-            relearning_steps=relearning_steps,
-            maximum_interval=maximum_interval,
-            enable_fuzzing=enable_fuzzing,
+            parameters=source_dict["parameters"],
+            desired_retention=source_dict["desired_retention"],
+            learning_steps=[
+                timedelta(seconds=learning_step)
+                for learning_step in source_dict["learning_steps"]
+            ],
+            relearning_steps=[
+                timedelta(seconds=relearning_step)
+                for relearning_step in source_dict["relearning_steps"]
+            ],
+            maximum_interval=source_dict["maximum_interval"],
+            enable_fuzzing=source_dict["enable_fuzzing"],
         )
 
     def _clamp_difficulty(self, *, difficulty: float) -> float:
-        if isinstance(difficulty, Number):
+        if isinstance(difficulty, Real):
             difficulty = min(max(difficulty, MIN_DIFFICULTY), MAX_DIFFICULTY)
         else:  # type(difficulty) is torch.Tensor
-            difficulty = difficulty.clamp(min=MIN_DIFFICULTY, max=MAX_DIFFICULTY)
+            difficulty = difficulty.clamp(min=MIN_DIFFICULTY, max=MAX_DIFFICULTY)  # type: ignore[attr-defined]
 
         return difficulty
 
     def _clamp_stability(self, *, stability: float) -> float:
-        if isinstance(stability, Number):
+        if isinstance(stability, Real):
             stability = max(stability, STABILITY_MIN)
         else:  # type(stability) is torch.Tensor
-            stability = stability.clamp(min=STABILITY_MIN)
+            stability = stability.clamp(min=STABILITY_MIN)  # type: ignore[attr-defined]
 
         return stability
 
@@ -574,7 +590,7 @@ class Scheduler:
             (self.desired_retention ** (1 / self._DECAY)) - 1
         )
 
-        if not isinstance(next_interval, Number):  # type(next_interval) is torch.Tensor
+        if not isinstance(next_interval, Real):  # type(next_interval) is torch.Tensor
             next_interval = next_interval.detach().item()
 
         next_interval = round(next_interval)  # intervals are full days
@@ -593,7 +609,7 @@ class Scheduler:
         ) * (stability ** -self.parameters[19])
 
         if rating in (Rating.Good, Rating.Easy):
-            if isinstance(short_term_stability_increase, Number):
+            if isinstance(short_term_stability_increase, Real):
                 short_term_stability_increase = max(short_term_stability_increase, 1.0)
             else:  # type(short_term_stability_increase) is torch.Tensor
                 short_term_stability_increase = short_term_stability_increase.clamp(

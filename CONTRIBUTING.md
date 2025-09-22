@@ -24,11 +24,21 @@ Now you're ready to make changes to files in the `fsrs` directory and see your c
 
 ### Pass the checks
 
-In order for your contribution to be accepted, your code must pass the linting checks and unit tests.
+In order for your contribution to be accepted, your code must pass the formatting, linting and type checks as well as unit tests.
+
+Format your code with:
+```bash
+ruff format
+```
 
 Lint your code with:
 ```bash
 ruff check --fix
+```
+
+Type check your code with:
+```bash
+mypy
 ```
 
 Run the tests with:

@@ -16,6 +16,7 @@
     <a href="https://github.com/open-spaced-repetition/py-fsrs/blob/main/LICENSE" style="text-decoration: none;"><img src="https://img.shields.io/badge/License-MIT-brightgreen.svg"></a>
     <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json"></a>
     <a href="https://codecov.io/gh/open-spaced-repetition/py-fsrs" ><img src="https://codecov.io/gh/open-spaced-repetition/py-fsrs/graph/badge.svg?token=3G0FF6HZQD"/></a>
+    <a href="https://mypy-lang.org/"><img src="https://www.mypy-lang.org/static/mypy_badge.svg" /></a>
 </div>
 <br />
 

@@ -17,6 +17,7 @@
     <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json"></a>
     <a href="https://codecov.io/gh/open-spaced-repetition/py-fsrs" ><img src="https://codecov.io/gh/open-spaced-repetition/py-fsrs/graph/badge.svg?token=3G0FF6HZQD"/></a>
     <a href="https://mypy-lang.org/"><img src="https://www.mypy-lang.org/static/mypy_badge.svg" /></a>
+    <a href="https://interactive-forgetting-curve.streamlit.app/"><img src="https://img.shields.io/badge/-Streamlit-FF4B4B?style=flat&logo=streamlit&logoColor=white" ></a>
 </div>
 <br />
 
@@ -31,6 +32,7 @@
 - [Optimizer (optional)](#optimizer-optional)
 - [Reference](#reference)
 - [API Documentation](#api-documentation)
+- [Interactive Demo](#interactive-demo)
 - [Other FSRS implementations](#other-fsrs-implementations)
 - [Other SRS python packages](#other-srs-python-packages)
 - [Contribute](#contribute)
@@ -239,6 +241,10 @@ Rating.Easy # (==4) remembered the card easily
 ## API Documentation
 
 You can find additional documentation for py-fsrs [here](https://open-spaced-repetition.github.io/py-fsrs).
+
+## Interactive Demo
+
+Developers who'd like a visual understanding of how py-fsrs works can check out this [interactive-demo](https://interactive-forgetting-curve.streamlit.app/).
 
 ## Other FSRS implementations
 

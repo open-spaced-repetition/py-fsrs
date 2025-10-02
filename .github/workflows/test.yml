@@ -21,6 +21,8 @@ jobs:
 
         - name: Display Python version
           run: python -V
+        - name: Intentional failure for badge test
+          run: exit 1
         - name: Test with pytest
           run: uvx pytest tests/test_basic.py
 

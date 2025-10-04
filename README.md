@@ -217,10 +217,20 @@ scheduler = Scheduler(optimal_parameters)
 optimal_retention = optimizer.compute_optimal_retention(optimal_parameters)
 
 # initialize a new scheduler with both optimized parameters and retention
-scheduler = Scheduler(optimal_parameters, optimal_retention)
+optimal_scheduler = Scheduler(optimal_parameters, optimal_retention)
 ```
 
-Note: The computed optimal parameters and retention may be slightly different than the numbers computed by Anki for the same set of review logs. This is because the two implementations are slightly different and updated at different times. If you're interested in the official Rust-based Anki implementation, please see [here](https://github.com/open-spaced-repetition/fsrs-rs).
+> [!NOTE]
+> Note: The computed optimal parameters and retention may be slightly different than the numbers computed by Anki for the same set of review logs. This is because the two implementations are slightly different and updated at different times. If you're interested in the official Rust-based Anki implementation, please see [here](https://github.com/open-spaced-repetition/fsrs-rs).
+
+### Reschedule cards after optimization
+
+After creating a new scheduler with optimized parameters, you may want to reschedule/update each of your previous cards with this new scheduler.
+
+```python
+# repeat the following for each of your cards
+rescheduled_card = optimal_scheduler.reschedule_card(card, review_logs_for_that_card)
+```
 
 ## Reference
 

@@ -8,33 +8,34 @@ import pytest
 import random
 from copy import deepcopy
 import sys
+import re
+
+TEST_RATINGS_1 = (
+    Rating.Good,
+    Rating.Good,
+    Rating.Good,
+    Rating.Good,
+    Rating.Good,
+    Rating.Good,
+    Rating.Again,
+    Rating.Again,
+    Rating.Good,
+    Rating.Good,
+    Rating.Good,
+    Rating.Good,
+    Rating.Good,
+)
 
 
 class TestPyFSRS:
     def test_review_card(self):
         scheduler = Scheduler(enable_fuzzing=False)
 
-        ratings = (
-            Rating.Good,
-            Rating.Good,
-            Rating.Good,
-            Rating.Good,
-            Rating.Good,
-            Rating.Good,
-            Rating.Again,
-            Rating.Again,
-            Rating.Good,
-            Rating.Good,
-            Rating.Good,
-            Rating.Good,
-            Rating.Good,
-        )
-
         card = Card()
         review_datetime = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
 
         ivl_history = []
-        for rating in ratings:
+        for rating in TEST_RATINGS_1:
             card, _ = scheduler.review_card(
                 card=card, rating=rating, review_datetime=review_datetime
             )
@@ -222,24 +223,9 @@ class TestPyFSRS:
         card = Card()
         now = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
 
-        ratings = (
-            Rating.Good,
-            Rating.Good,
-            Rating.Good,
-            Rating.Good,
-            Rating.Good,
-            Rating.Good,
-            Rating.Again,
-            Rating.Again,
-            Rating.Good,
-            Rating.Good,
-            Rating.Good,
-            Rating.Good,
-            Rating.Good,
-        )
         ivl_history = []
 
-        for rating in ratings:
+        for rating in TEST_RATINGS_1:
             card, _ = scheduler.review_card(card, rating, now)
             ivl = (card.due - card.last_review).days
             ivl_history.append(ivl)
@@ -1010,6 +996,150 @@ class TestPyFSRS:
 
         assert card.state == State.Review
         assert card.step is None
+
+    def test_reschedule_card_same_scheduler(self):
+        scheduler = Scheduler(enable_fuzzing=False)
+
+        card = Card()
+
+        review_logs = []
+        for rating in TEST_RATINGS_1:
+            card, review_log = scheduler.review_card(
+                card=card, rating=rating, review_datetime=card.due
+            )
+            review_logs.append(review_log)
+
+        rescheduled_card = scheduler.reschedule_card(card=card, review_logs=review_logs)
+
+        assert card is not rescheduled_card
+        assert card == rescheduled_card
+
+    def test_reschedule_card_different_parameters(self):
+        scheduler = Scheduler(enable_fuzzing=False)
+
+        card = Card()
+
+        review_logs = []
+        for rating in TEST_RATINGS_1:
+            card, review_log = scheduler.review_card(
+                card=card, rating=rating, review_datetime=card.due
+            )
+            review_logs.append(review_log)
+
+        DIFFERENT_PARAMETERS = [
+            0.12340357383516173,
+            1.2931,
+            2.397673571899466,
+            8.2956,
+            6.686820427099132,
+            0.45021679958387956,
+            3.077875127553957,
+            0.053520395733247045,
+            1.6539992229052127,
+            0.1466206769107436,
+            0.6300772488850335,
+            1.611965002575047,
+            0.012840136810798864,
+            0.34853762746216305,
+            1.8878958285806287,
+            0.8546376191171063,
+            1.8729,
+            0.6748536823468675,
+            0.20451266082721842,
+            0.22622814695113844,
+            0.46030603398979064,
+        ]
+        assert scheduler.parameters != DIFFERENT_PARAMETERS
+        scheduler_with_different_parameters = Scheduler(parameters=DIFFERENT_PARAMETERS)
+        rescheduled_card = scheduler_with_different_parameters.reschedule_card(
+            card=card, review_logs=review_logs
+        )
+
+        assert card.card_id == rescheduled_card.card_id
+        assert card.state == rescheduled_card.state
+        assert card.step == rescheduled_card.step
+        assert card.stability != rescheduled_card.stability
+        assert card.difficulty != rescheduled_card.difficulty
+        assert card.last_review == rescheduled_card.last_review
+        assert card.due != rescheduled_card.due
+
+    def test_reschedule_card_different_desired_retention(self):
+        scheduler = Scheduler(enable_fuzzing=False)
+
+        card = Card()
+
+        review_logs = []
+        for rating in TEST_RATINGS_1:
+            card, review_log = scheduler.review_card(
+                card=card, rating=rating, review_datetime=card.due
+            )
+            review_logs.append(review_log)
+
+        DIFFERENT_DESIRED_RETENTION = 0.8
+        assert scheduler.desired_retention != DIFFERENT_DESIRED_RETENTION
+        scheduler_with_different_retention = Scheduler(
+            desired_retention=DIFFERENT_DESIRED_RETENTION
+        )
+        rescheduled_card = scheduler_with_different_retention.reschedule_card(
+            card=card, review_logs=review_logs
+        )
+
+        assert card.card_id == rescheduled_card.card_id
+        assert card.state == rescheduled_card.state
+        assert card.step == rescheduled_card.step
+        assert card.stability == rescheduled_card.stability
+        assert card.difficulty == rescheduled_card.difficulty
+        assert card.last_review == rescheduled_card.last_review
+        assert card.due < rescheduled_card.due
+
+    def test_reschedule_card_different_learning_steps(self):
+        scheduler = Scheduler(enable_fuzzing=False)
+
+        card = Card()
+
+        review_logs = []
+        for rating in TEST_RATINGS_1:
+            card, review_log = scheduler.review_card(
+                card=card, rating=rating, review_datetime=card.due
+            )
+            review_logs.append(review_log)
+
+        DIFFERENT_LEARNING_STEPS = [timedelta(minutes=1)] * len(review_logs)
+        assert scheduler.learning_steps != DIFFERENT_LEARNING_STEPS
+        scheduler_with_different_retention = Scheduler(
+            learning_steps=DIFFERENT_LEARNING_STEPS
+        )
+        rescheduled_card = scheduler_with_different_retention.reschedule_card(
+            card=card, review_logs=review_logs
+        )
+
+        assert card.card_id == rescheduled_card.card_id
+        assert card.state != rescheduled_card.state
+        assert card.step != rescheduled_card.step
+        assert card.stability == rescheduled_card.stability
+        assert card.difficulty == rescheduled_card.difficulty
+        assert card.last_review == rescheduled_card.last_review
+        assert card.due > rescheduled_card.due
+
+    def test_reschedule_card_wrong_review_logs(self):
+        scheduler = Scheduler(enable_fuzzing=False)
+
+        card = Card()
+
+        review_logs = []
+        for rating in TEST_RATINGS_1:
+            card, review_log = scheduler.review_card(
+                card=card, rating=rating, review_datetime=card.due
+            )
+            review_logs.append(review_log)
+
+        DIFFERENT_CARD_ID = 123
+        assert card.card_id != DIFFERENT_CARD_ID
+        review_logs[0].card_id = DIFFERENT_CARD_ID
+
+        EXPECTED_ERROR_MESSAGE = f"ReviewLog card_id {DIFFERENT_CARD_ID} does not match Card card_id {card.card_id}"
+        with pytest.raises(ValueError, match=re.escape(EXPECTED_ERROR_MESSAGE)):
+            _ = scheduler.reschedule_card(card=card, review_logs=review_logs)
 
     def test_Optimizer_lazy_loading(self):
         assert "fsrs.scheduler" in sys.modules

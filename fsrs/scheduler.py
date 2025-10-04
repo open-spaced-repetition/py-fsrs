@@ -511,7 +511,7 @@ class Scheduler:
             review_logs: A list of that card's review logs (order doesn't matter).
 
         Returns:
-            A new card that has rescheduled/updated with this current scheduler.
+            A new card that has been rescheduled/updated with this current scheduler.
 
         Raises:
             ValueError: If any of the review logs are for a card other than the one specified, this will raise an error.

@@ -498,6 +498,45 @@ class Scheduler:
 
         return card, review_log
 
+    def reschedule_card(self, card: Card, review_logs: list[ReviewLog]) -> Card:
+        """
+        Reschedules/updates the given card with the current scheduler provided that card's review logs.
+
+        If the current card was previously scheduled with a different scheduler, you may want to reschedule/update
+        it as if it had always been scheduled with this current scheduler. For example, you may want to reschedule
+        each of your cards with a new scheduler after computing the optimal parameters with the Optimizer.
+
+        Args:
+            card: The card to be rescheduled/updated.
+            review_logs: A list of that card's review logs (order doesn't matter).
+
+        Returns:
+            A new card that has rescheduled/updated with this current scheduler.
+
+        Raises:
+            ValueError: If any of the review logs are for a card other than the one specified, this will raise an error.
+
+        """
+
+        for review_log in review_logs:
+            if review_log.card_id != card.card_id:
+                raise ValueError(
+                    f"ReviewLog card_id {review_log.card_id} does not match Card card_id {card.card_id}"
+                )
+
+        review_logs = sorted(review_logs, key=lambda log: log.review_datetime)
+
+        rescheduled_card = Card(card_id=card.card_id, due=card.due)
+
+        for review_log in review_logs:
+            rescheduled_card, _ = self.review_card(
+                card=rescheduled_card,
+                rating=review_log.rating,
+                review_datetime=review_log.review_datetime,
+            )
+
+        return rescheduled_card
+
     def to_dict(
         self,
     ) -> SchedulerDict:

@@ -38,12 +38,18 @@ ruff check --fix
 
 Type check your code with:
 ```bash
-mypy
+ty check
 ```
 
-Run the tests with:
+Run basic tests with:
 ```bash
-pytest
+pytest tests/test_basic.py
+```
+
+Run optimizer tests with:
+```bash
+# -n auto is for running multiple unit tests in parallel
+pytest tests/test_optimizer.py -n auto
 ```
 
 Additionally, you are strongly encouraged to contribute your own tests to [tests/](tests/) to help make Py-FSRS more reliable.

@@ -14,6 +14,7 @@
     <a href="https://pypi.org/project/fsrs/"><img src="https://img.shields.io/pypi/v/fsrs"></a>
     <a href="https://pypi.org/project/fsrs/"><img src="https://img.shields.io/badge/python-3.10%2B-blue"></a>
     <a href="https://github.com/open-spaced-repetition/py-fsrs/blob/main/LICENSE" style="text-decoration: none;"><img src="https://img.shields.io/badge/License-MIT-brightgreen.svg"></a>
+    <a href="https://open-spaced-repetition.github.io/py-fsrs/fsrs.html" style="text-decoration: none;"><img src="https://img.shields.io/badge/docs-py--fsrs-brightgreen.svg"></a>
     <a href="https://github.com/open-spaced-repetition/py-fsrs/actions/workflows/test.yml"><img src="https://github.com/open-spaced-repetition/py-fsrs/actions/workflows/test.yml/badge.svg" /></a>
     <a href="https://codecov.io/gh/open-spaced-repetition/py-fsrs" ><img src="https://codecov.io/gh/open-spaced-repetition/py-fsrs/graph/badge.svg?token=3G0FF6HZQD"/></a>
     <a href="https://github.com/astral-sh/ty"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ty/main/assets/badge/v0.json" /></a>

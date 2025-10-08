@@ -106,8 +106,8 @@ class Card:
             "last_review": self.last_review.isoformat() if self.last_review else None,
         }
 
-    @staticmethod
-    def from_dict(source_dict: CardDict) -> Card:
+    @classmethod
+    def from_dict(cls, source_dict: CardDict) -> Card:
         """
         Creates a Card object from an existing dictionary.
 
@@ -118,7 +118,7 @@ class Card:
             A Card object created from the provided dictionary.
         """
 
-        return Card(
+        return cls(
             card_id=int(source_dict["card_id"]),
             state=State(int(source_dict["state"])),
             step=source_dict["step"],

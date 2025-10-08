@@ -564,8 +564,8 @@ class Scheduler:
             "enable_fuzzing": self.enable_fuzzing,
         }
 
-    @staticmethod
-    def from_dict(source_dict: SchedulerDict) -> Scheduler:
+    @classmethod
+    def from_dict(cls, source_dict: SchedulerDict) -> Scheduler:
         """
         Creates a Scheduler object from an existing dictionary.
 
@@ -576,7 +576,7 @@ class Scheduler:
             A Scheduler object created from the provided dictionary.
         """
 
-        return Scheduler(
+        return cls(
             parameters=source_dict["parameters"],
             desired_retention=source_dict["desired_retention"],
             learning_steps=[

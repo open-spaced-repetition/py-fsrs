@@ -63,8 +63,9 @@ class ReviewLog:
             "review_duration": self.review_duration,
         }
 
-    @staticmethod
+    @classmethod
     def from_dict(
+        cls,
         source_dict: ReviewLogDict,
     ) -> ReviewLog:
         """
@@ -77,7 +78,7 @@ class ReviewLog:
             A ReviewLog object created from the provided dictionary.
         """
 
-        return ReviewLog(
+        return cls(
             card_id=source_dict["card_id"],
             rating=Rating(int(source_dict["rating"])),
             review_datetime=datetime.fromisoformat(source_dict["review_datetime"]),

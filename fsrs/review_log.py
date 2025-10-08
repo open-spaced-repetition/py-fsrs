@@ -13,6 +13,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from typing import TypedDict
+from typing_extensions import Self
 from fsrs.rating import Rating
 
 
@@ -67,7 +68,7 @@ class ReviewLog:
     def from_dict(
         cls,
         source_dict: ReviewLogDict,
-    ) -> ReviewLog:
+    ) -> Self:
         """
         Creates a ReviewLog object from an existing dictionary.
 

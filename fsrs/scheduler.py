@@ -21,6 +21,7 @@ from fsrs.card import Card
 from fsrs.rating import Rating
 from fsrs.review_log import ReviewLog
 from typing import TypedDict
+from typing_extensions import Self
 
 FSRS_DEFAULT_DECAY = 0.1542
 DEFAULT_PARAMETERS = (
@@ -565,7 +566,7 @@ class Scheduler:
         }
 
     @classmethod
-    def from_dict(cls, source_dict: SchedulerDict) -> Scheduler:
+    def from_dict(cls, source_dict: SchedulerDict) -> Self:
         """
         Creates a Scheduler object from an existing dictionary.
 

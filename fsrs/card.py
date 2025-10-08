@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 import time
 from typing import TypedDict
+from typing_extensions import Self
 from fsrs.state import State
 
 
@@ -107,7 +108,7 @@ class Card:
         }
 
     @classmethod
-    def from_dict(cls, source_dict: CardDict) -> Card:
+    def from_dict(cls, source_dict: CardDict) -> Self:
         """
         Creates a Card object from an existing dictionary.
 

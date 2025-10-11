@@ -22,12 +22,13 @@ jobs:
         - name: Display Python version
           run: python -V
 
-        - name: Install dependencies
+        - name: Install default dependencies + pytest
           run: |
-            uv pip install .
+            pip install .
+            pip install pytest
 
         - name: Test with pytest
-          run: uvx pytest tests/test_basic.py
+          run: pytest tests/test_basic.py
 
     test_optimizer:
 
@@ -48,7 +49,7 @@ jobs:
       - name: Display Python version
         run: python -V
 
-      - name: Install dependencies
+      - name: Install all optional dependencies
         run: |
           uv pip install ".[optimizer,dev]"
 

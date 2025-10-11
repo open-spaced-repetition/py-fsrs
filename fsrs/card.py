@@ -13,6 +13,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import time
+import json
 from typing import TypedDict
 from typing_extensions import Self
 from fsrs.state import State
@@ -89,9 +90,7 @@ class Card:
 
     def to_dict(self) -> CardDict:
         """
-        Returns a JSON-serializable dictionary representation of the Card object.
-
-        This method is specifically useful for storing Card objects in a database.
+        Returns a dictionary representation of the Card object.
 
         Returns:
             A dictionary representation of the Card object.
@@ -136,6 +135,30 @@ class Card:
                 else None
             ),
         )
+
+    def to_json(self) -> str:
+        """
+        Returns a JSON-serialized string of the Card object.
+
+        Returns:
+            str: A JSON-serialized string of the Card object.
+        """
+        return json.dumps(self.to_dict())
+
+    @classmethod
+    def from_json(cls, source_json: str) -> Self:
+        """
+        Creates a Card object from a JSON-serialized string.
+
+        Args:
+            source_json: A JSON-serialized string of an existing Card object.
+
+        Returns:
+            Self: A Card object created from the JSON string.
+        """
+
+        source_dict: CardDict = json.loads(source_json)
+        return cls.from_dict(source_dict=source_dict)
 
 
 __all__ = ["Card"]

@@ -14,6 +14,7 @@ from numbers import Real
 import math
 from datetime import datetime, timezone, timedelta
 from copy import copy
+import json
 from random import random
 from dataclasses import dataclass
 from fsrs.state import State
@@ -542,9 +543,7 @@ class Scheduler:
         self,
     ) -> SchedulerDict:
         """
-        Returns a JSON-serializable dictionary representation of the Scheduler object.
-
-        This method is specifically useful for storing Scheduler objects in a database.
+        Returns a dictionary representation of the Scheduler object.
 
         Returns:
             A dictionary representation of the Scheduler object.
@@ -591,6 +590,31 @@ class Scheduler:
             maximum_interval=source_dict["maximum_interval"],
             enable_fuzzing=source_dict["enable_fuzzing"],
         )
+
+    def to_json(self) -> str:
+        """
+        Returns a JSON-serialzed string of the Scheduler object.
+
+        Returns:
+            str: A JSON-serialized string of the Scheduler object.
+        """
+
+        return json.dumps(self.to_dict())
+
+    @classmethod
+    def from_json(cls, source_json: str) -> Self:
+        """
+        Creates a Scheduler object from a JSON-serialized string.
+
+        Args:
+            source_json: A JSON-serialzed string of an existing Scheduler object.
+
+        Returns:
+            Self: A Scheduler object created from the JSON string.
+        """
+
+        source_dict: SchedulerDict = json.loads(source_json)
+        return cls.from_dict(source_dict=source_dict)
 
     def _clamp_difficulty(self, *, difficulty: float) -> float:
         if isinstance(difficulty, Real):

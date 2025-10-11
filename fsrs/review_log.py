@@ -13,6 +13,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from typing import TypedDict
+import json
 from typing_extensions import Self
 from fsrs.rating import Rating
 
@@ -49,9 +50,7 @@ class ReviewLog:
         self,
     ) -> ReviewLogDict:
         """
-        Returns a JSON-serializable dictionary representation of the ReviewLog object.
-
-        This method is specifically useful for storing ReviewLog objects in a database.
+        Returns a dictionary representation of the ReviewLog object.
 
         Returns:
             A dictionary representation of the ReviewLog object.
@@ -85,6 +84,31 @@ class ReviewLog:
             review_datetime=datetime.fromisoformat(source_dict["review_datetime"]),
             review_duration=source_dict["review_duration"],
         )
+
+    def to_json(self) -> str:
+        """
+        Returns a JSON-serialized string of the ReviewLog object.
+
+        Returns:
+            str: A JSON-serialized string of the ReviewLog object.
+        """
+
+        return json.dumps(self.to_dict())
+
+    @classmethod
+    def from_json(cls, source_json: str) -> Self:
+        """
+        Creates a ReviewLog object from a JSON-serialized string.
+
+        Args:
+            source_json: A JSON-serialized string of an existing ReviewLog object.
+
+        Returns:
+            Self: A ReviewLog object created from the JSON string.
+        """
+
+        source_dict: ReviewLogDict = json.loads(source_json)
+        return cls.from_dict(source_dict=source_dict)
 
 
 __all__ = ["ReviewLog"]

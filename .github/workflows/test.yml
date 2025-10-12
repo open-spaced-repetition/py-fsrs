@@ -24,8 +24,8 @@ jobs:
 
         - name: Install default dependencies + pytest
           run: |
-            pip install .
-            pip install pytest
+            uv pip install .
+            uv pip install pytest
 
         - name: Test with pytest
           run: pytest tests/test_basic.py

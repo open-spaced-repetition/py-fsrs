@@ -7,8 +7,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+
+      - name: Set up Python with uv
+        uses: astral-sh/setup-uv@v5
         with:
+          enable-cache: true
           python-version: '3.14'
 
       - name: Install dependencies

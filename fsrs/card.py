@@ -93,7 +93,7 @@ class Card:
         Returns a dictionary representation of the Card object.
 
         Returns:
-            A dictionary representation of the Card object.
+            CardDict: A dictionary representation of the Card object.
         """
 
         return {
@@ -115,7 +115,7 @@ class Card:
             source_dict: A dictionary representing an existing Card object.
 
         Returns:
-            A Card object created from the provided dictionary.
+            Self: A Card object created from the provided dictionary.
         """
 
         return cls(

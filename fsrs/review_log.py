@@ -53,7 +53,7 @@ class ReviewLog:
         Returns a dictionary representation of the ReviewLog object.
 
         Returns:
-            A dictionary representation of the ReviewLog object.
+            ReviewLogDict: A dictionary representation of the ReviewLog object.
         """
 
         return {
@@ -75,7 +75,7 @@ class ReviewLog:
             source_dict: A dictionary representing an existing ReviewLog object.
 
         Returns:
-            A ReviewLog object created from the provided dictionary.
+            Self: A ReviewLog object created from the provided dictionary.
         """
 
         return cls(

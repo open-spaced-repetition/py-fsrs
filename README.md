@@ -57,7 +57,7 @@ scheduler = Scheduler()
 
 Create a new Card object
 ```python
-# note: all new cards are 'due' immediately upon creation
+# NOTE: all new cards are due immediately upon creation
 card = Card()
 ```
 
@@ -101,7 +101,7 @@ You can initialize the FSRS scheduler with your own custom parameters.
 ```python
 from datetime import timedelta
 
-# note: the following arguments are also the defaults
+# NOTE: the following arguments are also the defaults
 scheduler = Scheduler(
     parameters = (
             0.212,

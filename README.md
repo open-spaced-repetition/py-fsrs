@@ -165,20 +165,20 @@ print(f"There is a {retrievability} probability that this card is remembered.")
 # > There is a 0.94 probability that this card is remembered.
 ```
 
-### Serialization
+### JSON-Serialization
 
-`Scheduler`, `Card` and `ReviewLog` objects are all JSON-serializable via their `to_dict` and `from_dict` methods for easy database storage:
+`Scheduler`, `Card` and `ReviewLog` objects are all JSON-serializable via their `to_json` and `from_json` methods for easy database storage, network requests, etc:
 
 ```python
-# serialize before storage
-scheduler_dict = scheduler.to_dict()
-card_dict = card.to_dict()
-review_log_dict = review_log.to_dict()
+# serialize
+scheduler_json = scheduler.to_json()
+card_json = card.to_json()
+review_log_json = review_log.to_json()
 
-# deserialize from dict
-new_scheduler = Scheduler.from_dict(scheduler_dict)
-new_card = Card.from_dict(card_dict)
-new_review_log = ReviewLog.from_dict(review_log_dict)
+# deserialize
+scheduler = Scheduler.from_json(scheduler_json)
+card = Card.from_json(card_json)
+review_log = ReviewLog.from_json(review_log_json)
 ```
 
 ## Optimizer (optional)

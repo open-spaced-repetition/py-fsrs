@@ -14,6 +14,7 @@ from numbers import Real
 import math
 from datetime import datetime, timezone, timedelta
 from copy import copy
+import json
 from random import random
 from dataclasses import dataclass
 from fsrs.state import State
@@ -21,6 +22,7 @@ from fsrs.card import Card
 from fsrs.rating import Rating
 from fsrs.review_log import ReviewLog
 from typing import TypedDict
+from typing_extensions import Self
 
 FSRS_DEFAULT_DECAY = 0.1542
 DEFAULT_PARAMETERS = (
@@ -541,9 +543,7 @@ class Scheduler:
         self,
     ) -> SchedulerDict:
         """
-        Returns a JSON-serializable dictionary representation of the Scheduler object.
-
-        This method is specifically useful for storing Scheduler objects in a database.
+        Returns a dictionary representation of the Scheduler object.
 
         Returns:
             A dictionary representation of the Scheduler object.
@@ -564,8 +564,8 @@ class Scheduler:
             "enable_fuzzing": self.enable_fuzzing,
         }
 
-    @staticmethod
-    def from_dict(source_dict: SchedulerDict) -> Scheduler:
+    @classmethod
+    def from_dict(cls, source_dict: SchedulerDict) -> Self:
         """
         Creates a Scheduler object from an existing dictionary.
 
@@ -576,7 +576,7 @@ class Scheduler:
             A Scheduler object created from the provided dictionary.
         """
 
-        return Scheduler(
+        return cls(
             parameters=source_dict["parameters"],
             desired_retention=source_dict["desired_retention"],
             learning_steps=[
@@ -590,6 +590,34 @@ class Scheduler:
             maximum_interval=source_dict["maximum_interval"],
             enable_fuzzing=source_dict["enable_fuzzing"],
         )
+
+    def to_json(self, indent: int | str | None = None) -> str:
+        """
+        Returns a JSON-serialized string of the Scheduler object.
+
+        Args:
+            indent: Equivalent argument to the indent in json.dumps()
+
+        Returns:
+            str: A JSON-serialized string of the Scheduler object.
+        """
+
+        return json.dumps(self.to_dict(), indent=indent)
+
+    @classmethod
+    def from_json(cls, source_json: str) -> Self:
+        """
+        Creates a Scheduler object from a JSON-serialized string.
+
+        Args:
+            source_json: A JSON-serialized string of an existing Scheduler object.
+
+        Returns:
+            Self: A Scheduler object created from the JSON string.
+        """
+
+        source_dict: SchedulerDict = json.loads(source_json)
+        return cls.from_dict(source_dict=source_dict)
 
     def _clamp_difficulty(self, *, difficulty: float) -> float:
         if isinstance(difficulty, Real):

@@ -13,6 +13,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from typing import TypedDict
+import json
+from typing_extensions import Self
 from fsrs.rating import Rating
 
 
@@ -48,9 +50,7 @@ class ReviewLog:
         self,
     ) -> ReviewLogDict:
         """
-        Returns a JSON-serializable dictionary representation of the ReviewLog object.
-
-        This method is specifically useful for storing ReviewLog objects in a database.
+        Returns a dictionary representation of the ReviewLog object.
 
         Returns:
             A dictionary representation of the ReviewLog object.
@@ -63,10 +63,11 @@ class ReviewLog:
             "review_duration": self.review_duration,
         }
 
-    @staticmethod
+    @classmethod
     def from_dict(
+        cls,
         source_dict: ReviewLogDict,
-    ) -> ReviewLog:
+    ) -> Self:
         """
         Creates a ReviewLog object from an existing dictionary.
 
@@ -77,12 +78,40 @@ class ReviewLog:
             A ReviewLog object created from the provided dictionary.
         """
 
-        return ReviewLog(
+        return cls(
             card_id=source_dict["card_id"],
             rating=Rating(int(source_dict["rating"])),
             review_datetime=datetime.fromisoformat(source_dict["review_datetime"]),
             review_duration=source_dict["review_duration"],
         )
+
+    def to_json(self, indent: int | str | None = None) -> str:
+        """
+        Returns a JSON-serialized string of the ReviewLog object.
+
+        Args:
+            indent: Equivalent argument to the indent in json.dumps()
+
+        Returns:
+            str: A JSON-serialized string of the ReviewLog object.
+        """
+
+        return json.dumps(self.to_dict(), indent=indent)
+
+    @classmethod
+    def from_json(cls, source_json: str) -> Self:
+        """
+        Creates a ReviewLog object from a JSON-serialized string.
+
+        Args:
+            source_json: A JSON-serialized string of an existing ReviewLog object.
+
+        Returns:
+            Self: A ReviewLog object created from the JSON string.
+        """
+
+        source_dict: ReviewLogDict = json.loads(source_json)
+        return cls.from_dict(source_dict=source_dict)
 
 
 __all__ = ["ReviewLog"]

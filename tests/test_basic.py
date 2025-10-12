@@ -135,7 +135,7 @@ class TestPyFSRS:
         # card object's due datetime should be later than its last review
         assert card.due >= card.last_review
 
-    def test_Card_serialize(self):
+    def test_Card_dict_serialize(self):
         scheduler = Scheduler()
 
         # create card object the normal way
@@ -175,7 +175,35 @@ class TestPyFSRS:
         assert vars(card) != vars(reviewed_card)
         assert card.to_dict() != reviewed_card.to_dict()
 
-    def test_ReviewLog_serialize(self):
+    def test_Card_json_serialize(self):
+        scheduler = Scheduler()
+
+        # create card object the normal way
+        card = Card()
+
+        # we can reconstruct a copy of the card object equivalent to the original
+        card_json = card.to_json()
+        copied_card = Card.from_json(card_json)
+
+        assert card == copied_card
+        assert card.to_json() == copied_card.to_json()
+
+        # (x2) perform the above tests once more with a repeated card
+        reviewed_card, _ = scheduler.review_card(
+            card=card, rating=Rating.Good, review_datetime=datetime.now(timezone.utc)
+        )
+
+        reviewed_card_json = reviewed_card.to_json()
+        copied_reviewed_card = Card.from_json(reviewed_card_json)
+
+        assert reviewed_card == copied_reviewed_card
+        assert reviewed_card.to_json() == copied_reviewed_card.to_json()
+
+        # original card and repeated card are different
+        assert card != reviewed_card
+        assert card.to_json() != reviewed_card.to_json()
+
+    def test_ReviewLog_dict_serialize(self):
         scheduler = Scheduler()
 
         card = Card()
@@ -213,6 +241,64 @@ class TestPyFSRS:
 
         # original review log and next review log are different
         assert review_log.to_dict() != next_review_log.to_dict()
+
+    def test_ReviewLog_json_serialize(self):
+        scheduler = Scheduler()
+
+        card = Card()
+
+        card, review_log = scheduler.review_card(card=card, rating=Rating.Again)
+
+        # ReviewLog object is not naturally JSON-serializable
+        with pytest.raises(TypeError):
+            json.dumps(review_log.__dict__)
+
+        # we can reconstruct a copy of the ReviewLog object equivalent to the original
+        review_log_json = review_log.to_json()
+        copied_review_log = ReviewLog.from_json(review_log_json)
+
+        assert review_log == copied_review_log
+        assert review_log.to_json() == copied_review_log.to_json()
+
+        # (x2) perform the above tests one more with a review_log from a reviewed card
+        rating = Rating.Good
+        _, next_review_log = scheduler.review_card(
+            card=card, rating=rating, review_datetime=datetime.now(timezone.utc)
+        )
+
+        next_review_log_json = next_review_log.to_json()
+        copied_next_review_log = ReviewLog.from_json(next_review_log_json)
+
+        assert next_review_log == copied_next_review_log
+        assert next_review_log.to_json() == copied_next_review_log.to_json()
+
+        # original review log and next review lot are different
+        assert review_log != next_review_log
+        assert review_log.to_json() != next_review_log.to_json()
+
+    def test_Scheduler_dict_serialize(self):
+        scheduler = Scheduler()
+
+        # Scheduler objects are json-serializable through its .to_dict() method
+        assert type(json.dumps(scheduler.to_dict())) is str
+
+        # scheduler can be serialized and de-serialized while remaining the same
+        scheduler_dict = scheduler.to_dict()
+        copied_scheduler = Scheduler.from_dict(scheduler_dict)
+        assert vars(scheduler) == vars(copied_scheduler)
+        assert scheduler.to_dict() == copied_scheduler.to_dict()
+
+    def test_Scheduler_json_serialize(self):
+        scheduler = Scheduler()
+
+        # Scheduler objects are json-serializable through its .to_json() method
+        assert type(json.dumps(scheduler.to_json())) is str
+
+        # scheduler can be serialized and de-serialized while remaining the same
+        scheduler_json = scheduler.to_json()
+        copied_scheduler = Scheduler.from_json(source_json=scheduler_json)
+        assert scheduler == copied_scheduler
+        assert scheduler.to_json() == copied_scheduler.to_json()
 
     def test_custom_scheduler_args(self):
         scheduler = Scheduler(
@@ -296,18 +382,6 @@ class TestPyFSRS:
         assert card.state == State.Relearning
         retrievability = scheduler.get_card_retrievability(card=card)
         assert 0 <= retrievability <= 1
-
-    def test_Scheduler_serialize(self):
-        scheduler = Scheduler()
-
-        # Scheduler objects are json-serializable through its .to_dict() method
-        assert type(json.dumps(scheduler.to_dict())) is str
-
-        # scheduler can be serialized and de-serialized while remaining the same
-        scheduler_dict = scheduler.to_dict()
-        copied_scheduler = Scheduler.from_dict(scheduler_dict)
-        assert vars(scheduler) == vars(copied_scheduler)
-        assert scheduler.to_dict() == copied_scheduler.to_dict()
 
     def test_good_learning_steps(self):
         scheduler = Scheduler()

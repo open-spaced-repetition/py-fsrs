@@ -242,7 +242,7 @@ class TestPyFSRS:
         # original review log and next review log are different
         assert review_log.to_dict() != next_review_log.to_dict()
 
-    def testReviewLog_json_serialize(self):
+    def test_ReviewLog_json_serialize(self):
         scheduler = Scheduler()
 
         card = Card()

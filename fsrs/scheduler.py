@@ -593,7 +593,7 @@ class Scheduler:
 
     def to_json(self) -> str:
         """
-        Returns a JSON-serialzed string of the Scheduler object.
+        Returns a JSON-serialized string of the Scheduler object.
 
         Returns:
             str: A JSON-serialized string of the Scheduler object.
@@ -607,7 +607,7 @@ class Scheduler:
         Creates a Scheduler object from a JSON-serialized string.
 
         Args:
-            source_json: A JSON-serialzed string of an existing Scheduler object.
+            source_json: A JSON-serialized string of an existing Scheduler object.
 
         Returns:
             Self: A Scheduler object created from the JSON string.

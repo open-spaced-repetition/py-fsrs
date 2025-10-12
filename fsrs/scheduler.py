@@ -591,15 +591,18 @@ class Scheduler:
             enable_fuzzing=source_dict["enable_fuzzing"],
         )
 
-    def to_json(self) -> str:
+    def to_json(self, indent: int | str | None = None) -> str:
         """
         Returns a JSON-serialized string of the Scheduler object.
+
+        Args:
+            indent: Equivalent argument to the indent in json.dumps()
 
         Returns:
             str: A JSON-serialized string of the Scheduler object.
         """
 
-        return json.dumps(self.to_dict())
+        return json.dumps(self.to_dict(), indent=indent)
 
     @classmethod
     def from_json(cls, source_json: str) -> Self:

@@ -85,15 +85,18 @@ class ReviewLog:
             review_duration=source_dict["review_duration"],
         )
 
-    def to_json(self) -> str:
+    def to_json(self, indent: int | str | None = None) -> str:
         """
         Returns a JSON-serialized string of the ReviewLog object.
+
+        Args:
+            indent: Equivalent argument to the indent in json.dumps()
 
         Returns:
             str: A JSON-serialized string of the ReviewLog object.
         """
 
-        return json.dumps(self.to_dict())
+        return json.dumps(self.to_dict(), indent=indent)
 
     @classmethod
     def from_json(cls, source_json: str) -> Self:

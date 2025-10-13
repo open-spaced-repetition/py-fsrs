@@ -216,7 +216,7 @@ class Scheduler:
             current_datetime: The current date and time
 
         Returns:
-            The retrievability of the Card object.
+            float: The retrievability of the Card object.
         """
 
         if card.last_review is None:
@@ -246,7 +246,7 @@ class Scheduler:
             review_duration: The number of miliseconds it took to review the card or None if unspecified.
 
         Returns:
-            A tuple containing the updated, reviewed card and its corresponding review log.
+            tuple[Card,ReviewLog]: A tuple containing the updated, reviewed card and its corresponding review log.
 
         Raises:
             ValueError: If the `review_datetime` argument is not timezone-aware and set to UTC.
@@ -513,7 +513,7 @@ class Scheduler:
             review_logs: A list of that card's review logs (order doesn't matter).
 
         Returns:
-            A new card that has been rescheduled/updated with this current scheduler.
+            Card: A new card that has been rescheduled/updated with this current scheduler.
 
         Raises:
             ValueError: If any of the review logs are for a card other than the one specified, this will raise an error.
@@ -546,7 +546,7 @@ class Scheduler:
         Returns a dictionary representation of the Scheduler object.
 
         Returns:
-            A dictionary representation of the Scheduler object.
+            SchedulerDict: A dictionary representation of the Scheduler object.
         """
 
         return {
@@ -573,7 +573,7 @@ class Scheduler:
             source_dict: A dictionary representing an existing Scheduler object.
 
         Returns:
-            A Scheduler object created from the provided dictionary.
+            Self: A Scheduler object created from the provided dictionary.
         """
 
         return cls(
@@ -785,7 +785,7 @@ class Scheduler:
             interval: The calculated next interval, before fuzzing.
 
         Returns:
-            The new interval, after fuzzing.
+            timedelta: The new interval, after fuzzing.
         """
 
         interval_days = interval.days

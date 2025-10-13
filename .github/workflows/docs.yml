@@ -24,8 +24,8 @@ jobs:
           python-version: '3.13'
 
       # ADJUST THIS: install all dependencies (including pdoc)
-      - run: pip install -e .
-      - run: pip install pdoc
+      - run: uv pip install -e .
+      - run: uv pip install pdoc
       # ADJUST THIS: build your documentation into docs/.
       # We use a custom build script for pdoc itself, ideally you just run `pdoc -o docs/ ...` here.
       - run: pdoc fsrs --logo "https://raw.githubusercontent.com/open-spaced-repetition/py-fsrs/main/osr_logo.png" --favicon "https://raw.githubusercontent.com/open-spaced-repetition/py-fsrs/main/osr_logo.png" -o docs/

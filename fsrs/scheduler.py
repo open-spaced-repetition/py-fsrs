@@ -219,7 +219,7 @@ class Scheduler:
             float: The retrievability of the Card object.
         """
 
-        if card.last_review is None:
+        if card.last_review is None or card.stability is None:
             return 0
 
         if current_datetime is None:

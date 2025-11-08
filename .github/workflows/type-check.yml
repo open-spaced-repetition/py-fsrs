@@ -15,8 +15,8 @@ jobs:
           python-version: '3.14'
 
       - name: Install dependencies
-        run: uv pip install ty
+        run: uv add pyrefly --dev
 
-      - name: Run ty
-        run: ty check
+      - name: Run pyrefly
+        run: pyrefly check
       

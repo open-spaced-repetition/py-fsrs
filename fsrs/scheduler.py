@@ -219,7 +219,7 @@ class Scheduler:
             float: The retrievability of the Card object.
         """
 
-        if card.last_review is None:
+        if card.last_review is None or card.stability is None:
             return 0
 
         if current_datetime is None:
@@ -658,7 +658,9 @@ class Scheduler:
         )
 
         if not isinstance(next_interval, Real):  # type(next_interval) is torch.Tensor
-            next_interval = next_interval.detach().item()
+            next_interval = (
+                next_interval.detach().item()  # ty: ignore[possibly-missing-attribute]
+            )
 
         next_interval = round(next_interval)  # intervals are full days
 
@@ -679,7 +681,7 @@ class Scheduler:
             if isinstance(short_term_stability_increase, Real):
                 short_term_stability_increase = max(short_term_stability_increase, 1.0)
             else:  # type(short_term_stability_increase) is torch.Tensor
-                short_term_stability_increase = short_term_stability_increase.clamp(
+                short_term_stability_increase = short_term_stability_increase.clamp(  # ty: ignore[possibly-missing-attribute]
                     min=1.0
                 )
 

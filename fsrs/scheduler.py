@@ -701,7 +701,9 @@ class Scheduler:
             if isinstance(short_term_stability_increase, (int, float)):
                 short_term_stability_increase = max(short_term_stability_increase, 1.0)
             else:
-                short_term_stability_increase = short_term_stability_increase.clamp(min=1.0)
+                short_term_stability_increase = short_term_stability_increase.clamp(
+                    min=1.0
+                )
 
         short_term_stability = stability * short_term_stability_increase
 
@@ -824,7 +826,8 @@ class Scheduler:
             delta = 1.0
             for fuzz_range in FUZZ_RANGES:
                 delta += fuzz_range["factor"] * max(
-                    min(float(interval_days), fuzz_range["end"]) - fuzz_range["start"], 0.0
+                    min(float(interval_days), fuzz_range["end"]) - fuzz_range["start"],
+                    0.0,
                 )
 
             min_ivl = int(round(interval_days - delta))

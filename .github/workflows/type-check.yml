@@ -1,9 +1,9 @@
-name: ty typecheck
+name: pyrefly typecheck
 
 on: [push, pull_request]
 
 jobs:
-  mypy:
+  pyrefly:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,8 +15,8 @@ jobs:
           python-version: '3.14'
 
       - name: Install dependencies
-        run: uv pip install ty
+        run: uv pip install pyrefly
 
-      - name: Run ty
-        run: ty check
+      - name: Run pyrefly
+        run: pyrefly check
       

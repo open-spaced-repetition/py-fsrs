@@ -24,13 +24,17 @@ requires-python = ">=3.10"
 Homepage = "https://github.com/open-spaced-repetition/py-fsrs"
 
 [project.optional-dependencies]
-dev = ["pytest", "ruff", "setuptools", "torch", "numpy", "pandas", "uv", "pytest-xdist", "pdoc", "tqdm", "pytest-cov", "ty"]
+dev = ["pytest", "ruff", "setuptools", "torch", "numpy", "pandas", "uv", "pytest-xdist", "pdoc", "tqdm", "pytest-cov", "pyrefly"]
 optimizer = ["torch", "numpy", "pandas", "tqdm"]
 
 [tool.pytest.ini_options]
 pythonpath = "."
 filterwarnings = ["error"]
 
-[tool.ty.src]
-include = ["fsrs"]
-exclude = ["fsrs/optimizer.py"]
+[tool.setuptools.package-data]
+fsrs = ["py.typed"]
+
+[tool.pyrefly]
+project_includes = ["fsrs"]
+project_excludes = ["fsrs/optimizer.py"]
+ignore-missing-imports = ["torch"]

@@ -10,7 +10,6 @@ Classes:
 
 from __future__ import annotations
 from collections.abc import Sequence
-from numbers import Real
 import math
 from datetime import datetime, timezone, timedelta
 from copy import copy
@@ -21,7 +20,10 @@ from fsrs.state import State
 from fsrs.card import Card
 from fsrs.rating import Rating
 from fsrs.review_log import ReviewLog
-from typing import TypedDict
+from typing import TYPE_CHECKING, TypedDict, overload
+
+if TYPE_CHECKING:
+    from torch import Tensor  # torch is optional; import only for type checking
 from typing_extensions import Self
 
 FSRS_DEFAULT_DECAY = 0.1542
@@ -355,6 +357,9 @@ class Scheduler:
                             )
                             next_interval = timedelta(days=next_interval_days)
 
+                        case _:
+                            raise ValueError(f"Unknown rating: {rating}")
+
             case State.Review:
                 assert card.stability is not None
                 assert card.difficulty is not None
@@ -400,6 +405,9 @@ class Scheduler:
                             stability=card.stability
                         )
                         next_interval = timedelta(days=next_interval_days)
+
+                    case _:
+                        raise ValueError(f"Unknown rating: {rating}")
 
             case State.Relearning:
                 assert card.stability is not None
@@ -484,6 +492,12 @@ class Scheduler:
                                 stability=card.stability
                             )
                             next_interval = timedelta(days=next_interval_days)
+
+                        case _:
+                            raise ValueError(f"Unknown rating: {rating}")
+
+            case _:
+                raise ValueError(f"Unknown card state: {card.state}")
 
         if self.enable_fuzzing and card.state == State.Review:
             next_interval = self._get_fuzzed_interval(interval=next_interval)
@@ -619,19 +633,27 @@ class Scheduler:
         source_dict: SchedulerDict = json.loads(source_json)
         return cls.from_dict(source_dict=source_dict)
 
-    def _clamp_difficulty(self, *, difficulty: float) -> float:
-        if isinstance(difficulty, Real):
+    @overload
+    def _clamp_difficulty(self, *, difficulty: float) -> float: ...
+    @overload
+    def _clamp_difficulty(self, *, difficulty: Tensor) -> Tensor: ...
+    def _clamp_difficulty(self, *, difficulty: float | Tensor) -> float | Tensor:
+        if isinstance(difficulty, (int, float)):
             difficulty = min(max(difficulty, MIN_DIFFICULTY), MAX_DIFFICULTY)
-        else:  # type(difficulty) is torch.Tensor
-            difficulty = difficulty.clamp(min=MIN_DIFFICULTY, max=MAX_DIFFICULTY)  # type: ignore[attr-defined]
+        else:
+            difficulty = difficulty.clamp(min=MIN_DIFFICULTY, max=MAX_DIFFICULTY)
 
         return difficulty
 
-    def _clamp_stability(self, *, stability: float) -> float:
-        if isinstance(stability, Real):
+    @overload
+    def _clamp_stability(self, *, stability: float) -> float: ...
+    @overload
+    def _clamp_stability(self, *, stability: Tensor) -> Tensor: ...
+    def _clamp_stability(self, *, stability: float | Tensor) -> float | Tensor:
+        if isinstance(stability, (int, float)):
             stability = max(stability, STABILITY_MIN)
-        else:  # type(stability) is torch.Tensor
-            stability = stability.clamp(min=STABILITY_MIN)  # type: ignore[attr-defined]
+        else:
+            stability = stability.clamp(min=STABILITY_MIN)
 
         return stability
 
@@ -657,10 +679,8 @@ class Scheduler:
             (self.desired_retention ** (1 / self._DECAY)) - 1
         )
 
-        if not isinstance(next_interval, Real):  # type(next_interval) is torch.Tensor
-            next_interval = (
-                next_interval.detach().item()  # ty: ignore[possibly-missing-attribute]
-            )
+        if not isinstance(next_interval, (int, float)):
+            next_interval = next_interval.detach().item()
 
         next_interval = round(next_interval)  # intervals are full days
 
@@ -678,10 +698,10 @@ class Scheduler:
         ) * (stability ** -self.parameters[19])
 
         if rating in (Rating.Good, Rating.Easy):
-            if isinstance(short_term_stability_increase, Real):
+            if isinstance(short_term_stability_increase, (int, float)):
                 short_term_stability_increase = max(short_term_stability_increase, 1.0)
-            else:  # type(short_term_stability_increase) is torch.Tensor
-                short_term_stability_increase = short_term_stability_increase.clamp(  # ty: ignore[possibly-missing-attribute]
+            else:
+                short_term_stability_increase = short_term_stability_increase.clamp(
                     min=1.0
                 )
 
@@ -733,6 +753,9 @@ class Scheduler:
                 retrievability=retrievability,
                 rating=rating,
             )
+
+        else:
+            raise ValueError(f"Unknown rating: {rating}")
 
         next_stability = self._clamp_stability(stability=next_stability)
 
@@ -803,7 +826,8 @@ class Scheduler:
             delta = 1.0
             for fuzz_range in FUZZ_RANGES:
                 delta += fuzz_range["factor"] * max(
-                    min(interval_days, fuzz_range["end"]) - fuzz_range["start"], 0.0
+                    min(float(interval_days), fuzz_range["end"]) - fuzz_range["start"],
+                    0.0,
                 )
 
             min_ivl = int(round(interval_days - delta))

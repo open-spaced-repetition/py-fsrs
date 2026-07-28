@@ -697,7 +697,7 @@ class Scheduler:
             math.e ** (self.parameters[17] * (rating - 3 + self.parameters[18]))
         ) * (stability ** -self.parameters[19])
 
-        if rating in (Rating.Good, Rating.Easy):
+        if rating in (Rating.Hard, Rating.Good, Rating.Easy):
             if isinstance(short_term_stability_increase, (int, float)):
                 short_term_stability_increase = max(short_term_stability_increase, 1.0)
             else:

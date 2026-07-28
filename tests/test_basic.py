@@ -784,6 +784,18 @@ class TestPyFSRS:
             )
             assert card.stability >= STABILITY_MIN
 
+    def test_same_day_hard_review_does_not_decrease_stability(self):
+        scheduler = Scheduler(learning_steps=())
+        review_datetime = datetime(2026, 1, 1, tzinfo=timezone.utc)
+        card, _ = scheduler.review_card(Card(), Rating.Good, review_datetime)
+        previous_stability = card.stability
+
+        card, _ = scheduler.review_card(
+            card, Rating.Hard, review_datetime + timedelta(minutes=1)
+        )
+
+        assert card.stability == previous_stability
+
     def test_scheduler_parameter_validation(self):
         # initializing a Scheduler object with valid parameters works
         good_parameters = DEFAULT_PARAMETERS

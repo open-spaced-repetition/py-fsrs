@@ -31,6 +31,9 @@ optimizer = ["torch", "numpy", "pandas", "tqdm"]
 pythonpath = "."
 filterwarnings = ["error"]
 
+[tool.ruff]
+extend-exclude = ["README.md"]
+
 [tool.setuptools.package-data]
 fsrs = ["py.typed"]
 

@@ -9,18 +9,20 @@ Classes:
 """
 
 from __future__ import annotations
-from collections.abc import Sequence
-import math
-from datetime import datetime, timezone, timedelta
-from copy import copy
+
 import json
-from random import random
+import math
+from collections.abc import Sequence
+from copy import copy
 from dataclasses import dataclass
-from fsrs.state import State
+from datetime import datetime, timedelta, timezone
+from random import random
+from typing import TYPE_CHECKING, TypedDict, overload
+
 from fsrs.card import Card
 from fsrs.rating import Rating
 from fsrs.review_log import ReviewLog
-from typing import TYPE_CHECKING, TypedDict, overload
+from fsrs.state import State
 
 if TYPE_CHECKING:
     from torch import Tensor  # torch is optional; import only for type checking
@@ -830,8 +832,8 @@ class Scheduler:
                     0.0,
                 )
 
-            min_ivl = int(round(interval_days - delta))
-            max_ivl = int(round(interval_days + delta))
+            min_ivl = round(interval_days - delta)
+            max_ivl = round(interval_days + delta)
 
             # make sure the min_ivl and max_ivl fall into a valid range
             min_ivl = max(2, min_ivl)

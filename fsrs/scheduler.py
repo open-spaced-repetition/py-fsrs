@@ -9,24 +9,27 @@ Classes:
 """
 
 from __future__ import annotations
-from collections.abc import Sequence
-import math
-from datetime import datetime, timezone, timedelta
-from copy import copy
+
 import json
-from random import random
+import math
+from collections.abc import Sequence
+from copy import copy
 from dataclasses import dataclass
-from fsrs.state import State
+from datetime import datetime, timedelta, timezone
+from random import random
+from typing import TYPE_CHECKING, TypedDict, overload
+
 from fsrs.card import Card
 from fsrs.rating import Rating
 from fsrs.review_log import ReviewLog
-from typing import TYPE_CHECKING, TypedDict, overload
+from fsrs.state import State
 
 if TYPE_CHECKING:
     from torch import Tensor  # torch is optional; import only for type checking
 from typing_extensions import Self
 
 FSRS_DEFAULT_DECAY = 0.1542
+UNKNOWN_RATING_MSG = "Unknown rating: "
 DEFAULT_PARAMETERS = (
     0.212,
     1.2931,
@@ -358,7 +361,7 @@ class Scheduler:
                             next_interval = timedelta(days=next_interval_days)
 
                         case _:
-                            raise ValueError(f"Unknown rating: {rating}")
+                            raise ValueError(f"{UNKNOWN_RATING_MSG}{rating}")
 
             case State.Review:
                 assert card.stability is not None
@@ -407,7 +410,7 @@ class Scheduler:
                         next_interval = timedelta(days=next_interval_days)
 
                     case _:
-                        raise ValueError(f"Unknown rating: {rating}")
+                        raise ValueError(f"{UNKNOWN_RATING_MSG}{rating}")
 
             case State.Relearning:
                 assert card.stability is not None
@@ -494,7 +497,7 @@ class Scheduler:
                             next_interval = timedelta(days=next_interval_days)
 
                         case _:
-                            raise ValueError(f"Unknown rating: {rating}")
+                            raise ValueError(f"{UNKNOWN_RATING_MSG}{rating}")
 
             case _:
                 raise ValueError(f"Unknown card state: {card.state}")
@@ -755,7 +758,7 @@ class Scheduler:
             )
 
         else:
-            raise ValueError(f"Unknown rating: {rating}")
+            raise ValueError(f"{UNKNOWN_RATING_MSG}{rating}")
 
         next_stability = self._clamp_stability(stability=next_stability)
 

@@ -10,11 +10,14 @@ Classes:
 """
 
 from __future__ import annotations
+
+import json
 from dataclasses import dataclass
 from datetime import datetime
 from typing import TypedDict
-import json
+
 from typing_extensions import Self
+
 from fsrs.rating import Rating
 
 

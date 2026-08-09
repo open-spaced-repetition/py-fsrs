@@ -5,26 +5,26 @@ fsrs.optimizer
 This module defines the optional Optimizer class.
 """
 
-from fsrs.card import Card
-from fsrs.review_log import ReviewLog, Rating
-from fsrs.scheduler import (
-    Scheduler,
-    DEFAULT_PARAMETERS,
-    LOWER_BOUNDS_PARAMETERS,
-    UPPER_BOUNDS_PARAMETERS,
-)
-
 import math
-from datetime import datetime, timezone
 from copy import deepcopy
+from datetime import datetime, timezone
 from random import Random
 from statistics import mean
 
+from fsrs.card import Card
+from fsrs.review_log import Rating, ReviewLog
+from fsrs.scheduler import (
+    DEFAULT_PARAMETERS,
+    LOWER_BOUNDS_PARAMETERS,
+    UPPER_BOUNDS_PARAMETERS,
+    Scheduler,
+)
+
 try:
-    import torch
-    from torch.nn import BCELoss
-    from torch import optim
     import pandas as pd
+    import torch
+    from torch import optim
+    from torch.nn import BCELoss
     from tqdm import tqdm
 
     # weight clipping
@@ -91,7 +91,7 @@ try:
                     if card_id not in revlogs_train:
                         revlogs_train[card_id] = []
 
-                    revlogs_train[card_id].append((datum))
+                    revlogs_train[card_id].append(datum)
                     revlogs_train[card_id] = sorted(
                         revlogs_train[card_id], key=lambda x: x[0][0]
                     )  # keep reviews sorted

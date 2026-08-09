@@ -10,12 +10,15 @@ Classes:
 """
 
 from __future__ import annotations
+
+import json
+import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
-import time
-import json
 from typing import TypedDict
+
 from typing_extensions import Self
+
 from fsrs.state import State
 
 

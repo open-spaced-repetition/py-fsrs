@@ -1,14 +1,15 @@
-from fsrs.scheduler import Scheduler, STABILITY_MIN, DEFAULT_PARAMETERS
-from fsrs.card import Card, State
-from fsrs.review_log import ReviewLog, Rating
-
-from datetime import datetime, timedelta, timezone
 import json
-import pytest
 import random
-from copy import deepcopy
-import sys
 import re
+import sys
+from copy import deepcopy
+from datetime import datetime, timedelta, timezone
+
+import pytest
+
+from fsrs.card import Card, State
+from fsrs.review_log import Rating, ReviewLog
+from fsrs.scheduler import DEFAULT_PARAMETERS, STABILITY_MIN, Scheduler
 
 TEST_RATINGS_1 = (
     Rating.Good,
@@ -114,14 +115,14 @@ class TestPyFSRS:
 
         # comparing timezone aware cards with deprecated datetime.utcnow() should raise a TypeError
         with pytest.raises(TypeError):
-            datetime.now() >= card.due
+            assert datetime.now() >= card.due  # noqa: DTZ005
 
         # repeating a card with a non-utc, non-timezone-aware datetime object should raise a Value Error
         with pytest.raises(ValueError):
             scheduler.review_card(
                 card=card,
                 rating=Rating.Good,
-                review_datetime=datetime(2022, 11, 29, 12, 30, 0, 0),
+                review_datetime=datetime(2022, 11, 29, 12, 30, 0, 0),  # noqa: DTZ001
             )
 
         # review a card with rating good before next tests

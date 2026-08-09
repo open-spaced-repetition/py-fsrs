@@ -1,15 +1,15 @@
-from fsrs.optimizer import Optimizer
-from fsrs.review_log import ReviewLog, Rating
-from fsrs.scheduler import Scheduler, DEFAULT_PARAMETERS
-from fsrs.card import Card
-
-import pandas as pd
 from copy import deepcopy
+from datetime import datetime, timedelta, timezone
 from random import shuffle
-import numpy as np
-import pytest
-from datetime import datetime, timezone, timedelta
 
+import numpy as np
+import pandas as pd
+import pytest
+
+from fsrs.card import Card
+from fsrs.optimizer import Optimizer
+from fsrs.review_log import Rating, ReviewLog
+from fsrs.scheduler import DEFAULT_PARAMETERS, Scheduler
 
 test_optimal_parameters = [
     0.12340357383516173,

@@ -115,14 +115,14 @@ class TestPyFSRS:
 
         # comparing timezone aware cards with deprecated datetime.utcnow() should raise a TypeError
         with pytest.raises(TypeError):
-            assert datetime.now() >= card.due  # noqa: DTZ005
+            assert datetime.now() >= card.due
 
         # repeating a card with a non-utc, non-timezone-aware datetime object should raise a Value Error
         with pytest.raises(ValueError):
             scheduler.review_card(
                 card=card,
                 rating=Rating.Good,
-                review_datetime=datetime(2022, 11, 29, 12, 30, 0, 0),  # noqa: DTZ001
+                review_datetime=datetime(2022, 11, 29, 12, 30, 0, 0),
             )
 
         # review a card with rating good before next tests

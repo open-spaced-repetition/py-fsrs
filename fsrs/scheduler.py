@@ -848,7 +848,11 @@ class Scheduler:
             random() * (max_ivl - min_ivl + 1)
         ) + min_ivl  # the next interval is a random value between min_ivl and max_ivl
 
-        fuzzed_interval_days = min(round(fuzzed_interval_days), self.maximum_interval)
+        # random() is in [0, 1), so flooring gives each whole day from min_ivl to max_ivl
+        # an equal chance; rounding would give min_ivl half a share and max_ivl + 1 the other half
+        fuzzed_interval_days = min(
+            math.floor(fuzzed_interval_days), self.maximum_interval
+        )
 
         fuzzed_interval = timedelta(days=fuzzed_interval_days)
 

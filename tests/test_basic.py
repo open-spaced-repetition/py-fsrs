@@ -612,6 +612,45 @@ class TestPyFSRS:
 
         assert interval.days == 11
 
+    def test_fuzzed_interval_edges(self, monkeypatch):
+        scheduler = Scheduler()
+
+        # a 10-day interval has a fuzz range of 8 to 12 days, five days with equal chances
+        for random_value, expected_days in (
+            (0.0, 8),
+            (0.1999, 8),
+            (0.2, 9),
+            (0.7999, 11),
+            (0.8, 12),
+            (0.9999999, 12),
+        ):
+            monkeypatch.setattr(
+                "fsrs.scheduler.random", lambda value=random_value: value
+            )
+            fuzzed_interval = scheduler._get_fuzzed_interval(
+                interval=timedelta(days=10)
+            )
+            assert fuzzed_interval.days == expected_days
+
+    def test_fuzzed_interval_stays_in_fuzz_range(self):
+        scheduler = Scheduler()
+        random.seed(42)
+
+        # (interval, min_ivl, max_ivl), as computed by the fuzz ranges
+        for interval_days, min_ivl, max_ivl in (
+            (3, 2, 4),
+            (10, 8, 12),
+            (30, 27, 33),
+            (100, 93, 107),
+        ):
+            fuzzed_days = {
+                scheduler._get_fuzzed_interval(
+                    interval=timedelta(days=interval_days)
+                ).days
+                for _ in range(2000)
+            }
+            assert fuzzed_days == set(range(min_ivl, max_ivl + 1))
+
     def test_no_learning_steps(self):
         scheduler = Scheduler(learning_steps=())
 
